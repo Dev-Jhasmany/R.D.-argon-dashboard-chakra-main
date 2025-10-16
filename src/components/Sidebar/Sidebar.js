@@ -65,24 +65,65 @@ function Sidebar(props) {
         st[prop["state"]] = !state[prop.state];
         return (
           <React.Fragment key={key}>
-            <Text
-              color={activeColor}
-              fontWeight="bold"
+            <Button
+              boxSize="initial"
+              justifyContent="flex-start"
+              alignItems="center"
+              bg="transparent"
               mb={{
                 xl: "6px",
               }}
-              mx="auto"
+              mx={{
+                xl: "auto",
+              }}
+              py="12px"
               ps={{
                 sm: "10px",
                 xl: "16px",
               }}
-              py="12px"
+              borderRadius="15px"
+              _hover="none"
+              w="100%"
+              _active={{
+                bg: "inherit",
+                transform: "none",
+                borderColor: "transparent",
+              }}
+              _focus={{
+                boxShadow: "none",
+              }}
+              onClick={() => {
+                setState(st);
+              }}
             >
-              {document.documentElement.dir === "rtl"
-                ? prop.rtlName
-                : prop.name}
-            </Text>
-            {createLinks(prop.views)}
+              <Flex>
+                {typeof prop.icon === "string" ? (
+                  <Icon>{prop.icon}</Icon>
+                ) : (
+                  <IconBox
+                    bg={state[prop.state] ? "blue.500" : inactiveBg}
+                    color={state[prop.state] ? "white" : "blue.500"}
+                    h="30px"
+                    w="30px"
+                    me="12px"
+                    transition={variantChange}
+                  >
+                    {prop.icon}
+                  </IconBox>
+                )}
+                <Text color={activeColor} my="auto" fontSize="sm">
+                  {document.documentElement.dir === "rtl"
+                    ? prop.rtlName
+                    : prop.name}
+                </Text>
+              </Flex>
+            </Button>
+            <Box
+              display={state[prop.state] ? "block" : "none"}
+              ps="10px"
+            >
+              {createLinks(prop.views)}
+            </Box>
           </React.Fragment>
         );
       }
@@ -273,6 +314,7 @@ export function SidebarResponsive(props) {
   // this is for the rest of the collapses
   const [state, setState] = React.useState({});
   const mainPanel = React.useRef();
+  let variantChange = "0.2s linear";
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
     return location.pathname === routeName ? "active" : "";
@@ -299,24 +341,65 @@ export function SidebarResponsive(props) {
         st[prop["state"]] = !state[prop.state];
         return (
           <React.Fragment key={key}>
-            <Text
-              color={activeColor}
-              fontWeight="bold"
+            <Button
+              boxSize="initial"
+              justifyContent="flex-start"
+              alignItems="center"
+              bg="transparent"
               mb={{
                 xl: "6px",
               }}
-              mx="auto"
+              mx={{
+                xl: "auto",
+              }}
+              py="12px"
               ps={{
                 sm: "10px",
                 xl: "16px",
               }}
-              py="12px"
+              borderRadius="15px"
+              _hover="none"
+              w="100%"
+              _active={{
+                bg: "inherit",
+                transform: "none",
+                borderColor: "transparent",
+              }}
+              _focus={{
+                boxShadow: "none",
+              }}
+              onClick={() => {
+                setState(st);
+              }}
             >
-              {document.documentElement.dir === "rtl"
-                ? prop.rtlName
-                : prop.name}
-            </Text>
-            {createLinks(prop.views)}
+              <Flex>
+                {typeof prop.icon === "string" ? (
+                  <Icon>{prop.icon}</Icon>
+                ) : (
+                  <IconBox
+                    bg={state[prop.state] ? "blue.500" : inactiveBg}
+                    color={state[prop.state] ? "white" : "blue.500"}
+                    h="30px"
+                    w="30px"
+                    me="12px"
+                    transition={variantChange}
+                  >
+                    {prop.icon}
+                  </IconBox>
+                )}
+                <Text color={activeColor} my="auto" fontSize="sm">
+                  {document.documentElement.dir === "rtl"
+                    ? prop.rtlName
+                    : prop.name}
+                </Text>
+              </Flex>
+            </Button>
+            <Box
+              display={state[prop.state] ? "block" : "none"}
+              ps="10px"
+            >
+              {createLinks(prop.views)}
+            </Box>
           </React.Fragment>
         );
       }

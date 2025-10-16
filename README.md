@@ -267,3 +267,37 @@ Dribbble: <https://dribbble.com/simmmple>
 
 Instagram: <https://www.instagram.com/simmmple.web>
 
+```
+
+  | Ruta             | Nombre    | Componente   | Icono      |
+  |------------------|-----------|--------------|------------|
+  | /admin/dashboard | Dashboard | Dashboard.js | HomeIcon   |
+  | /admin/tables    | Tables    | Tables.js    | StatsIcon  |
+  | /admin/billing   | Billing   | Billing.js   | CreditIcon |
+  | /admin/profile   | Profile   | Profile.js   | PersonIcon |
+
+  Rutas de Autenticación (Layout: /auth)
+
+  | Ruta                 | Nombre         | Componente       | Descripción            |
+  |----------------------|----------------|------------------|------------------------|
+  | /auth/signin         | Sign In        | SignIn.js        | Iniciar sesión         |
+  | /auth/signup         | Sign Up        | SignUp.js        | Registrarse            |
+  | /auth/reset-password | Reset Password | ResetPassword.js | Restablecer contraseña |
+
+  Ruta RTL (Layout: /rtl)
+
+  | Ruta                  | Nombre | Componente |
+  |-----------------------|--------|------------|
+  | /rtl/rtl-support-page | RTL    | RTLPage.js |
+
+  URLs completas (con Docker en puerto 3001):
+
+  - http://localhost:3001/#/admin/dashboard
+  - http://localhost:3001/#/admin/tables
+  - http://localhost:3001/#/admin/billing
+  - http://localhost:3001/#/admin/profile
+  - http://localhost:3001/#/auth/signin
+  - http://localhost:3001/#/auth/signup
+  - http://localhost:3001/#/auth/reset-password
+  - http://localhost:3001/#/rtl/rtl-support-page
+  ```
