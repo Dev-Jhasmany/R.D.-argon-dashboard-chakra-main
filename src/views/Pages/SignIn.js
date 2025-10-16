@@ -64,7 +64,7 @@ function SignIn() {
               fontWeight='bold'
               textAlign='center'
               mb='22px'>
-              Register With
+              Sign In With
             </Text>
             <HStack spacing='15px' justify='center' mb='22px'>
               <Flex
@@ -138,14 +138,14 @@ function SignIn() {
             </Text>
             <FormControl>
               <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-                Name
+                Email
               </FormLabel>
               <Input
                 variant='auth'
                 fontSize='sm'
                 ms='4px'
-                type='text'
-                placeholder='Your full name'
+                type='email'
+                placeholder='Your email address'
                 mb='24px'
                 size='lg'
               />
@@ -174,7 +174,7 @@ function SignIn() {
                 w='100%'
                 h='45'
                 mb='24px'>
-                SIGN UP
+                SIGN IN
               </Button>
             </FormControl>
             <Flex
@@ -183,15 +183,26 @@ function SignIn() {
               alignItems='center'
               maxW='100%'
               mt='0px'>
-              <Text color={textColor} fontWeight='medium'>
-                Already have an account?
+              <Text color={textColor} fontWeight='medium' mb='10px'>
+                Don't have an account?
                 <Link
                   color={titleColor}
                   as='span'
                   ms='5px'
-                  href='#'
+                  href='#/auth/signup'
                   fontWeight='bold'>
-                  Sign In
+                  Sign Up
+                </Link>
+              </Text>
+              <Text color={textColor} fontWeight='medium'>
+                Forgot your password?
+                <Link
+                  color={titleColor}
+                  as='span'
+                  ms='5px'
+                  href='#/auth/reset-password'
+                  fontWeight='bold'>
+                  Reset Password
                 </Link>
               </Text>
             </Flex>

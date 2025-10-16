@@ -228,7 +228,7 @@ function SignUp() {
                 color={titleColor}
                 as='span'
                 ms='5px'
-                href='#'
+                href='#/auth/signin'
                 fontWeight='bold'>
                 Sign In
               </Link>

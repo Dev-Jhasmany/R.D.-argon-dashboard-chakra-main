@@ -61,21 +61,8 @@ export default function AuthNavbar(props) {
   hamburgerColor = { base: "white" };
   var linksAuth = (
     <HStack display={{ sm: "none", lg: "flex" }}>
-      <NavLink to="/admin/dashboard">
-        <Button
-          fontSize="sm"
-          ms="0px"
-          me="0px"
-          px="0px"
-          me={{ sm: "2px", md: "16px" }}
-          color={navbarIcon}
-          variant="no-effects"
-          leftIcon={<HomeIcon color={navbarIcon} w="12px" h="12px" me="0px" />}
-        >
-          <Text>Dashboard</Text>
-        </Button>
-      </NavLink>
-      <NavLink to="/admin/profile">
+      
+      <NavLink to="/auth/reset-password">
         <Button
           fontSize="sm"
           ms="0px"
@@ -88,9 +75,10 @@ export default function AuthNavbar(props) {
             <PersonIcon color={navbarIcon} w="12px" h="12px" me="0px" />
           }
         >
-          <Text>Profile</Text>
+          <Text>Reset Password</Text>
         </Button>
       </NavLink>
+      
       <NavLink to="/auth/signup">
         <Button
           fontSize="sm"
@@ -195,7 +183,7 @@ export default function AuthNavbar(props) {
               lg: "flex",
             }}
           >
-            Free Download
+            Menu Del Comidas
           </Button>
         </Link>
       </Flex>

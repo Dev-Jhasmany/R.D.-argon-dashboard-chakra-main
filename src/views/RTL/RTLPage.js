@@ -21,8 +21,6 @@ import {
 } from "@chakra-ui/react";
 // Custom components
 import Card from "components/Card/Card.js";
-import BarChart from "components/Charts/BarChart";
-import LineChart from "components/Charts/LineChart";
 import IconBox from "components/Icons/IconBox";
 // Custom icons
 import {
@@ -33,12 +31,6 @@ import {
 } from "components/Icons/Icons.js";
 import React from "react";
 // Variables
-import {
-  barChartData,
-  barChartOptions,
-  lineChartData,
-  lineChartOptions,
-} from "variables/charts";
 import { pageVisits, socialTraffic } from "variables/general";
 
 export default function Dashboard() {
@@ -79,7 +71,7 @@ export default function Dashboard() {
               </Stat>
               <IconBox
                 borderRadius='50%'
-                as='box'
+                as='div'
                 h={"45px"}
                 w={"45px"}
                 bg={iconBlue}>
@@ -118,7 +110,7 @@ export default function Dashboard() {
               </Stat>
               <IconBox
                 borderRadius='50%'
-                as='box'
+                as='div'
                 h={"45px"}
                 w={"45px"}
                 bg={iconBlue}>
@@ -157,7 +149,7 @@ export default function Dashboard() {
               </Stat>
               <IconBox
                 borderRadius='50%'
-                as='box'
+                as='div'
                 h={"45px"}
                 w={"45px"}
                 bg={iconBlue}>
@@ -196,7 +188,7 @@ export default function Dashboard() {
               </Stat>
               <IconBox
                 borderRadius='50%'
-                as='box'
+                as='div'
                 h={"45px"}
                 w={"45px"}
                 bg={iconBlue}>
@@ -235,11 +227,8 @@ export default function Dashboard() {
               in 2022
             </Text>
           </Flex>
-          <Box minH='300px'>
-            <LineChart
-              chartData={lineChartData}
-              chartOptions={lineChartOptions}
-            />
+          <Box minH='300px' display='flex' alignItems='center' justifyContent='center'>
+            <Text color='#fff' fontSize='md'>Chart temporarily disabled</Text>
           </Box>
         </Card>
         <Card p='0px' maxW={{ sm: "320px", md: "100%" }}>
@@ -251,8 +240,8 @@ export default function Dashboard() {
               Total orders
             </Text>
           </Flex>
-          <Box minH='300px'>
-            <BarChart chartData={barChartData} chartOptions={barChartOptions} />
+          <Box minH='300px' display='flex' alignItems='center' justifyContent='center'>
+            <Text color={textColor} fontSize='md'>Chart temporarily disabled</Text>
           </Box>
         </Card>
         <Card p='0px' maxW={{ sm: "320px", md: "100%" }}>

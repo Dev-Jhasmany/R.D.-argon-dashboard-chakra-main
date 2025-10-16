@@ -7,6 +7,7 @@ import RTLPage from "views/RTL/RTLPage.js";
 import Profile from "views/Dashboard/Profile.js";
 import SignIn from "views/Pages/SignIn.js";
 import SignUp from "views/Pages/SignUp.js";
+import ResetPassword from "views/Pages/ResetPassword.js";
 
 import {
   HomeIcon,
@@ -80,6 +81,14 @@ var dashRoutes = [
         rtlName: "لوحة القيادة",
         icon: <RocketIcon color='inherit' />,
         component: SignUp,
+        layout: "/auth",
+      },
+      {
+        path: "/reset-password",
+        name: "Reset Password",
+        rtlName: "إعادة تعيين كلمة المرور",
+        icon: <DocumentIcon color='inherit' />,
+        component: ResetPassword,
         layout: "/auth",
       },
     ],
