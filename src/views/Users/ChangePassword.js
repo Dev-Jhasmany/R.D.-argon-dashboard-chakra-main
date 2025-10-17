@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -8,13 +8,98 @@ import {
   Input,
   Text,
   useColorModeValue,
+  useToast,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
+import authService from "services/authService";
 
 function ChangePassword() {
   const textColor = useColorModeValue("gray.700", "white");
+  const toast = useToast();
+
+  const [formData, setFormData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    // Validaciones
+    if (!formData.oldPassword || !formData.newPassword || !formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (formData.newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "La nueva contraseña debe tener al menos 6 caracteres",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setLoading(true);
+    const result = await authService.changePassword(formData.oldPassword, formData.newPassword);
+    setLoading(false);
+
+    if (result.success) {
+      toast({
+        title: "Contraseña actualizada",
+        description: "Su contraseña ha sido cambiada correctamente",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      // Limpiar el formulario
+      setFormData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
@@ -26,11 +111,21 @@ function ChangePassword() {
         </CardHeader>
         <CardBody>
           <Flex direction='column' w='100%'>
+            <Alert status='info' mb='20px' borderRadius='8px'>
+              <AlertIcon />
+              <AlertDescription fontSize='sm'>
+                La nueva contraseña debe tener al menos 6 caracteres.
+              </AlertDescription>
+            </Alert>
+
             <FormControl mb='24px'>
               <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
                 Contraseña Actual
               </FormLabel>
               <Input
+                name="oldPassword"
+                value={formData.oldPassword}
+                onChange={handleChange}
                 borderRadius='15px'
                 fontSize='sm'
                 type='password'
@@ -43,6 +138,9 @@ function ChangePassword() {
                 Nueva Contraseña
               </FormLabel>
               <Input
+                name="newPassword"
+                value={formData.newPassword}
+                onChange={handleChange}
                 borderRadius='15px'
                 fontSize='sm'
                 type='password'
@@ -55,6 +153,10 @@ function ChangePassword() {
                 Confirmar Nueva Contraseña
               </FormLabel>
               <Input
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                 borderRadius='15px'
                 fontSize='sm'
                 type='password'
@@ -63,6 +165,8 @@ function ChangePassword() {
               />
             </FormControl>
             <Button
+              onClick={handleSubmit}
+              isLoading={loading}
               variant='dark'
               fontSize='sm'
               fontWeight='bold'

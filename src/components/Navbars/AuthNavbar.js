@@ -53,7 +53,7 @@ export default function AuthNavbar(props) {
         <Box w="1px" h="20px" bg={"white"} />
         <ChakraLogoBlue w="82px" h="21px" />
       </Stack>
-      <Text fontsize="sm" mt="3px">
+      <Text fontSize="sm" mt="3px">
         {logoText}
       </Text>
     </Link>

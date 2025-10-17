@@ -20,7 +20,7 @@ import { ArgonLogoDark, ArgonLogoLight, ChakraLogoDark, ChakraLogoLight, Profile
 import { ItemContent } from "components/Menu/ItemContent";
 import { SearchBar } from "components/Navbars/SearchBar/SearchBar";
 import { SidebarResponsive } from "components/Sidebar/Sidebar";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import routes from "routes.js";
 
@@ -36,6 +36,20 @@ export default function HeaderLinks(props) {
   } = props;
 
   const { colorMode } = useColorMode();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    // Obtener usuario del localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+      }
+    }
+  }, []);
 
   // Chakra Color Mode
   let navbarIcon =
@@ -53,7 +67,7 @@ export default function HeaderLinks(props) {
       alignItems='center'
       flexDirection='row'>
       <SearchBar me='18px' />
-      <NavLink to='/auth/signin'>
+      <NavLink to='/admin/users/user-info'>
         <Button
           ms='0px'
           px='0px'
@@ -74,7 +88,9 @@ export default function HeaderLinks(props) {
               ""
             )
           }>
-          <Text display={{ sm: "none", md: "flex" }}>Sign In</Text>
+          <Text display={{ sm: "none", md: "flex" }}>
+            {currentUser ? `${currentUser.full_name || ''} ${currentUser.full_last_name || ''}`.trim() || currentUser.username : 'Sign In'}
+          </Text>
         </Button>
       </NavLink>
       <SidebarResponsive

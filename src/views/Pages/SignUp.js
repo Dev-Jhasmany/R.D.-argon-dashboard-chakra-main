@@ -9,15 +9,18 @@ import {
   Icon,
   Input,
   Link,
-  Switch,
   Text,
   useColorModeValue,
-  LightMode,
+  useToast,
+  Select,
+  Grid,
 } from "@chakra-ui/react";
 // Assets
 import BgSignUp from "assets/img/BgSignUp.png";
-import React from "react";
+import React, { useState } from "react";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
+import { useHistory } from "react-router-dom";
+import authService from "services/authService";
 
 function SignUp() {
   const bgForm = useColorModeValue("white", "navy.800");
@@ -26,6 +29,94 @@ function SignUp() {
   const colorIcons = useColorModeValue("gray.700", "white");
   const bgIcons = useColorModeValue("trasnparent", "navy.700");
   const bgIconsHover = useColorModeValue("gray.50", "whiteAlpha.100");
+  const toast = useToast();
+  const history = useHistory();
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    ci: "",
+    full_name: "",
+    full_last_name: "",
+    gender: "other",
+    date_of_birth: "",
+    address: "",
+    phone_number: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    // Validar campos obligatorios
+    if (!formData.username || !formData.email || !formData.password ||
+        !formData.ci || !formData.full_name || !formData.full_last_name) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos obligatorios",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "La contraseña debe tener al menos 6 caracteres",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    // Preparar datos para enviar (solo incluir opcionales si tienen valor)
+    const dataToSend = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      ci: formData.ci,
+      full_name: formData.full_name,
+      full_last_name: formData.full_last_name,
+      gender: formData.gender,
+      ...(formData.date_of_birth && { date_of_birth: formData.date_of_birth }),
+      ...(formData.address && { address: formData.address }),
+      ...(formData.phone_number && { phone_number: formData.phone_number }),
+    };
+
+    const result = await authService.register(dataToSend);
+    setLoading(false);
+
+    if (result.success) {
+      toast({
+        title: "Registro exitoso",
+        description: "Su cuenta ha sido creada. Ahora puede iniciar sesión",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      history.push("/auth/signin");
+    } else {
+      toast({
+        title: "Error al registrar",
+        description: result.error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
   return (
     <Flex
       direction='column'
@@ -75,11 +166,12 @@ function SignUp() {
       <Flex alignItems='center' justifyContent='center' mb='60px' mt='20px'>
         <Flex
           direction='column'
-          w='445px'
+          w='800px'
+          maxW='90%'
           background='transparent'
           borderRadius='15px'
           p='40px'
-          mx={{ base: "100px" }}
+          mx={{ base: "20px" }}
           bg={bgForm}
           boxShadow={useColorModeValue(
             "0px 5px 14px rgba(0, 0, 0, 0.05)",
@@ -91,129 +183,186 @@ function SignUp() {
             fontWeight='bold'
             textAlign='center'
             mb='22px'>
-            Register With
-          </Text>
-          <HStack spacing='15px' justify='center' mb='22px'>
-            <Flex
-              justify='center'
-              align='center'
-              w='75px'
-              h='75px'
-              borderRadius='8px'
-              border={useColorModeValue("1px solid", "0px")}
-              borderColor='gray.200'
-              cursor='pointer'
-              transition='all .25s ease'
-              bg={bgIcons}
-              _hover={{ bg: bgIconsHover }}>
-              <Link href='#'>
-                <Icon as={FaFacebook} color={colorIcons} w='30px' h='30px' />
-              </Link>
-            </Flex>
-            <Flex
-              justify='center'
-              align='center'
-              w='75px'
-              h='75px'
-              borderRadius='8px'
-              border={useColorModeValue("1px solid", "0px")}
-              borderColor='gray.200'
-              cursor='pointer'
-              transition='all .25s ease'
-              bg={bgIcons}
-              _hover={{ bg: bgIconsHover }}>
-              <Link href='#'>
-                <Icon
-                  as={FaApple}
-                  color={colorIcons}
-                  w='30px'
-                  h='30px'
-                  _hover={{ filter: "brightness(120%)" }}
-                />
-              </Link>
-            </Flex>
-            <Flex
-              justify='center'
-              align='center'
-              w='75px'
-              h='75px'
-              borderRadius='8px'
-              border={useColorModeValue("1px solid", "0px")}
-              borderColor='gray.200'
-              cursor='pointer'
-              transition='all .25s ease'
-              bg={bgIcons}
-              _hover={{ bg: bgIconsHover }}>
-              <Link href='#'>
-                <Icon
-                  as={FaGoogle}
-                  color={colorIcons}
-                  w='30px'
-                  h='30px'
-                  _hover={{ filter: "brightness(120%)" }}
-                />
-              </Link>
-            </Flex>
-          </HStack>
-          <Text
-            fontSize='lg'
-            color='gray.400'
-            fontWeight='bold'
-            textAlign='center'
-            mb='22px'>
-            or
+            Crear Nueva Cuenta
           </Text>
           <FormControl>
-            <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-              Name
-            </FormLabel>
-            <Input
-              variant='auth'
-              fontSize='sm'
-              ms='4px'
-              type='text'
-              placeholder='Your full name'
-              mb='24px'
-              size='lg'
-            />
-            <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-              Email
-            </FormLabel>
-            <Input
-              variant='auth'
-              fontSize='sm'
-              ms='4px'
-              type='email'
-              placeholder='Your email address'
-              mb='24px'
-              size='lg'
-            />
-            <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-              Password
-            </FormLabel>
-            <Input
-              variant='auth'
-              fontSize='sm'
-              ms='4px'
-              type='password'
-              placeholder='Your password'
-              mb='24px'
-              size='lg'
-            />
-            <FormControl display='flex' alignItems='center' mb='24px'>
-              <Switch id='remember-login' colorScheme='blue' me='10px' />
-              <FormLabel htmlFor='remember-login' mb='0' fontWeight='normal'>
-                Remember me
-              </FormLabel>
-            </FormControl>
+            <Grid templateColumns='repeat(2, 1fr)' gap={4} mb='20px'>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Username *
+                </FormLabel>
+                <Input
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='text'
+                  placeholder='Username'
+                  size='lg'
+                />
+              </Box>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Email *
+                </FormLabel>
+                <Input
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='email'
+                  placeholder='Email address'
+                  size='lg'
+                />
+              </Box>
+            </Grid>
+
+            <Grid templateColumns='repeat(2, 1fr)' gap={4} mb='20px'>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  CI *
+                </FormLabel>
+                <Input
+                  name="ci"
+                  value={formData.ci}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='text'
+                  placeholder='Cédula de identidad'
+                  size='lg'
+                />
+              </Box>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Género *
+                </FormLabel>
+                <Select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  size='lg'
+                >
+                  <option value='male'>Masculino</option>
+                  <option value='female'>Femenino</option>
+                  <option value='other'>Otro</option>
+                </Select>
+              </Box>
+            </Grid>
+
+            <Grid templateColumns='repeat(2, 1fr)' gap={4} mb='20px'>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Nombres *
+                </FormLabel>
+                <Input
+                  name="full_name"
+                  value={formData.full_name}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='text'
+                  placeholder='Nombres completos'
+                  size='lg'
+                />
+              </Box>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Apellidos *
+                </FormLabel>
+                <Input
+                  name="full_last_name"
+                  value={formData.full_last_name}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='text'
+                  placeholder='Apellidos completos'
+                  size='lg'
+                />
+              </Box>
+            </Grid>
+
+            <Grid templateColumns='repeat(2, 1fr)' gap={4} mb='20px'>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Contraseña *
+                </FormLabel>
+                <Input
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='password'
+                  placeholder='Mínimo 6 caracteres'
+                  size='lg'
+                />
+              </Box>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Teléfono (Opcional)
+                </FormLabel>
+                <Input
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='tel'
+                  placeholder='+591 77777777'
+                  size='lg'
+                />
+              </Box>
+            </Grid>
+
+            <Grid templateColumns='repeat(2, 1fr)' gap={4} mb='20px'>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Fecha de Nacimiento (Opcional)
+                </FormLabel>
+                <Input
+                  name="date_of_birth"
+                  value={formData.date_of_birth}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='date'
+                  size='lg'
+                />
+              </Box>
+              <Box>
+                <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                  Dirección (Opcional)
+                </FormLabel>
+                <Input
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  variant='auth'
+                  fontSize='sm'
+                  type='text'
+                  placeholder='Dirección completa'
+                  size='lg'
+                />
+              </Box>
+            </Grid>
+
             <Button
+              onClick={handleSubmit}
+              isLoading={loading}
               fontSize='10px'
               variant='dark'
               fontWeight='bold'
               w='100%'
               h='45'
-              mb='24px'>
-              SIGN UP
+              mb='24px'
+              mt='10px'>
+              REGISTRARSE
             </Button>
           </FormControl>
           <Flex

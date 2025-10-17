@@ -30,6 +30,7 @@ import { SidebarHelp } from "components/Sidebar/SidebarHelp";
 import React from "react";
 import { Scrollbars } from "react-custom-scrollbars";
 import { NavLink, useLocation } from "react-router-dom";
+import { usePermissions } from "hooks/usePermissions";
 
 
 
@@ -42,6 +43,10 @@ function Sidebar(props) {
   const [state, setState] = React.useState({});
   const mainPanel = React.useRef();
   let variantChange = "0.2s linear";
+
+  // Hook de permisos
+  const { hasAccessToCategory, hasAccessToSubmenu, loading: permissionsLoading } = usePermissions();
+
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
     return location.pathname === routeName ? "active" : "";
@@ -60,7 +65,29 @@ function Sidebar(props) {
       if (prop.redirect) {
         return null;
       }
+
+      // No mostrar rutas de autenticación en el sidebar
+      if (prop.layout === "/auth") {
+        return null;
+      }
+
+      // Si es una categoría con submenús
       if (prop.category) {
+        // Verificar si el usuario tiene acceso a esta categoría
+        if (!hasAccessToCategory(prop.name)) {
+          return null; // No mostrar la categoría si no tiene acceso
+        }
+
+        // Filtrar los submenús según permisos
+        const filteredViews = prop.views?.filter(view =>
+          hasAccessToSubmenu(prop.name, view.name)
+        ) || [];
+
+        // Si no tiene acceso a ningún submenú, no mostrar la categoría
+        if (filteredViews.length === 0) {
+          return null;
+        }
+
         var st = {};
         st[prop["state"]] = !state[prop.state];
         return (
@@ -122,7 +149,7 @@ function Sidebar(props) {
               display={state[prop.state] ? "block" : "none"}
               ps="10px"
             >
-              {createLinks(prop.views)}
+              {createLinks(filteredViews)}
             </Box>
           </React.Fragment>
         );
@@ -296,7 +323,7 @@ function Sidebar(props) {
             <Stack direction="column" mb="40px">
               <Box>{links}</Box>
             </Stack>
-            <SidebarHelp sidebarVariant={sidebarVariant} />
+            {/* <SidebarHelp sidebarVariant={sidebarVariant} /> */}
           </Scrollbars>
         </Box>
       </Box>
@@ -315,6 +342,10 @@ export function SidebarResponsive(props) {
   const [state, setState] = React.useState({});
   const mainPanel = React.useRef();
   let variantChange = "0.2s linear";
+
+  // Hook de permisos
+  const { hasAccessToCategory, hasAccessToSubmenu, loading: permissionsLoading } = usePermissions();
+
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
     return location.pathname === routeName ? "active" : "";
@@ -336,7 +367,29 @@ export function SidebarResponsive(props) {
       if (prop.redirect) {
         return null;
       }
+
+      // No mostrar rutas de autenticación en el sidebar
+      if (prop.layout === "/auth") {
+        return null;
+      }
+
+      // Si es una categoría con submenús
       if (prop.category) {
+        // Verificar si el usuario tiene acceso a esta categoría
+        if (!hasAccessToCategory(prop.name)) {
+          return null; // No mostrar la categoría si no tiene acceso
+        }
+
+        // Filtrar los submenús según permisos
+        const filteredViews = prop.views?.filter(view =>
+          hasAccessToSubmenu(prop.name, view.name)
+        ) || [];
+
+        // Si no tiene acceso a ningún submenú, no mostrar la categoría
+        if (filteredViews.length === 0) {
+          return null;
+        }
+
         var st = {};
         st[prop["state"]] = !state[prop.state];
         return (
@@ -398,7 +451,7 @@ export function SidebarResponsive(props) {
               display={state[prop.state] ? "block" : "none"}
               ps="10px"
             >
-              {createLinks(prop.views)}
+              {createLinks(filteredViews)}
             </Box>
           </React.Fragment>
         );
@@ -569,7 +622,7 @@ export function SidebarResponsive(props) {
               <Stack direction="column" mb="40px">
                 <Box>{links}</Box>
               </Stack>
-              <SidebarHelp />
+              {/* <SidebarHelp /> */}
             </Box>
           </DrawerBody>
         </DrawerContent>

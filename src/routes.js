@@ -14,8 +14,8 @@ import ChangePassword from "views/Users/ChangePassword.js";
 import UserInfo from "views/Users/UserInfo.js";
 import RegisterRole from "views/Roles/RegisterRole.js";
 import ListRoles from "views/Roles/ListRoles.js";
-import RegisterGroup from "views/Roles/RegisterGroup.js";
-import ListGroups from "views/Roles/ListGroups.js";
+import RegisterPermission from "views/Permissions/RegisterPermission.js";
+import ListPermissions from "views/Permissions/ListPermissions.js";
 import RegisterProduct from "views/Products/RegisterProduct.js";
 import ListProducts from "views/Products/ListProducts.js";
 import SupplyEntry from "views/Products/SupplyEntry.js";
@@ -48,30 +48,30 @@ var dashRoutes = [
     component: Dashboard,
     layout: "/admin",
   },
-  {
-    path: "/tables",
-    name: "Tables",
-    rtlName: "لوحة القيادة",
-    icon: <StatsIcon color='inherit' />,
-    component: Tables,
-    layout: "/admin",
-  },
-  {
-    path: "/billing",
-    name: "Billing",
-    rtlName: "لوحة القيادة",
-    icon: <CreditIcon color='inherit' />,
-    component: Billing,
-    layout: "/admin",
-  },
-  {
-    path: "/rtl-support-page",
-    name: "RTL",
-    rtlName: "آرتيإل",
-    icon: <SupportIcon color='inherit' />,
-    component: RTLPage,
-    layout: "/rtl",
-  },
+  // {
+  //   path: "/tables",
+  //   name: "Tables",
+  //   rtlName: "لوحة القيادة",
+  //   icon: <StatsIcon color='inherit' />,
+  //   component: Tables,
+  //   layout: "/admin",
+  // },
+  // {
+  //   path: "/billing",
+  //   name: "Billing",
+  //   rtlName: "لوحة القيادة",
+  //   icon: <CreditIcon color='inherit' />,
+  //   component: Billing,
+  //   layout: "/admin",
+  // },
+  // {
+  //   path: "/rtl-support-page",
+  //   name: "RTL",
+  //   rtlName: "آرتيإل",
+  //   icon: <SupportIcon color='inherit' />,
+  //   component: RTLPage,
+  //   layout: "/rtl",
+  // },
   {
     name: "Usuarios",
     category: "users",
@@ -80,7 +80,7 @@ var dashRoutes = [
     icon: <PersonIcon color='inherit' />,
     views: [
       {
-        path: "/register-user",
+        path: "/users/register-user",
         name: "Registrar Usuario",
         rtlName: "تسجيل المستخدم",
         icon: <PersonIcon color='inherit' />,
@@ -88,7 +88,7 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
-        path: "/list-users",
+        path: "/users/list-users",
         name: "Listar Usuarios",
         rtlName: "قائمة المستخدمين",
         icon: <PersonIcon color='inherit' />,
@@ -96,7 +96,7 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
-        path: "/change-password",
+        path: "/users/change-password",
         name: "Cambiar Contraseña",
         rtlName: "تغيير كلمة المرور",
         icon: <DocumentIcon color='inherit' />,
@@ -104,8 +104,8 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
-        path: "/user-info",
-        name: "Información Usuarios",
+        path: "/users/user-info",
+        name: "Mi Perfil",
         rtlName: "معلومات المستخدمين",
         icon: <StatsIcon color='inherit' />,
         component: UserInfo,
@@ -114,9 +114,9 @@ var dashRoutes = [
     ],
   },
   {
-    name: "Roles y Grupos",
+    name: "Roles y Permisos",
     category: "roles",
-    rtlName: "الأدوار والمجموعات",
+    rtlName: "الأدوار والأذونات",
     state: "rolesCollapse",
     icon: <DocumentIcon color='inherit' />,
     views: [
@@ -137,19 +137,19 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
-        path: "/register-group",
-        name: "Registrar Grupo",
-        rtlName: "تسجيل المجموعة",
+        path: "/register-permission",
+        name: "Registrar Permiso",
+        rtlName: "تسجيل الإذن",
         icon: <PersonIcon color='inherit' />,
-        component: RegisterGroup,
+        component: RegisterPermission,
         layout: "/admin",
       },
       {
-        path: "/list-groups",
-        name: "Listar Grupos",
-        rtlName: "قائمة المجموعات",
+        path: "/list-permissions",
+        name: "Listar Permisos",
+        rtlName: "قائمة الأذونات",
         icon: <PersonIcon color='inherit' />,
-        component: ListGroups,
+        component: ListPermissions,
         layout: "/admin",
       },
     ],
@@ -295,46 +295,30 @@ var dashRoutes = [
       },
     ],
   },
+  // Rutas de autenticación (no se muestran en sidebar)
   {
-    name: "ACCOUNT PAGES",
-    category: "account",
-    rtlName: "صفحات",
-    state: "pageCollapse",
-    views: [
-      {
-        path: "/profile",
-        name: "Profile",
-        rtlName: "لوحة القيادة",
-        icon: <PersonIcon color='inherit' />,
-        secondaryNavbar: true,
-        component: Profile,
-        layout: "/admin",
-      },
-      {
-        path: "/signin",
-        name: "Sign In",
-        rtlName: "لوحة القيادة",
-        icon: <DocumentIcon color='inherit' />,
-        component: SignIn,
-        layout: "/auth",
-      },
-      {
-        path: "/signup",
-        name: "Sign Up",
-        rtlName: "لوحة القيادة",
-        icon: <RocketIcon color='inherit' />,
-        component: SignUp,
-        layout: "/auth",
-      },
-      {
-        path: "/reset-password",
-        name: "Reset Password",
-        rtlName: "إعادة تعيين كلمة المرور",
-        icon: <DocumentIcon color='inherit' />,
-        component: ResetPassword,
-        layout: "/auth",
-      },
-    ],
+    path: "/signin",
+    name: "Sign In",
+    rtlName: "لوحة القيادة",
+    icon: <DocumentIcon color='inherit' />,
+    component: SignIn,
+    layout: "/auth",
+  },
+  {
+    path: "/signup",
+    name: "Sign Up",
+    rtlName: "لوحة القيادة",
+    icon: <RocketIcon color='inherit' />,
+    component: SignUp,
+    layout: "/auth",
+  },
+  {
+    path: "/reset-password",
+    name: "Reset Password",
+    rtlName: "إعادة تعيين كلمة المرور",
+    icon: <DocumentIcon color='inherit' />,
+    component: ResetPassword,
+    layout: "/auth",
   },
 ];
 export default dashRoutes;

@@ -24,28 +24,28 @@ import {
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
-import groupService from "services/groupService";
+import permissionService from "services/permissionService";
 
-function ListGroups() {
+function ListPermissions() {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const toast = useToast();
 
-  const [groups, setGroups] = useState([]);
+  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const cancelRef = React.useRef();
 
   useEffect(() => {
-    loadGroups();
+    loadPermissions();
   }, []);
 
-  const loadGroups = async () => {
+  const loadPermissions = async () => {
     setLoading(true);
-    const result = await groupService.getAllGroups();
+    const result = await permissionService.getAllPermissions();
     if (result.success) {
-      setGroups(result.data);
+      setPermissions(result.data);
     } else {
       toast({
         title: "Error",
@@ -59,16 +59,16 @@ function ListGroups() {
   };
 
   const handleDelete = async () => {
-    const result = await groupService.deleteGroup(deleteId);
+    const result = await permissionService.deletePermission(deleteId);
     if (result.success) {
       toast({
-        title: "Grupo eliminado",
-        description: "El grupo ha sido eliminado correctamente",
+        title: "Permiso eliminado",
+        description: "El permiso ha sido eliminado correctamente",
         status: "success",
         duration: 3000,
         isClosable: true,
       });
-      loadGroups();
+      loadPermissions();
     } else {
       toast({
         title: "Error",
@@ -87,6 +87,32 @@ function ListGroups() {
     setIsDeleteOpen(true);
   };
 
+  const getCategoryLabel = (category) => {
+    const labels = {
+      users: 'Usuarios',
+      roles: 'Roles y Permisos',
+      products: 'Productos e Inventario',
+      promotions: 'Promociones',
+      suppliers: 'Proveedores',
+      payments: 'Pagos',
+      settings: 'Configuración'
+    };
+    return labels[category] || category;
+  };
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      users: 'purple',
+      roles: 'blue',
+      products: 'green',
+      promotions: 'orange',
+      suppliers: 'cyan',
+      payments: 'pink',
+      settings: 'gray'
+    };
+    return colors[category] || 'gray';
+  };
+
   if (loading) {
     return (
       <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
@@ -103,43 +129,74 @@ function ListGroups() {
         <CardHeader p='6px 0px 22px 0px'>
           <Flex justify='space-between' align='center'>
             <Text fontSize='xl' color={textColor} fontWeight='bold'>
-              Lista de Grupos
+              Lista de Permisos
             </Text>
             <Badge colorScheme='blue' p='6px 12px' borderRadius='8px'>
-              {groups.length} grupos
+              {permissions.length} permisos
             </Badge>
           </Flex>
         </CardHeader>
         <CardBody>
-          {groups.length === 0 ? (
+          {permissions.length === 0 ? (
             <Center h="200px">
               <Text fontSize="lg" color="gray.500">
-                No hay grupos registrados
+                No hay permisos registrados
               </Text>
             </Center>
           ) : (
             <Table variant='simple' color={textColor}>
               <Thead>
                 <Tr>
-                  <Th borderColor={borderColor} color='gray.400'>Grupo</Th>
+                  <Th borderColor={borderColor} color='gray.400'>Rol</Th>
+                  <Th borderColor={borderColor} color='gray.400'>Categoría de Menú</Th>
+                  <Th borderColor={borderColor} color='gray.400'>Submenús Permitidos</Th>
                   <Th borderColor={borderColor} color='gray.400'>Descripción</Th>
-                  <Th borderColor={borderColor} color='gray.400'>Fecha Creación</Th>
                   <Th borderColor={borderColor} color='gray.400'>Acciones</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {groups.map((group) => (
-                  <Tr key={group.id}>
+                {permissions.map((permission) => (
+                  <Tr key={permission.id}>
                     <Td borderColor={borderColor}>
-                      <Text fontSize='sm' fontWeight='bold'>{group.name}</Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm'>{group.description || "Sin descripción"}</Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm'>
-                        {group.createdAt ? new Date(group.createdAt).toLocaleDateString('es-BO') : 'N/A'}
+                      <Text fontSize='sm' fontWeight='bold'>
+                        {permission.role?.name || 'Sin rol'}
                       </Text>
+                      <Badge colorScheme='gray' fontSize='xs' mt={1}>
+                        Nivel {permission.role?.hierarchyLevel || 'N/A'}
+                      </Badge>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Badge
+                        colorScheme={getCategoryColor(permission.menuCategory)}
+                        fontSize='sm'
+                        p='3px 10px'
+                        borderRadius='8px'
+                      >
+                        {getCategoryLabel(permission.menuCategory)}
+                      </Badge>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Flex wrap='wrap' gap={1}>
+                        {permission.submenus && permission.submenus.length > 0 ? (
+                          permission.submenus.map((submenu, idx) => (
+                            <Badge
+                              key={idx}
+                              colorScheme='teal'
+                              fontSize='xs'
+                              p='2px 8px'
+                              borderRadius='6px'
+                              mb={1}
+                            >
+                              {submenu}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Text fontSize='xs' color='gray.500'>Sin submenús</Text>
+                        )}
+                      </Flex>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Text fontSize='sm'>{permission.description || "Sin descripción"}</Text>
                     </Td>
                     <Td borderColor={borderColor}>
                       <Button size='sm' variant='outline' colorScheme='blue' me='5px'>
@@ -149,7 +206,7 @@ function ListGroups() {
                         size='sm'
                         variant='outline'
                         colorScheme='red'
-                        onClick={() => openDeleteDialog(group.id)}
+                        onClick={() => openDeleteDialog(permission.id)}
                       >
                         Eliminar
                       </Button>
@@ -171,7 +228,7 @@ function ListGroups() {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-              Eliminar Grupo
+              Eliminar Permiso
             </AlertDialogHeader>
 
             <AlertDialogBody>
@@ -193,4 +250,4 @@ function ListGroups() {
   );
 }
 
-export default ListGroups;
+export default ListPermissions;

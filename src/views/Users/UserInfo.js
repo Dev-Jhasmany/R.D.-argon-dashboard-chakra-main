@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   Box,
@@ -7,15 +7,77 @@ import {
   Grid,
   Text,
   useColorModeValue,
+  useToast,
+  Spinner,
+  Center,
+  Badge,
 } from "@chakra-ui/react";
+import { useHistory } from "react-router-dom";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
+import authService from "services/authService";
 
 function UserInfo() {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("gray.200", "gray.600");
-  const bgProfile = useColorModeValue("white", "navy.800");
+  const toast = useToast();
+  const history = useHistory();
+
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserInfo();
+  }, []);
+
+  const loadUserInfo = () => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    } else {
+      toast({
+        title: "Error",
+        description: "No se pudo obtener la información del usuario",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+    setLoading(false);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-BO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  if (loading) {
+    return (
+      <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
+        <Center h="400px">
+          <Spinner size="xl" color="teal.300" />
+        </Center>
+      </Flex>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
+        <Center h="400px">
+          <Text fontSize="lg" color="gray.500">
+            No hay información del usuario disponible
+          </Text>
+        </Center>
+      </Flex>
+    );
+  }
 
   return (
     <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
@@ -31,33 +93,33 @@ function UserInfo() {
               <Flex align='center' mb='18px'>
                 <Avatar
                   size='xl'
-                  name='Usuario Ejemplo'
+                  name={`${user.full_name} ${user.full_last_name}`}
                   me='18px'
                 />
                 <Flex direction='column'>
                   <Text fontSize='md' color={textColor} fontWeight='bold'>
-                    Usuario Ejemplo
+                    {user.full_name} {user.full_last_name}
                   </Text>
                   <Text fontSize='sm' color='gray.400'>
-                    usuario@email.com
+                    @{user.username}
                   </Text>
                 </Flex>
               </Flex>
               <Box>
                 <Flex mb='12px'>
                   <Text fontSize='sm' color='gray.400' me='6px' fontWeight='bold'>
-                    Nombre Completo:
+                    Email:
                   </Text>
                   <Text fontSize='sm' color={textColor}>
-                    Juan Pérez García
+                    {user.email}
                   </Text>
                 </Flex>
                 <Flex mb='12px'>
                   <Text fontSize='sm' color='gray.400' me='6px' fontWeight='bold'>
-                    Email:
+                    CI:
                   </Text>
                   <Text fontSize='sm' color={textColor}>
-                    usuario@email.com
+                    {user.ci || "N/A"}
                   </Text>
                 </Flex>
                 <Flex mb='12px'>
@@ -65,15 +127,23 @@ function UserInfo() {
                     Teléfono:
                   </Text>
                   <Text fontSize='sm' color={textColor}>
-                    +591 12345678
+                    {user.phone_number || "N/A"}
                   </Text>
                 </Flex>
                 <Flex mb='12px'>
                   <Text fontSize='sm' color='gray.400' me='6px' fontWeight='bold'>
-                    Rol:
+                    Dirección:
                   </Text>
                   <Text fontSize='sm' color={textColor}>
-                    Administrador
+                    {user.address || "N/A"}
+                  </Text>
+                </Flex>
+                <Flex mb='12px'>
+                  <Text fontSize='sm' color='gray.400' me='6px' fontWeight='bold'>
+                    Género:
+                  </Text>
+                  <Text fontSize='sm' color={textColor}>
+                    {user.gender === 'male' ? 'Masculino' : user.gender === 'female' ? 'Femenino' : 'Otro'}
                   </Text>
                 </Flex>
                 <Flex mb='12px'>
@@ -86,22 +156,31 @@ function UserInfo() {
                 </Flex>
                 <Flex mb='12px'>
                   <Text fontSize='sm' color='gray.400' me='6px' fontWeight='bold'>
+                    Fecha de Nacimiento:
+                  </Text>
+                  <Text fontSize='sm' color={textColor}>
+                    {formatDate(user.date_of_birth)}
+                  </Text>
+                </Flex>
+                <Flex mb='12px'>
+                  <Text fontSize='sm' color='gray.400' me='6px' fontWeight='bold'>
                     Fecha de Registro:
                   </Text>
                   <Text fontSize='sm' color={textColor}>
-                    15/10/2024
+                    {formatDate(user.created_at)}
                   </Text>
                 </Flex>
               </Box>
-              <Button
-                variant='dark'
-                fontSize='sm'
-                fontWeight='bold'
-                w='200px'
-                h='45px'
-                mt='24px'>
-                EDITAR INFORMACIÓN
-              </Button>
+              <Flex gap='10px' mt='24px'>
+                <Button
+                  onClick={() => history.push('/admin/users/change-password')}
+                  variant='dark'
+                  fontSize='sm'
+                  fontWeight='bold'
+                  flex='1'>
+                  CAMBIAR CONTRASEÑA
+                </Button>
+              </Flex>
             </Flex>
           </CardBody>
         </Card>
@@ -109,41 +188,32 @@ function UserInfo() {
         <Card p='16px'>
           <CardHeader p='12px 5px' mb='12px'>
             <Text fontSize='lg' color={textColor} fontWeight='bold'>
-              Actividad Reciente
+              Información Adicional
             </Text>
           </CardHeader>
           <CardBody px='5px'>
             <Flex direction='column'>
-              <Flex mb='18px'>
-                <Box>
-                  <Text fontSize='sm' color={textColor} fontWeight='bold'>
-                    Último acceso
-                  </Text>
-                  <Text fontSize='xs' color='gray.400'>
-                    15/10/2024 - 14:30
-                  </Text>
-                </Box>
-              </Flex>
-              <Flex mb='18px'>
-                <Box>
-                  <Text fontSize='sm' color={textColor} fontWeight='bold'>
-                    Cambio de contraseña
-                  </Text>
-                  <Text fontSize='xs' color='gray.400'>
-                    10/10/2024 - 10:15
-                  </Text>
-                </Box>
-              </Flex>
-              <Flex mb='18px'>
-                <Box>
-                  <Text fontSize='sm' color={textColor} fontWeight='bold'>
-                    Actualización de perfil
-                  </Text>
-                  <Text fontSize='xs' color='gray.400'>
-                    05/10/2024 - 16:45
-                  </Text>
-                </Box>
-              </Flex>
+              <Box mb='18px'>
+                <Text fontSize='sm' color='gray.400' fontWeight='bold' mb='8px'>
+                  Última Actualización:
+                </Text>
+                <Text fontSize='sm' color={textColor}>
+                  {formatDate(user.updated_at)}
+                </Text>
+              </Box>
+              <Box mb='18px'>
+                <Text fontSize='sm' color='gray.400' fontWeight='bold' mb='8px'>
+                  ID de Usuario:
+                </Text>
+                <Text fontSize='xs' color={textColor} fontFamily='monospace'>
+                  {user.id}
+                </Text>
+              </Box>
+              <Box>
+                <Badge colorScheme='green' p='6px 12px' borderRadius='8px'>
+                  Cuenta Verificada
+                </Badge>
+              </Box>
             </Flex>
           </CardBody>
         </Card>

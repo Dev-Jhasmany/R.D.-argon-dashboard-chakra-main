@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -6,19 +6,38 @@ import {
   Icon,
   Text,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
+import { useHistory } from "react-router-dom";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import { FaSignOutAlt } from "react-icons/fa";
+import authService from "services/authService";
 
 function Logout() {
   const textColor = useColorModeValue("gray.700", "white");
   const iconColor = useColorModeValue("blue.500", "blue.500");
+  const toast = useToast();
+  const history = useHistory();
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
-    // Aquí iría la lógica de cierre de sesión
-    console.log("Cerrando sesión...");
-    // Ejemplo: limpiar tokens, redirigir a login, etc.
+    setLoading(true);
+
+    // Mostrar toast de despedida
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión correctamente. ¡Hasta pronto!",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    // Cerrar sesión después de 1 segundo
+    setTimeout(() => {
+      authService.logout();
+      setLoading(false);
+    }, 1000);
   };
 
   return (
@@ -56,7 +75,8 @@ function Logout() {
                 fontWeight='bold'
                 w='50%'
                 h='45px'
-                onClick={() => window.history.back()}>
+                isDisabled={loading}
+                onClick={() => history.push('/admin/dashboard')}>
                 CANCELAR
               </Button>
               <Button
@@ -66,6 +86,7 @@ function Logout() {
                 fontWeight='bold'
                 w='50%'
                 h='45px'
+                isLoading={loading}
                 onClick={handleLogout}>
                 CERRAR SESIÓN
               </Button>

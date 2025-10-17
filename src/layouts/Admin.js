@@ -86,7 +86,7 @@ export default function Dashboard(props) {
       if (prop.collapse) {
         return getRoutes(prop.views);
       }
-      if (prop.category === "account") {
+      if (prop.category) {
         return getRoutes(prop.views);
       }
       if (prop.layout === "/admin") {

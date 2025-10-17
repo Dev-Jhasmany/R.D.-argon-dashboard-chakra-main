@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 // Chakra imports
 import {
   Box,
@@ -13,10 +13,13 @@ import {
   Switch,
   Text,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 // Assets
 import signInImage from "assets/img/signInImage.png";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
+import { useHistory } from "react-router-dom";
+import authService from "services/authService";
 
 function SignIn() {
   // Chakra color mode
@@ -26,6 +29,60 @@ function SignIn() {
   const colorIcons = useColorModeValue("gray.700", "white");
   const bgIcons = useColorModeValue("trasnparent", "navy.700");
   const bgIconsHover = useColorModeValue("gray.50", "whiteAlpha.100");
+  const toast = useToast();
+  const history = useHistory();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.email || !formData.password) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setLoading(true);
+    const result = await authService.login(formData.email, formData.password);
+    setLoading(false);
+
+    if (result.success) {
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: "Bienvenido de vuelta",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      // Redirigir al dashboard
+      history.push("/admin/dashboard");
+    } else {
+      toast({
+        title: "Error al iniciar sesión",
+        description: result.error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
   return (
     <Flex position='relative' mb='40px'>
       <Flex
@@ -141,6 +198,9 @@ function SignIn() {
                 Email
               </FormLabel>
               <Input
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 variant='auth'
                 fontSize='sm'
                 ms='4px'
@@ -153,6 +213,10 @@ function SignIn() {
                 Password
               </FormLabel>
               <Input
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                 variant='auth'
                 fontSize='sm'
                 ms='4px'
@@ -162,12 +226,20 @@ function SignIn() {
                 size='lg'
               />
               <FormControl display='flex' alignItems='center' mb='24px'>
-                <Switch id='remember-login' colorScheme='blue' me='10px' />
+                <Switch
+                  id='remember-login'
+                  colorScheme='blue'
+                  me='10px'
+                  isChecked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
                 <FormLabel htmlFor='remember-login' mb='0' fontWeight='normal'>
                   Remember me
                 </FormLabel>
               </FormControl>
               <Button
+                onClick={handleSubmit}
+                isLoading={loading}
                 fontSize='10px'
                 variant='dark'
                 fontWeight='bold'
@@ -214,7 +286,8 @@ function SignIn() {
           w='100%'
           left='0px'
           position='absolute'
-          bgImage={signInImage}>
+          bgImage={signInImage}
+          zIndex='1'>
           <Box
             w='100%'
             h='100%'
