@@ -27,7 +27,20 @@ const productService = {
     }
   },
 
-  // Crear un nuevo producto
+  // Obtener productos por categoría
+  getProductsByCategory: async (categoryId) => {
+    try {
+      const response = await api.get(`/products/by-category/${categoryId}`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error al obtener productos por categoría',
+      };
+    }
+  },
+
+  // Crear un nuevo producto (el código se genera automáticamente en el backend)
   createProduct: async (productData) => {
     try {
       const response = await api.post('/products', productData);
@@ -43,7 +56,7 @@ const productService = {
   // Actualizar un producto
   updateProduct: async (id, productData) => {
     try {
-      const response = await api.patch(`/products/${id}`, productData);
+      const response = await api.put(`/products/${id}`, productData);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -66,57 +79,15 @@ const productService = {
     }
   },
 
-  // Actualizar stock de un producto
-  updateStock: async (id, quantity, operation = 'add') => {
+  // Cambiar estado activo/inactivo
+  toggleStatus: async (id) => {
     try {
-      const response = await api.patch(`/products/${id}/stock`, {
-        quantity,
-        operation, // 'add' o 'subtract'
-      });
+      const response = await api.patch(`/products/${id}/toggle-status`);
       return { success: true, data: response.data };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Error al actualizar stock',
-      };
-    }
-  },
-
-  // Buscar productos
-  searchProducts: async (searchTerm) => {
-    try {
-      const response = await api.get(`/products?search=${searchTerm}`);
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Error al buscar productos',
-      };
-    }
-  },
-
-  // Filtrar productos por categoría
-  getProductsByCategory: async (categoryId) => {
-    try {
-      const response = await api.get(`/products?category=${categoryId}`);
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Error al filtrar productos',
-      };
-    }
-  },
-
-  // Obtener productos con bajo stock
-  getLowStockProducts: async (threshold = 10) => {
-    try {
-      const response = await api.get(`/products?lowStock=${threshold}`);
-      return { success: true, data: response.data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Error al obtener productos con bajo stock',
+        error: error.response?.data?.message || 'Error al cambiar estado del producto',
       };
     }
   },

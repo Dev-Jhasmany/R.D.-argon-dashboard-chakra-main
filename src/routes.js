@@ -18,12 +18,15 @@ import RegisterPermission from "views/Permissions/RegisterPermission.js";
 import ListPermissions from "views/Permissions/ListPermissions.js";
 import RegisterProduct from "views/Products/RegisterProduct.js";
 import ListProducts from "views/Products/ListProducts.js";
+import RegisterCategory from "views/Products/RegisterCategory.js";
 import SupplyEntry from "views/Products/SupplyEntry.js";
 import StockControl from "views/Products/StockControl.js";
 import RegisterPromotion from "views/Promotions/RegisterPromotion.js";
 import ListPromotions from "views/Promotions/ListPromotions.js";
 import RegisterSupplier from "views/Suppliers/RegisterSupplier.js";
 import ListSuppliers from "views/Suppliers/ListSuppliers.js";
+import RegisterSale from "views/Sales/RegisterSale.js";
+import SalesList from "views/Sales/SalesList.js";
 import RegisterPayment from "views/Payments/RegisterPayment.js";
 import PaymentMethods from "views/Payments/PaymentMethods.js";
 import ActivityLog from "views/Settings/ActivityLog.js";
@@ -178,6 +181,14 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
+        path: "/register-category",
+        name: "Registrar Categorías",
+        rtlName: "تسجيل الفئات",
+        icon: <DocumentIcon color='inherit' />,
+        component: RegisterCategory,
+        layout: "/admin",
+      },
+      {
         path: "/supply-entry",
         name: "Entradas de Insumos",
         rtlName: "إدخالات الإمدادات",
@@ -241,6 +252,31 @@ var dashRoutes = [
         rtlName: "قائمة الموردين",
         icon: <StatsIcon color='inherit' />,
         component: ListSuppliers,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
+    name: "Gestión de Ventas",
+    category: "sales",
+    rtlName: "إدارة المبيعات",
+    state: "salesCollapse",
+    icon: <CreditIcon color='inherit' />,
+    views: [
+      {
+        path: "/register-sale",
+        name: "Registrar Venta",
+        rtlName: "تسجيل البيع",
+        icon: <CreditIcon color='inherit' />,
+        component: RegisterSale,
+        layout: "/admin",
+      },
+      {
+        path: "/list-sales",
+        name: "Listar Ventas",
+        rtlName: "قائمة المبيعات",
+        icon: <StatsIcon color='inherit' />,
+        component: SalesList,
         layout: "/admin",
       },
     ],

@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
   Flex,
-  Grid,
-  Progress,
-  Stat,
-  StatLabel,
-  StatNumber,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  Textarea,
   Table,
   Tbody,
   Td,
@@ -16,118 +16,533 @@ import {
   Thead,
   Tr,
   useColorModeValue,
-} from "@chakra-ui/react";
-import Card from "components/Card/Card";
-import CardBody from "components/Card/CardBody";
-import CardHeader from "components/Card/CardHeader";
+  useToast,
+  Badge,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  IconButton,
+  Tooltip,
+} from '@chakra-ui/react';
+import { AddIcon, MinusIcon, ViewIcon } from '@chakra-ui/icons';
+import Card from 'components/Card/Card';
+import CardBody from 'components/Card/CardBody';
+import CardHeader from 'components/Card/CardHeader';
+import stockMovementService from 'services/stockMovementService';
+import productService from 'services/productService';
 
 function StockControl() {
-  const textColor = useColorModeValue("gray.700", "white");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
-  const iconBlue = useColorModeValue("blue.500", "blue.500");
+  const textColor = useColorModeValue('gray.700', 'white');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const toast = useToast();
 
-  const stockData = [
-    { id: 1, product: "Laptop HP", current: 15, min: 10, max: 50, percentage: 30 },
-    { id: 2, product: "Mouse Logitech", current: 45, min: 20, max: 100, percentage: 45 },
-    { id: 3, product: "Teclado Mecánico", current: 3, min: 10, max: 30, percentage: 10 },
-    { id: 4, product: "Monitor LG 24", current: 0, min: 5, max: 25, percentage: 0 },
-  ];
+  // Estados
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [productHistory, setProductHistory] = useState([]);
+  const [movementType, setMovementType] = useState('');
+
+  const [formData, setFormData] = useState({
+    quantity: '',
+    reason: '',
+    notes: '',
+  });
+
+  // Cargar productos al iniciar
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    const result = await productService.getAllProducts();
+    if (result.success) {
+      // Filtrar solo productos activos
+      const activeProducts = result.data.filter((p) => p.is_active);
+      setProducts(activeProducts);
+      setFilteredProducts(activeProducts);
+    } else {
+      toast({
+        title: 'Error',
+        description: result.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.trim() === '') {
+      setFilteredProducts(products);
+      return;
+    }
+
+    // Filtrar productos por código, nombre o categoría
+    const filtered = products.filter(
+      (product) =>
+        product.code.toLowerCase().includes(value.toLowerCase()) ||
+        product.name.toLowerCase().includes(value.toLowerCase()) ||
+        product.category?.name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  };
+
+  const openMovementModal = (product, type) => {
+    setSelectedProduct(product);
+    setMovementType(type);
+    setFormData({ quantity: '', reason: '', notes: '' });
+    setIsMovementModalOpen(true);
+  };
+
+  const closeMovementModal = () => {
+    setIsMovementModalOpen(false);
+    setSelectedProduct(null);
+    setMovementType('');
+    setFormData({ quantity: '', reason: '', notes: '' });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmitMovement = async () => {
+    // Validaciones
+    if (!formData.quantity) {
+      toast({
+        title: 'Campo requerido',
+        description: 'Por favor ingrese la cantidad',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const quantity = parseFloat(formData.quantity);
+    if (quantity <= 0) {
+      toast({
+        title: 'Cantidad inválida',
+        description: 'La cantidad debe ser mayor a 0',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const movementData = {
+      product_id: selectedProduct.id,
+      movement_type: movementType,
+      quantity: quantity,
+      reason: formData.reason || null,
+      notes: formData.notes || null,
+    };
+
+    const result = await stockMovementService.createMovement(movementData);
+
+    if (result.success) {
+      toast({
+        title: 'Movimiento registrado',
+        description: `${movementType === 'entrada' ? 'Entrada' : 'Salida'} de stock registrada exitosamente`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      closeMovementModal();
+      loadProducts(); // Recargar productos para actualizar stock
+    } else {
+      toast({
+        title: 'Error',
+        description: result.error,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const openHistoryModal = async (product) => {
+    setSelectedProduct(product);
+    setIsHistoryModalOpen(true);
+
+    // Cargar historial del producto
+    const result = await stockMovementService.getMovementsByProduct(product.id);
+    if (result.success) {
+      setProductHistory(result.data);
+    } else {
+      toast({
+        title: 'Error',
+        description: result.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      setProductHistory([]);
+    }
+  };
+
+  const closeHistoryModal = () => {
+    setIsHistoryModalOpen(false);
+    setSelectedProduct(null);
+    setProductHistory([]);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('es-BO', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getStockStatus = (stock) => {
+    const stockNum = parseFloat(stock);
+    if (stockNum === 0) {
+      return <Badge colorScheme='red'>AGOTADO</Badge>;
+    } else if (stockNum < 10) {
+      return <Badge colorScheme='orange'>BAJO</Badge>;
+    } else {
+      return <Badge colorScheme='green'>NORMAL</Badge>;
+    }
+  };
+
+  const getMovementTypeBadge = (type) => {
+    if (type === 'entrada') {
+      return (
+        <Badge colorScheme='green' fontSize='sm'>
+          ENTRADA
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge colorScheme='red' fontSize='sm'>
+          SALIDA
+        </Badge>
+      );
+    }
+  };
 
   return (
-    <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
-      <Grid templateColumns={{ sm: "1fr", lg: "repeat(3, 1fr)" }} gap='22px' mb='24px'>
-        <Card>
-          <CardBody>
-            <Stat>
-              <StatLabel fontSize='sm' color='gray.400' fontWeight='bold' mb='5px'>
-                Total Productos
-              </StatLabel>
-              <StatNumber fontSize='2xl' color={textColor} fontWeight='bold'>
-                124
-              </StatNumber>
-            </Stat>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody>
-            <Stat>
-              <StatLabel fontSize='sm' color='orange.400' fontWeight='bold' mb='5px'>
-                Bajo Stock
-              </StatLabel>
-              <StatNumber fontSize='2xl' color='orange.400' fontWeight='bold'>
-                8
-              </StatNumber>
-            </Stat>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody>
-            <Stat>
-              <StatLabel fontSize='sm' color='red.400' fontWeight='bold' mb='5px'>
-                Agotados
-              </StatLabel>
-              <StatNumber fontSize='2xl' color='red.400' fontWeight='bold'>
-                3
-              </StatNumber>
-            </Stat>
-          </CardBody>
-        </Card>
-      </Grid>
-
-      <Card overflowX={{ sm: "scroll", xl: "hidden" }} pb='0px'>
-        <CardHeader p='6px 0px 22px 0px'>
-          <Text fontSize='xl' color={textColor} fontWeight='bold'>
-            Control de Stock
-          </Text>
+    <Flex direction='column' pt={{ base: '120px', md: '75px' }}>
+      {/* Tabla de productos con control de stock */}
+      <Card overflowX={{ sm: 'scroll', xl: 'hidden' }}>
+        <CardHeader p='12px 5px'>
+          <Flex justify='space-between' align='center' wrap='wrap' gap={4}>
+            <Text fontSize='xl' color={textColor} fontWeight='bold'>
+              Control de Stock de Productos
+            </Text>
+            <Box minW={{ base: '100%', md: '300px' }}>
+              <Input
+                placeholder='Buscar por código, nombre o categoría...'
+                value={searchTerm}
+                onChange={handleSearchChange}
+                size='md'
+              />
+            </Box>
+          </Flex>
         </CardHeader>
         <CardBody>
-          <Table variant='simple' color={textColor}>
-            <Thead>
-              <Tr>
-                <Th borderColor={borderColor} color='gray.400'>Producto</Th>
-                <Th borderColor={borderColor} color='gray.400'>Stock Actual</Th>
-                <Th borderColor={borderColor} color='gray.400'>Stock Mínimo</Th>
-                <Th borderColor={borderColor} color='gray.400'>Stock Máximo</Th>
-                <Th borderColor={borderColor} color='gray.400'>Nivel</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {stockData.map((item) => (
-                <Tr key={item.id}>
-                  <Td borderColor={borderColor}>
-                    <Text fontSize='sm' fontWeight='bold'>{item.product}</Text>
-                  </Td>
-                  <Td borderColor={borderColor}>
-                    <Text fontSize='sm' fontWeight='bold'>{item.current}</Text>
-                  </Td>
-                  <Td borderColor={borderColor}>
-                    <Text fontSize='sm'>{item.min}</Text>
-                  </Td>
-                  <Td borderColor={borderColor}>
-                    <Text fontSize='sm'>{item.max}</Text>
-                  </Td>
-                  <Td borderColor={borderColor}>
-                    <Flex align='center'>
-                      <Progress
-                        value={item.percentage}
-                        colorScheme={
-                          item.percentage === 0 ? "red" :
-                          item.percentage < 30 ? "orange" : "green"
-                        }
-                        size='sm'
-                        borderRadius='15px'
-                        w='100px'
-                        me='10px'
-                      />
-                      <Text fontSize='sm'>{item.percentage}%</Text>
-                    </Flex>
-                  </Td>
+          {products.length === 0 ? (
+            <Box p={4} bg='orange.100' borderRadius='md'>
+              <Text color='orange.800' fontWeight='bold'>
+                ⚠️ No hay productos registrados. Por favor registre productos
+                primero.
+              </Text>
+            </Box>
+          ) : filteredProducts.length === 0 ? (
+            <Box p={4} bg='blue.50' borderRadius='md'>
+              <Text color='blue.800'>
+                No se encontraron productos con el término de búsqueda "{searchTerm}"
+              </Text>
+            </Box>
+          ) : (
+            <Table variant='simple' color={textColor}>
+              <Thead>
+                <Tr>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Código
+                  </Th>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Producto
+                  </Th>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Categoría
+                  </Th>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Precio
+                  </Th>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Stock Actual
+                  </Th>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Estado
+                  </Th>
+                  <Th borderColor={borderColor} color='gray.400'>
+                    Acciones
+                  </Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {filteredProducts.map((product) => (
+                  <Tr key={product.id}>
+                    <Td borderColor={borderColor}>
+                      <Text fontSize='sm' fontWeight='bold'>
+                        {product.code}
+                      </Text>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Text fontSize='sm' fontWeight='bold'>
+                        {product.name}
+                      </Text>
+                      {product.description && (
+                        <Text fontSize='xs' color='gray.600'>
+                          {product.description}
+                        </Text>
+                      )}
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Text fontSize='sm'>{product.category?.name}</Text>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Text fontSize='sm' fontWeight='bold'>
+                        Bs. {product.price}
+                      </Text>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Text fontSize='lg' fontWeight='bold' color='blue.500'>
+                        {product.stock}
+                      </Text>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      {getStockStatus(product.stock)}
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Flex gap={2}>
+                        <Tooltip label='Entrada de Stock'>
+                          <IconButton
+                            size='sm'
+                            colorScheme='green'
+                            icon={<AddIcon />}
+                            onClick={() => openMovementModal(product, 'entrada')}
+                          />
+                        </Tooltip>
+                        <Tooltip label='Salida de Stock'>
+                          <IconButton
+                            size='sm'
+                            colorScheme='red'
+                            icon={<MinusIcon />}
+                            onClick={() => openMovementModal(product, 'salida')}
+                          />
+                        </Tooltip>
+                        <Tooltip label='Ver Historial'>
+                          <IconButton
+                            size='sm'
+                            colorScheme='blue'
+                            variant='outline'
+                            icon={<ViewIcon />}
+                            onClick={() => openHistoryModal(product)}
+                          />
+                        </Tooltip>
+                      </Flex>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          )}
         </CardBody>
       </Card>
+
+      {/* Modal para registrar movimiento */}
+      <Modal isOpen={isMovementModalOpen} onClose={closeMovementModal} size='lg'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {movementType === 'entrada' ? 'Entrada de Stock' : 'Salida de Stock'}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selectedProduct && (
+              <Box mb={4} p={3} bg='blue.50' borderRadius='md'>
+                <Text fontSize='sm' fontWeight='bold' color='blue.800'>
+                  Producto: {selectedProduct.code} - {selectedProduct.name}
+                </Text>
+                <Text fontSize='sm' color='blue.600'>
+                  Stock actual: {selectedProduct.stock} | Categoría:{' '}
+                  {selectedProduct.category?.name}
+                </Text>
+              </Box>
+            )}
+
+            <Flex direction='column' gap='20px'>
+              <FormControl isRequired>
+                <FormLabel>Cantidad</FormLabel>
+                <Input
+                  type='number'
+                  name='quantity'
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  step='0.01'
+                  min='0.01'
+                  placeholder='0.00'
+                  autoFocus
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Razón</FormLabel>
+                <Input
+                  name='reason'
+                  value={formData.reason}
+                  onChange={handleChange}
+                  placeholder={
+                    movementType === 'entrada'
+                      ? 'Ej: Compra, Producción, Devolución'
+                      : 'Ej: Venta, Merma, Ajuste'
+                  }
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Notas</FormLabel>
+                <Textarea
+                  name='notes'
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder='Observaciones adicionales (opcional)'
+                  rows={3}
+                />
+              </FormControl>
+            </Flex>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={closeMovementModal}>
+              Cancelar
+            </Button>
+            <Button
+              colorScheme={movementType === 'entrada' ? 'green' : 'red'}
+              onClick={handleSubmitMovement}>
+              Registrar {movementType === 'entrada' ? 'Entrada' : 'Salida'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal para ver historial */}
+      <Modal
+        isOpen={isHistoryModalOpen}
+        onClose={closeHistoryModal}
+        size='6xl'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            Historial de Movimientos
+            {selectedProduct && ` - ${selectedProduct.name}`}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selectedProduct && (
+              <Box mb={4} p={3} bg='gray.50' borderRadius='md'>
+                <Flex justify='space-between' align='center'>
+                  <Box>
+                    <Text fontSize='sm' fontWeight='bold'>
+                      {selectedProduct.code} - {selectedProduct.name}
+                    </Text>
+                    <Text fontSize='sm' color='gray.600'>
+                      Categoría: {selectedProduct.category?.name}
+                    </Text>
+                  </Box>
+                  <Box textAlign='right'>
+                    <Text fontSize='sm' color='gray.600'>
+                      Stock Actual
+                    </Text>
+                    <Text fontSize='2xl' fontWeight='bold' color='blue.500'>
+                      {selectedProduct.stock}
+                    </Text>
+                  </Box>
+                </Flex>
+              </Box>
+            )}
+
+            {productHistory.length === 0 ? (
+              <Box p={4} bg='blue.50' borderRadius='md'>
+                <Text color='blue.800'>
+                  No hay movimientos registrados para este producto.
+                </Text>
+              </Box>
+            ) : (
+              <Box overflowX='auto'>
+                <Table variant='simple' size='sm'>
+                  <Thead>
+                    <Tr>
+                      <Th>Fecha</Th>
+                      <Th>Tipo</Th>
+                      <Th>Cantidad</Th>
+                      <Th>Stock Anterior</Th>
+                      <Th>Stock Nuevo</Th>
+                      <Th>Razón</Th>
+                      <Th>Notas</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {productHistory.map((movement) => (
+                      <Tr key={movement.id}>
+                        <Td>
+                          <Text fontSize='xs'>
+                            {formatDate(movement.created_at)}
+                          </Text>
+                        </Td>
+                        <Td>{getMovementTypeBadge(movement.movement_type)}</Td>
+                        <Td>
+                          <Text fontWeight='bold'>{movement.quantity}</Text>
+                        </Td>
+                        <Td>{movement.previous_stock}</Td>
+                        <Td>
+                          <Text fontWeight='bold' color='blue.500'>
+                            {movement.new_stock}
+                          </Text>
+                        </Td>
+                        <Td>
+                          <Text fontSize='sm'>{movement.reason || '-'}</Text>
+                        </Td>
+                        <Td>
+                          <Text fontSize='sm' noOfLines={2}>
+                            {movement.notes || '-'}
+                          </Text>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            )}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button onClick={closeHistoryModal}>Cerrar</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
 }
