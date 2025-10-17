@@ -25,7 +25,7 @@ import {
   Input,
 } from '@chakra-ui/react';
 import { ViewIcon, DeleteIcon } from '@chakra-ui/icons';
-import Card from 'components/Card/CardBody';
+import Card from 'components/Card/Card';
 import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
 import salesService from 'services/salesService';
@@ -33,6 +33,8 @@ import salesService from 'services/salesService';
 function SalesList() {
   const textColor = useColorModeValue('gray.700', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputTextColor = useColorModeValue('gray.800', 'white');
   const toast = useToast();
 
   const [sales, setSales] = useState([]);
@@ -154,6 +156,8 @@ function SalesList() {
                 value={searchTerm}
                 onChange={handleSearchChange}
                 size='md'
+                bg={inputBg}
+                color={inputTextColor}
               />
             </Box>
           </Flex>

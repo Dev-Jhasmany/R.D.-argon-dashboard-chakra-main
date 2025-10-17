@@ -43,6 +43,9 @@ import supplyEntryService from "services/supplyEntryService";
 function SupplyEntry() {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("gray.200", "gray.600");
+  const inputBg = useColorModeValue("white", "gray.700");
+  const inputTextColor = useColorModeValue("gray.800", "white");
+  const readOnlyBg = useColorModeValue("gray.100", "gray.600");
   const toast = useToast();
 
   const [suppliers, setSuppliers] = useState([]);
@@ -453,7 +456,8 @@ function SupplyEntry() {
                     placeholder='0.00'
                     size='lg'
                     isReadOnly
-                    bg='gray.100'
+                    bg={readOnlyBg}
+                    color={inputTextColor}
                   />
                 </FormControl>
               </Grid>
@@ -668,7 +672,8 @@ function SupplyEntry() {
                   type='number'
                   size='md'
                   isReadOnly
-                  bg='gray.100'
+                  bg={readOnlyBg}
+                  color={inputTextColor}
                 />
               </FormControl>
             </Grid>

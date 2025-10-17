@@ -27,8 +27,8 @@ import RegisterSupplier from "views/Suppliers/RegisterSupplier.js";
 import ListSuppliers from "views/Suppliers/ListSuppliers.js";
 import RegisterSale from "views/Sales/RegisterSale.js";
 import SalesList from "views/Sales/SalesList.js";
-import RegisterPayment from "views/Payments/RegisterPayment.js";
-import PaymentMethods from "views/Payments/PaymentMethods.js";
+// import RegisterPayment from "views/Payments/RegisterPayment.js";
+// import PaymentMethods from "views/Payments/PaymentMethods.js";
 import ActivityLog from "views/Settings/ActivityLog.js";
 import Logout from "views/Settings/Logout.js";
 
@@ -281,31 +281,31 @@ var dashRoutes = [
       },
     ],
   },
-  {
-    name: "Pagos",
-    category: "payments",
-    rtlName: "المدفوعات",
-    state: "paymentsCollapse",
-    icon: <CreditIcon color='inherit' />,
-    views: [
-      {
-        path: "/register-payment",
-        name: "Registrar Pago",
-        rtlName: "تسجيل الدفع",
-        icon: <CreditIcon color='inherit' />,
-        component: RegisterPayment,
-        layout: "/admin",
-      },
-      {
-        path: "/payment-methods",
-        name: "Métodos de Pago",
-        rtlName: "طرق الدفع",
-        icon: <CreditIcon color='inherit' />,
-        component: PaymentMethods,
-        layout: "/admin",
-      },
-    ],
-  },
+  // {
+  //   name: "Pagos",
+  //   category: "payments",
+  //   rtlName: "المدفوعات",
+  //   state: "paymentsCollapse",
+  //   icon: <CreditIcon color='inherit' />,
+  //   views: [
+  //     {
+  //       path: "/register-payment",
+  //       name: "Registrar Pago",
+  //       rtlName: "تسجيل الدفع",
+  //       icon: <CreditIcon color='inherit' />,
+  //       component: RegisterPayment,
+  //       layout: "/admin",
+  //     },
+  //     {
+  //       path: "/payment-methods",
+  //       name: "Métodos de Pago",
+  //       rtlName: "طرق الدفع",
+  //       icon: <CreditIcon color='inherit' />,
+  //       component: PaymentMethods,
+  //       layout: "/admin",
+  //     },
+  //   ],
+  // },
   {
     name: "Configuración",
     category: "settings",

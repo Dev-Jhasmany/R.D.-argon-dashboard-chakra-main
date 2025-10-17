@@ -36,17 +36,22 @@ import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
 import salesService from 'services/salesService';
 import productService from 'services/productService';
+import promotionService from 'services/promotionService';
 
 function RegisterSale() {
   const textColor = useColorModeValue('gray.700', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputTextColor = useColorModeValue('gray.800', 'white');
   const toast = useToast();
 
   const [products, setProducts] = useState([]);
+  const [promotions, setPromotions] = useState([]);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [saleInfo, setSaleInfo] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [quantity, setQuantity] = useState('');
   const [cart, setCart] = useState([]);
 
@@ -60,6 +65,7 @@ function RegisterSale() {
 
   useEffect(() => {
     loadProducts();
+    loadPromotions();
   }, []);
 
   const loadProducts = async () => {
@@ -78,6 +84,20 @@ function RegisterSale() {
     }
   };
 
+  const loadPromotions = async () => {
+    const result = await promotionService.getActivePromotions();
+    if (result.success) {
+      // Filtrar solo las promociones que están activas y dentro del rango de fechas
+      const now = new Date();
+      const activePromos = result.data.filter((promo) => {
+        const startDate = new Date(promo.start_date);
+        const endDate = new Date(promo.end_date);
+        return promo.is_active && now >= startDate && now <= endDate;
+      });
+      setPromotions(activePromos);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -85,6 +105,7 @@ function RegisterSale() {
 
   const openProductModal = () => {
     setSelectedProduct(null);
+    setSelectedPromotion(null);
     setQuantity('');
     setIsProductModalOpen(true);
   };
@@ -92,14 +113,16 @@ function RegisterSale() {
   const closeProductModal = () => {
     setIsProductModalOpen(false);
     setSelectedProduct(null);
+    setSelectedPromotion(null);
     setQuantity('');
   };
 
   const handleAddToCart = () => {
-    if (!selectedProduct || !quantity || parseFloat(quantity) <= 0) {
+    // Validar que se haya seleccionado algo
+    if ((!selectedProduct && !selectedPromotion) || !quantity || parseFloat(quantity) <= 0) {
       toast({
         title: 'Datos incompletos',
-        description: 'Seleccione un producto y cantidad válida',
+        description: 'Seleccione un producto o promoción y cantidad válida',
         status: 'warning',
         duration: 3000,
         isClosable: true,
@@ -108,6 +131,55 @@ function RegisterSale() {
     }
 
     const qty = parseFloat(quantity);
+
+    // Si es una promoción
+    if (selectedPromotion) {
+      // Las promociones siempre tienen cantidad 1
+      if (qty !== 1) {
+        toast({
+          title: 'Cantidad inválida',
+          description: 'Las promociones solo se pueden agregar con cantidad 1',
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const existingItem = cart.find((item) => item.promotion_id === selectedPromotion.id);
+      if (existingItem) {
+        toast({
+          title: 'Promoción ya agregada',
+          description: 'Esta promoción ya está en el carrito',
+          status: 'warning',
+          duration: 2000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const price = selectedPromotion.promotion_type === 'combo'
+        ? parseFloat(selectedPromotion.combo_price)
+        : parseFloat(selectedPromotion.product.price) * (1 - parseFloat(selectedPromotion.discount_percentage) / 100);
+
+      setCart([
+        ...cart,
+        {
+          promotion_id: selectedPromotion.id,
+          product_id: selectedPromotion.product.id,
+          product_name: `${selectedPromotion.name} (${selectedPromotion.promotion_type === 'combo' ? 'Combo' : 'Descuento'})`,
+          product_code: `PROMO-${selectedPromotion.product.code}`,
+          quantity: 1,
+          unit_price: price,
+          is_promotion: true,
+        },
+      ]);
+
+      closeProductModal();
+      return;
+    }
+
+    // Si es un producto normal
     if (qty > parseFloat(selectedProduct.stock)) {
       toast({
         title: 'Stock insuficiente',
@@ -119,11 +191,11 @@ function RegisterSale() {
       return;
     }
 
-    const existingItem = cart.find((item) => item.product_id === selectedProduct.id);
+    const existingItem = cart.find((item) => item.product_id === selectedProduct.id && !item.is_promotion);
     if (existingItem) {
       setCart(
         cart.map((item) =>
-          item.product_id === selectedProduct.id
+          item.product_id === selectedProduct.id && !item.is_promotion
             ? { ...item, quantity: item.quantity + qty }
             : item
         )
@@ -137,6 +209,7 @@ function RegisterSale() {
           product_code: selectedProduct.code,
           quantity: qty,
           unit_price: parseFloat(selectedProduct.price),
+          is_promotion: false,
         },
       ]);
     }
@@ -326,6 +399,8 @@ function RegisterSale() {
                       step='0.01'
                       min='0'
                       size='sm'
+                      bg={inputBg}
+                      color={inputTextColor}
                     />
                   </FormControl>
                   <Box borderTop='1px' borderColor={borderColor} pt={3}>
@@ -359,6 +434,8 @@ function RegisterSale() {
                       onChange={handleChange}
                       size='sm'
                       placeholder='Opcional'
+                      bg={inputBg}
+                      color={inputTextColor}
                     />
                   </FormControl>
                   <FormControl>
@@ -369,6 +446,8 @@ function RegisterSale() {
                       onChange={handleChange}
                       size='sm'
                       placeholder='Opcional'
+                      bg={inputBg}
+                      color={inputTextColor}
                     />
                   </FormControl>
                   <FormControl isRequired>
@@ -377,10 +456,12 @@ function RegisterSale() {
                       name='payment_method'
                       value={formData.payment_method}
                       onChange={handleChange}
-                      size='sm'>
+                      size='sm'
+                      bg={inputBg}
+                      color={inputTextColor}>
                       <option value='efectivo'>Efectivo</option>
-                      <option value='tarjeta'>Tarjeta</option>
-                      <option value='transferencia'>Transferencia</option>
+                      {/* <option value='tarjeta'>Tarjeta</option> */}
+                      {/* <option value='transferencia'>Transferencia</option> */}
                       <option value='qr'>QR</option>
                     </Select>
                   </FormControl>
@@ -392,6 +473,8 @@ function RegisterSale() {
                       onChange={handleChange}
                       size='sm'
                       placeholder='Opcional'
+                      bg={inputBg}
+                      color={inputTextColor}
                     />
                   </FormControl>
                   <Button
@@ -409,40 +492,115 @@ function RegisterSale() {
         </Grid>
       </form>
 
-      {/* Modal para agregar producto */}
-      <Modal isOpen={isProductModalOpen} onClose={closeProductModal}>
+      {/* Modal para agregar producto o promoción */}
+      <Modal isOpen={isProductModalOpen} onClose={closeProductModal} size='lg'>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Agregar Producto</ModalHeader>
+          <ModalHeader>Agregar Producto o Promoción</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction='column' gap='20px'>
-              <FormControl isRequired>
-                <FormLabel>Producto</FormLabel>
-                <Select
-                  placeholder='Seleccione un producto'
-                  onChange={(e) => {
-                    const product = products.find((p) => p.id === e.target.value);
-                    setSelectedProduct(product);
-                  }}>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.code} - {product.name} (Stock: {product.stock}) - Bs.{' '}
-                      {product.price}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-              {selectedProduct && (
-                <Box p={3} bg='blue.50' borderRadius='md'>
-                  <Text fontSize='sm'>
-                    <strong>Stock disponible:</strong> {selectedProduct.stock}
+              {/* Sección de Promociones Activas */}
+              {promotions.length > 0 && (
+                <Box>
+                  <Text fontSize='md' fontWeight='bold' mb={2} color={textColor}>
+                    🎉 Promociones Activas
                   </Text>
-                  <Text fontSize='sm'>
-                    <strong>Precio:</strong> Bs. {selectedProduct.price}
+                  <FormControl>
+                    <Select
+                      placeholder='Seleccione una promoción'
+                      onChange={(e) => {
+                        const promo = promotions.find((p) => p.id === e.target.value);
+                        setSelectedPromotion(promo);
+                        setSelectedProduct(null);
+                        setQuantity('1'); // Las promociones siempre son cantidad 1
+                      }}
+                      bg={inputBg}
+                      color={inputTextColor}
+                      value={selectedPromotion?.id || ''}>
+                      {promotions.map((promo) => {
+                        const price = promo.promotion_type === 'combo'
+                          ? parseFloat(promo.combo_price).toFixed(2)
+                          : (parseFloat(promo.product.price) * (1 - parseFloat(promo.discount_percentage) / 100)).toFixed(2);
+                        return (
+                          <option key={promo.id} value={promo.id}>
+                            {promo.name} - {promo.promotion_type === 'combo' ? 'COMBO' : `${promo.discount_percentage}% OFF`} - Bs. {price}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                  {selectedPromotion && (
+                    <Box p={3} bg='green.50' borderRadius='md' mt={2} border='2px solid' borderColor='green.200'>
+                      <Text fontSize='sm' fontWeight='bold' color='green.700'>
+                        {selectedPromotion.name}
+                      </Text>
+                      <Text fontSize='xs' color='green.600' mt={1}>
+                        {selectedPromotion.description}
+                      </Text>
+                      <Text fontSize='sm' fontWeight='bold' color='green.700' mt={2}>
+                        Precio: Bs. {selectedPromotion.promotion_type === 'combo'
+                          ? parseFloat(selectedPromotion.combo_price).toFixed(2)
+                          : (parseFloat(selectedPromotion.product.price) * (1 - parseFloat(selectedPromotion.discount_percentage) / 100)).toFixed(2)}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* Separador */}
+              {promotions.length > 0 && (
+                <Box textAlign='center' position='relative'>
+                  <Box position='absolute' top='50%' left='0' right='0' h='1px' bg={borderColor} />
+                  <Text
+                    as='span'
+                    position='relative'
+                    bg={inputBg}
+                    px={3}
+                    fontSize='sm'
+                    color='gray.500'>
+                    O
                   </Text>
                 </Box>
               )}
+
+              {/* Sección de Productos Regulares */}
+              <Box>
+                <Text fontSize='md' fontWeight='bold' mb={2} color={textColor}>
+                  📦 Productos Regulares
+                </Text>
+                <FormControl>
+                  <Select
+                    placeholder='Seleccione un producto'
+                    onChange={(e) => {
+                      const product = products.find((p) => p.id === e.target.value);
+                      setSelectedProduct(product);
+                      setSelectedPromotion(null);
+                      setQuantity('');
+                    }}
+                    bg={inputBg}
+                    color={inputTextColor}
+                    value={selectedProduct?.id || ''}>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.code} - {product.name} (Stock: {product.stock}) - Bs. {product.price}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+                {selectedProduct && (
+                  <Box p={3} bg='blue.50' borderRadius='md' mt={2}>
+                    <Text fontSize='sm'>
+                      <strong>Stock disponible:</strong> {selectedProduct.stock}
+                    </Text>
+                    <Text fontSize='sm'>
+                      <strong>Precio:</strong> Bs. {selectedProduct.price}
+                    </Text>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Campo de Cantidad */}
               <FormControl isRequired>
                 <FormLabel>Cantidad</FormLabel>
                 <Input
@@ -452,7 +610,15 @@ function RegisterSale() {
                   step='0.01'
                   min='0.01'
                   placeholder='0.00'
+                  bg={inputBg}
+                  color={inputTextColor}
+                  isReadOnly={!!selectedPromotion} // Solo lectura si es promoción
                 />
+                {selectedPromotion && (
+                  <Text fontSize='xs' color='gray.500' mt={1}>
+                    Las promociones solo se pueden agregar con cantidad 1
+                  </Text>
+                )}
               </FormControl>
             </Flex>
           </ModalBody>

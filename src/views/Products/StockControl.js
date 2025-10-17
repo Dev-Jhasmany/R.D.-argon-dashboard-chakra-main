@@ -38,6 +38,8 @@ import productService from 'services/productService';
 function StockControl() {
   const textColor = useColorModeValue('gray.700', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputTextColor = useColorModeValue('gray.800', 'white');
   const toast = useToast();
 
   // Estados
@@ -256,6 +258,8 @@ function StockControl() {
                 value={searchTerm}
                 onChange={handleSearchChange}
                 size='md'
+                bg={inputBg}
+                color={inputTextColor}
               />
             </Box>
           </Flex>
@@ -405,6 +409,8 @@ function StockControl() {
                   min='0.01'
                   placeholder='0.00'
                   autoFocus
+                  bg={inputBg}
+                  color={inputTextColor}
                 />
               </FormControl>
 
@@ -419,6 +425,8 @@ function StockControl() {
                       ? 'Ej: Compra, Producción, Devolución'
                       : 'Ej: Venta, Merma, Ajuste'
                   }
+                  bg={inputBg}
+                  color={inputTextColor}
                 />
               </FormControl>
 
@@ -430,6 +438,8 @@ function StockControl() {
                   onChange={handleChange}
                   placeholder='Observaciones adicionales (opcional)'
                   rows={3}
+                  bg={inputBg}
+                  color={inputTextColor}
                 />
               </FormControl>
             </Flex>
