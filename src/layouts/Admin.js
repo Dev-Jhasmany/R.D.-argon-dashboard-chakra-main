@@ -17,7 +17,7 @@ import {
 // Layout components
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
-import React, { useState } from "react";
+import React from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import routes from "routes.js";
 // Custom Chakra theme
@@ -30,8 +30,6 @@ import bgAdmin from "assets/img/admin-background.png";
 
 export default function Dashboard(props) {
   const { ...rest } = props;
-  // states and functions
-  const [fixed, setFixed] = useState(false);
   const { colorMode } = useColorMode();
   // functions for changing the states from components
   const getRoute = () => {
@@ -150,7 +148,6 @@ export default function Dashboard(props) {
             onOpen={onOpen}
             brandText={getActiveRoute(routes)}
             secondary={getActiveNavbar(routes)}
-            fixed={fixed}
             {...rest}
           />
         </Portal>
@@ -168,18 +165,12 @@ export default function Dashboard(props) {
         <Portal>
           <FixedPlugin
             secondary={getActiveNavbar(routes)}
-            fixed={fixed}
             onOpen={onOpen}
           />
         </Portal>
         <Configurator
-          secondary={getActiveNavbar(routes)}
           isOpen={isOpen}
           onClose={onClose}
-          isChecked={fixed}
-          onSwitch={(value) => {
-            setFixed(value);
-          }}
         />
       </MainPanel>
     </Box>

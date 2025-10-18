@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 // Assets
 import signInImage from "assets/img/signInImage.png";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, Link as RouterLink } from "react-router-dom";
 import authService from "services/authService";
 
 function ResetPassword() {
@@ -317,10 +317,10 @@ function ResetPassword() {
               <Text color={textColor} fontWeight='medium'>
                 Remember your password?
                 <Link
+                  as={RouterLink}
+                  to='/auth/signin'
                   color={titleColor}
-                  as='span'
                   ms='5px'
-                  href='#/auth/signin'
                   fontWeight='bold'>
                   Sign In
                 </Link>

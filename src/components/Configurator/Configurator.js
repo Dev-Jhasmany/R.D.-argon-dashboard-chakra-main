@@ -2,188 +2,94 @@
 import {
   Box,
   Button,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  Flex, Link,
-  Switch,
+  Flex,
+  Icon,
   Text,
   useColorMode,
-  useColorModeValue
+  useColorModeValue,
+  VStack,
+  HStack,
+  IconButton,
+  Fade,
 } from "@chakra-ui/react";
-import { HSeparator } from "components/Separator/Separator";
-import React, { useState } from "react";
-import GitHubButton from "react-github-btn";
-import { FaFacebook, FaTwitter } from "react-icons/fa";
+import React from "react";
+import { FaMoon, FaSun, FaTimes } from "react-icons/fa";
 
 export default function Configurator(props) {
-  const {
-    sidebarVariant,
-    setSidebarVariant,
-    secondary,
-    isOpen,
-    onClose,
-    fixed,
-    ...rest
-  } = props;
-  const [switched, setSwitched] = useState(props.isChecked);
+  const { isOpen, onClose } = props;
 
   const { colorMode, toggleColorMode } = useColorMode();
 
-  let bgButton = useColorModeValue(
-    "linear-gradient(81.62deg, #313860 2.25%, #151928 79.87%)",
-    "white"
-  );
-  let colorButton = useColorModeValue("white", "gray.700");
-  const secondaryButtonBg = useColorModeValue("white", "transparent");
-  const secondaryButtonBorder = useColorModeValue("gray.700", "white");
-  const secondaryButtonColor = useColorModeValue("gray.700", "white");
-  const bgDrawer = useColorModeValue("white", "navy.800");
-  const settingsRef = React.useRef();
-  return (
-    <>
-      <Drawer
-        isOpen={props.isOpen}
-        onClose={props.onClose}
-        placement={document.documentElement.dir === "rtl" ? "left" : "right"}
-        finalFocusRef={settingsRef}
-        blockScrollOnMount={false}
-      >
-        <DrawerContent bg={bgDrawer}>
-          <DrawerHeader pt="24px" px="24px">
-            <DrawerCloseButton />
-            <Text fontSize="xl" fontWeight="bold" mt="16px">
-              Argon Chakra Configurator
-            </Text>
-            <Text fontSize="md" mb="16px">
-              See your dashboard options.
-            </Text>
-            <HSeparator />
-          </DrawerHeader>
-          <DrawerBody w="340px" ps="24px" pe="40px">
-            <Flex flexDirection="column">
-              <Flex justifyContent="space-between " mb="16px">
-                <Text fontSize="md" fontWeight="600" mb="4px">
-                  Navbar Fixed
-                </Text>
-                <Switch
-                  colorScheme="blue"
-                  isChecked={switched}
-                  onChange={() => {
-                    if (switched === true) {
-                      props.onSwitch(false);
-                      setSwitched(false);
-                    } else {
-                      props.onSwitch(true);
-                      setSwitched(true);
-                    }
-                  }}
-                />
-              </Flex>
-              <Flex
-                justifyContent="space-between"
-                alignItems="center"
-                mb="24px"
-              >
-                <Text fontSize="md" fontWeight="600" mb="4px">
-                  Dark/Light
-                </Text>
-                <Button
-                  onClick={toggleColorMode}
-                  color={colorMode === "light" ? "Dark" : "Light"}
-                >
-                  Toggle {colorMode === "light" ? "Dark" : "Light"}
-                </Button>
-              </Flex>
+  const bgCard = useColorModeValue("white", "navy.800");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const textColor = useColorModeValue("gray.700", "white");
+  const secondaryText = useColorModeValue("gray.600", "gray.400");
 
-              <HSeparator />
-              <Box mt="24px">
-                <Box>
-                  <Link
-                    href="https://www.creative-tim.com/product/argon-dashboard-chakra?ref=creativetim-pud"
-                    w="100%"
-                    mb="16px"
-                  >
-                    <Button
-                      w="100%"
-                      mb="16px"
-                      bg={bgButton}
-                      color={colorButton}
-                      fontSize="xs"
-                      variant="no-effects"
-                      px="30px"
-                    >
-                      Free Download
-                    </Button>
-                  </Link>
-                  <Link
-                    href="https://demos.creative-tim.com/docs-argon-dashboard-chakra/?ref=creativetim-pud"
-                    w="100%"
-                  >
-                    <Button
-                      w="100%"
-                      bg={secondaryButtonBg}
-                      border="1px solid"
-                      borderColor={secondaryButtonBorder}
-                      color={secondaryButtonColor}
-                      fontSize="xs"
-                      variant="no-effects"
-                      px="20px"
-                      mb="16px"
-                    >
-                      <Text textDecorationColor="none">Documentation</Text>
-                    </Button>
-                  </Link>
-                </Box>
-                <Flex
-                  justifyContent="center"
-                  alignItems="center"
-                  w="100%"
-                  mb="16px"
+  if (!isOpen) return null;
+
+  return (
+    <Fade in={isOpen}>
+      <Box
+        position="fixed"
+        right="35px"
+        bottom="100px"
+        zIndex="999"
+        w="280px"
+      >
+        <Box
+          bg={bgCard}
+          borderRadius="20px"
+          borderWidth="1px"
+          borderColor={borderColor}
+          boxShadow="0 20px 27px 0 rgba(0, 0, 0, 0.05)"
+          p="20px"
+        >
+          <Flex justify="space-between" align="center" mb="16px">
+            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+              Configuración
+            </Text>
+            <IconButton
+              icon={<Icon as={FaTimes} />}
+              onClick={onClose}
+              size="sm"
+              variant="ghost"
+              aria-label="Cerrar configuración"
+            />
+          </Flex>
+
+          <VStack spacing="16px" align="stretch">
+            <Box>
+              <Text fontSize="sm" fontWeight="600" color={secondaryText} mb="10px">
+                Apariencia
+              </Text>
+              <HStack spacing="8px">
+                <Button
+                  leftIcon={<Icon as={FaSun} />}
+                  onClick={colorMode === "dark" ? toggleColorMode : undefined}
+                  colorScheme="blue"
+                  variant={colorMode === "light" ? "solid" : "outline"}
+                  size="sm"
+                  flex="1"
+                  isDisabled={colorMode === "light"}
                 >
-                  <GitHubButton
-                    href="https://github.com/creativetimofficial/argon-dashboard-chakra"
-                    data-icon="octicon-star"
-                    data-show-count="true"
-                    aria-label="Star creativetimofficial/argon-dashboard-chakra on GitHub"
-                  >
-                    Star
-                  </GitHubButton>
-                </Flex>
-                <Box w="100%">
-                  <Text mb="6px" textAlign="center">
-                    Thank you for sharing!
-                  </Text>
-                  <Flex justifyContent="center" alignContent="center">
-                    <Link
-                      isExternal="true"
-                      href="https://twitter.com/intent/tweet?url=https://www.creative-tim.com/product/argon-dashboard-chakra/&text=Check%20Argon%20Dashboard%20Chakra%20made%20by%20@simmmple_web%20and%20@CreativeTim"
-                    >
-                      <Button
-                        colorScheme="twitter"
-                        leftIcon={<FaTwitter />}
-                        me="10px"
-                      >
-                        <Text>Tweet</Text>
-                      </Button>
-                    </Link>
-                    <Link
-                      isExternal="true"
-                      href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/argon-dashboard-chakra/"
-                    >
-                      <Button colorScheme="facebook" leftIcon={<FaFacebook />}>
-                        <Text>Share</Text>
-                      </Button>
-                    </Link>
-                  </Flex>
-                </Box>
-              </Box>
-            </Flex>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </>
+                  Claro
+                </Button>
+                <Button
+                  leftIcon={<Icon as={FaMoon} />}
+                  onClick={colorMode === "light" ? toggleColorMode : undefined}
+                  colorScheme="blue"
+                  variant={colorMode === "dark" ? "solid" : "outline"}
+                  size="sm"
+                  flex="1"
+                  isDisabled={colorMode === "dark"}
+                >
+                  Oscuro
+                </Button>
+              </HStack>
+            </Box>
+          </VStack>
+        </Box>
+      </Box>
+    </Fade>
   );
 }

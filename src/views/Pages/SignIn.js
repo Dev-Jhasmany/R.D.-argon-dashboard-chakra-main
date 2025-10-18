@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // Chakra imports
 import {
   Box,
@@ -43,6 +43,20 @@ function SignIn() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Cargar email guardado al montar el componente
+  useEffect(() => {
+    const rememberedEmail = authService.getRememberedEmail();
+    const isRememberMeActive = authService.isRememberMeActive();
+
+    if (rememberedEmail && isRememberMeActive) {
+      setFormData(prev => ({
+        ...prev,
+        email: rememberedEmail
+      }));
+      setRememberMe(true);
+    }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -64,7 +78,7 @@ function SignIn() {
     }
 
     setLoading(true);
-    const result = await authService.login(formData.email, formData.password);
+    const result = await authService.login(formData.email, formData.password, rememberMe);
     setLoading(false);
 
     if (result.success) {

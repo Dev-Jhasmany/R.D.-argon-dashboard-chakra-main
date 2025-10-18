@@ -2,14 +2,27 @@ import api from './api';
 
 const authService = {
   // Login
-  login: async (email, password) => {
+  login: async (email, password, rememberMe = false) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { access_token, user } = response.data;
 
-      // Guardar token y usuario en localStorage
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Determinar el storage a usar basado en rememberMe
+      const storage = rememberMe ? localStorage : sessionStorage;
+
+      // Guardar token y usuario
+      storage.setItem('token', access_token);
+      storage.setItem('user', JSON.stringify(user));
+
+      // Si rememberMe está activado, guardar las credenciales
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        // Limpiar credenciales recordadas si no se seleccionó remember me
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberMe');
+      }
 
       return { success: true, data: response.data };
     } catch (error) {
@@ -35,14 +48,18 @@ const authService = {
 
   // Logout
   logout: () => {
+    // Limpiar ambos storages
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    // No limpiar rememberedEmail ni rememberMe para mantener el email guardado
     window.location.href = '/#/auth/signin';
   },
 
   // Obtener usuario actual
   getCurrentUser: () => {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (userStr) {
       try {
         return JSON.parse(userStr);
@@ -55,12 +72,26 @@ const authService = {
 
   // Verificar si está autenticado
   isAuthenticated: () => {
-    return !!localStorage.getItem('token');
+    return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
   },
 
   // Obtener token
   getToken: () => {
-    return localStorage.getItem('token');
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+  },
+
+  // Obtener email recordado
+  getRememberedEmail: () => {
+    const rememberMe = localStorage.getItem('rememberMe');
+    if (rememberMe === 'true') {
+      return localStorage.getItem('rememberedEmail');
+    }
+    return null;
+  },
+
+  // Verificar si remember me está activo
+  isRememberMeActive: () => {
+    return localStorage.getItem('rememberMe') === 'true';
   },
 
   // Cambiar contraseña
