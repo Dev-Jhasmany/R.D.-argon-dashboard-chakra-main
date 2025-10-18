@@ -23,12 +23,19 @@ import {
   IconButton,
   Tooltip,
   Input,
+  Icon,
+  ButtonGroup,
 } from '@chakra-ui/react';
 import { ViewIcon, DeleteIcon } from '@chakra-ui/icons';
+import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import Card from 'components/Card/Card';
 import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
 import salesService from 'services/salesService';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 function SalesList() {
   const textColor = useColorModeValue('gray.700', 'white');
@@ -142,6 +149,127 @@ function SalesList() {
     );
   };
 
+  // Exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+
+    // Título
+    doc.setFontSize(18);
+    doc.text('Listado de Ventas', 14, 20);
+
+    // Fecha de generación
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleString('es-BO')}`, 14, 28);
+
+    // Calcular totales
+    const totalVentas = filteredSales.reduce((sum, sale) => sum + parseFloat(sale.total), 0);
+
+    // Información de resumen
+    doc.text(`Total de ventas: ${filteredSales.length}`, 14, 34);
+    doc.text(`Monto total: Bs. ${totalVentas.toFixed(2)}`, 14, 40);
+
+    // Preparar datos para la tabla
+    const tableData = filteredSales.map(sale => [
+      sale.sale_number,
+      formatDate(sale.created_at),
+      sale.customer_name || 'Sin nombre',
+      sale.customer_nit || '-',
+      sale.payment_method.toUpperCase(),
+      `Bs. ${parseFloat(sale.total).toFixed(2)}`,
+    ]);
+
+    // Crear tabla usando autoTable
+    autoTable(doc, {
+      startY: 46,
+      head: [['Nº Venta', 'Fecha', 'Cliente', 'NIT/CI', 'Método Pago', 'Total']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [66, 153, 225], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+      foot: [[
+        { content: 'TOTAL GENERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold' } },
+        { content: `Bs. ${totalVentas.toFixed(2)}`, styles: { fontStyle: 'bold', fillColor: [220, 252, 231] } }
+      ]],
+      footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
+    });
+
+    // Guardar PDF
+    doc.save(`ventas_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    toast({
+      title: 'PDF Generado',
+      description: 'El listado de ventas ha sido exportado a PDF',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  // Exportar a Excel
+  const exportToExcel = () => {
+    // Preparar datos de resumen
+    const totalVentas = filteredSales.reduce((sum, sale) => sum + parseFloat(sale.total), 0);
+
+    // Preparar datos principales
+    const excelData = filteredSales.map(sale => ({
+      'Nº Venta': sale.sale_number,
+      'Fecha': formatDate(sale.created_at),
+      'Cliente': sale.customer_name || 'Sin nombre',
+      'NIT/CI': sale.customer_nit || '-',
+      'Método de Pago': sale.payment_method.toUpperCase(),
+      'Subtotal': `Bs. ${parseFloat(sale.subtotal).toFixed(2)}`,
+      'Descuento': `Bs. ${parseFloat(sale.discount).toFixed(2)}`,
+      'Total': `Bs. ${parseFloat(sale.total).toFixed(2)}`,
+      'Notas': sale.notes || '',
+    }));
+
+    // Agregar fila de total
+    excelData.push({
+      'Nº Venta': '',
+      'Fecha': '',
+      'Cliente': '',
+      'NIT/CI': '',
+      'Método de Pago': '',
+      'Subtotal': '',
+      'Descuento': 'TOTAL GENERAL:',
+      'Total': `Bs. ${totalVentas.toFixed(2)}`,
+      'Notas': '',
+    });
+
+    // Crear libro de trabajo
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
+
+    // Ajustar ancho de columnas
+    const colWidths = [
+      { wch: 15 }, // Nº Venta
+      { wch: 20 }, // Fecha
+      { wch: 25 }, // Cliente
+      { wch: 15 }, // NIT/CI
+      { wch: 15 }, // Método Pago
+      { wch: 12 }, // Subtotal
+      { wch: 12 }, // Descuento
+      { wch: 12 }, // Total
+      { wch: 30 }, // Notas
+    ];
+    ws['!cols'] = colWidths;
+
+    // Generar archivo
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(data, `ventas_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: 'Excel Generado',
+      description: 'El listado de ventas ha sido exportado a Excel',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
   return (
     <Flex direction='column' pt={{ base: '120px', md: '75px' }}>
       <Card overflowX={{ sm: 'scroll', xl: 'hidden' }}>
@@ -150,16 +278,39 @@ function SalesList() {
             <Text fontSize='xl' color={textColor} fontWeight='bold'>
               Listado de Ventas
             </Text>
-            <Box minW={{ base: '100%', md: '300px' }}>
-              <Input
-                placeholder='Buscar por número, cliente o NIT...'
-                value={searchTerm}
-                onChange={handleSearchChange}
-                size='md'
-                bg={inputBg}
-                color={inputTextColor}
-              />
-            </Box>
+            <Flex gap={3} align='center' flexWrap='wrap'>
+              <Box minW={{ base: '100%', md: '300px' }}>
+                <Input
+                  placeholder='Buscar por número, cliente o NIT...'
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  size='md'
+                  bg={inputBg}
+                  color={inputTextColor}
+                />
+              </Box>
+              <ButtonGroup size='sm' isAttached variant='outline'>
+                <Button
+                  leftIcon={<Icon as={FaFilePdf} />}
+                  colorScheme='red'
+                  onClick={exportToPDF}
+                  isDisabled={filteredSales.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button
+                  leftIcon={<Icon as={FaFileExcel} />}
+                  colorScheme='green'
+                  onClick={exportToExcel}
+                  isDisabled={filteredSales.length === 0}
+                >
+                  Excel
+                </Button>
+              </ButtonGroup>
+              <Badge colorScheme='blue' p='6px 12px' borderRadius='8px'>
+                {filteredSales.length} ventas
+              </Badge>
+            </Flex>
           </Flex>
         </CardHeader>
         <CardBody>

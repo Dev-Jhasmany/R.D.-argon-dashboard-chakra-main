@@ -27,13 +27,20 @@ import {
   ModalCloseButton,
   IconButton,
   Tooltip,
+  Icon,
+  ButtonGroup,
 } from '@chakra-ui/react';
 import { AddIcon, MinusIcon, ViewIcon } from '@chakra-ui/icons';
+import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import Card from 'components/Card/Card';
 import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
 import stockMovementService from 'services/stockMovementService';
 import productService from 'services/productService';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 function StockControl() {
   const textColor = useColorModeValue('gray.700', 'white');
@@ -268,6 +275,192 @@ function StockControl() {
     }
   };
 
+  // Exportar productos con stock bajo a PDF
+  const exportLowStockToPDF = () => {
+    const doc = new jsPDF();
+
+    // Título
+    doc.setFontSize(18);
+    doc.text('Productos con Stock Bajo', 14, 20);
+
+    // Información adicional
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleString('es-BO')}`, 14, 28);
+    doc.text(`Límite de stock bajo: ${stockLimit}`, 14, 34);
+
+    // Preparar datos para la tabla
+    const tableData = lowStockProducts.map(product => [
+      product.code,
+      product.name,
+      product.category?.name || 'Sin categoría',
+      `Bs. ${product.price}`,
+      product.stock,
+      product.stock === 0 ? 'AGOTADO' : 'BAJO',
+    ]);
+
+    // Crear tabla usando autoTable
+    autoTable(doc, {
+      startY: 40,
+      head: [['Código', 'Producto', 'Categoría', 'Precio', 'Stock', 'Estado']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [237, 137, 54], textColor: 255 }, // Color naranja
+      alternateRowStyles: { fillColor: [254, 243, 199] },
+    });
+
+    // Guardar PDF
+    doc.save(`stock_bajo_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    toast({
+      title: 'PDF Generado',
+      description: 'Los productos con stock bajo han sido exportados a PDF',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  // Exportar productos con stock bajo a Excel
+  const exportLowStockToExcel = () => {
+    const excelData = lowStockProducts.map(product => ({
+      'Código': product.code,
+      'Producto': product.name,
+      'Descripción': product.description || '',
+      'Categoría': product.category?.name || 'Sin categoría',
+      'Precio': `Bs. ${product.price}`,
+      'Stock Actual': product.stock,
+      'Unidad': product.unit || '',
+      'Estado': product.stock === 0 ? 'AGOTADO' : 'BAJO',
+      'Fecha Creación': new Date(product.created_at).toLocaleString('es-BO'),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Stock Bajo');
+
+    const colWidths = [
+      { wch: 15 }, // Código
+      { wch: 30 }, // Producto
+      { wch: 40 }, // Descripción
+      { wch: 20 }, // Categoría
+      { wch: 12 }, // Precio
+      { wch: 12 }, // Stock
+      { wch: 12 }, // Unidad
+      { wch: 12 }, // Estado
+      { wch: 20 }, // Fecha
+    ];
+    ws['!cols'] = colWidths;
+
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(data, `stock_bajo_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: 'Excel Generado',
+      description: 'Los productos con stock bajo han sido exportados a Excel',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  // Exportar todos los productos a PDF
+  const exportAllProductsToPDF = () => {
+    const doc = new jsPDF();
+
+    // Título
+    doc.setFontSize(18);
+    doc.text('Control de Stock - Todos los Productos', 14, 20);
+
+    // Fecha
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleString('es-BO')}`, 14, 28);
+
+    // Preparar datos
+    const tableData = filteredProducts.map(product => {
+      const stockNum = parseFloat(product.stock);
+      let estado = 'NORMAL';
+      if (stockNum === 0) estado = 'AGOTADO';
+      else if (stockNum <= parseFloat(stockLimit)) estado = 'BAJO';
+
+      return [
+        product.code,
+        product.name,
+        product.category?.name || 'Sin categoría',
+        `Bs. ${product.price}`,
+        product.stock,
+        estado,
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['Código', 'Producto', 'Categoría', 'Precio', 'Stock', 'Estado']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [66, 153, 225], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+    });
+
+    doc.save(`control_stock_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    toast({
+      title: 'PDF Generado',
+      description: 'El control de stock ha sido exportado a PDF',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  // Exportar todos los productos a Excel
+  const exportAllProductsToExcel = () => {
+    const excelData = filteredProducts.map(product => {
+      const stockNum = parseFloat(product.stock);
+      let estado = 'NORMAL';
+      if (stockNum === 0) estado = 'AGOTADO';
+      else if (stockNum <= parseFloat(stockLimit)) estado = 'BAJO';
+
+      return {
+        'Código': product.code,
+        'Producto': product.name,
+        'Descripción': product.description || '',
+        'Categoría': product.category?.name || 'Sin categoría',
+        'Precio': `Bs. ${product.price}`,
+        'Stock Actual': product.stock,
+        'Unidad': product.unit || '',
+        'Estado Stock': estado,
+        'Estado Producto': product.is_active ? 'Activo' : 'Inactivo',
+        'Fecha Creación': new Date(product.created_at).toLocaleString('es-BO'),
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Control Stock');
+
+    const colWidths = [
+      { wch: 15 }, { wch: 30 }, { wch: 40 }, { wch: 20 },
+      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 15 },
+      { wch: 15 }, { wch: 20 },
+    ];
+    ws['!cols'] = colWidths;
+
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(data, `control_stock_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: 'Excel Generado',
+      description: 'El control de stock ha sido exportado a Excel',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
   // Componente reutilizable para tabla de productos
   const ProductsTable = ({ productsList, emptyMessage }) => (
     <Table variant='simple' color={textColor}>
@@ -413,9 +606,29 @@ function StockControl() {
             <Text fontSize='xl' color='orange.600' fontWeight='bold'>
               ⚠️ Productos con Stock Bajo (≤ {stockLimit})
             </Text>
-            <Badge colorScheme='orange' p='6px 12px' borderRadius='8px'>
-              {lowStockProducts.length} productos
-            </Badge>
+            <Flex align='center' gap={3}>
+              <ButtonGroup size='sm' isAttached variant='outline'>
+                <Button
+                  leftIcon={<Icon as={FaFilePdf} />}
+                  colorScheme='red'
+                  onClick={exportLowStockToPDF}
+                  isDisabled={lowStockProducts.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button
+                  leftIcon={<Icon as={FaFileExcel} />}
+                  colorScheme='green'
+                  onClick={exportLowStockToExcel}
+                  isDisabled={lowStockProducts.length === 0}
+                >
+                  Excel
+                </Button>
+              </ButtonGroup>
+              <Badge colorScheme='orange' p='6px 12px' borderRadius='8px'>
+                {lowStockProducts.length} productos
+              </Badge>
+            </Flex>
           </Flex>
         </CardHeader>
         <CardBody>
@@ -452,6 +665,24 @@ function StockControl() {
                   color={inputTextColor}
                 />
               </Box>
+              <ButtonGroup size='sm' isAttached variant='outline'>
+                <Button
+                  leftIcon={<Icon as={FaFilePdf} />}
+                  colorScheme='red'
+                  onClick={exportAllProductsToPDF}
+                  isDisabled={filteredProducts.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button
+                  leftIcon={<Icon as={FaFileExcel} />}
+                  colorScheme='green'
+                  onClick={exportAllProductsToExcel}
+                  isDisabled={filteredProducts.length === 0}
+                >
+                  Excel
+                </Button>
+              </ButtonGroup>
               <Badge colorScheme='blue' p='6px 12px' borderRadius='8px'>
                 {filteredProducts.length} productos
               </Badge>

@@ -20,12 +20,17 @@ import {
   useToast,
   Spinner,
   Center,
+  ButtonGroup,
 } from "@chakra-ui/react";
-import { FaFilter, FaSync } from "react-icons/fa";
+import { FaFilter, FaSync, FaFilePdf, FaFileExcel } from "react-icons/fa";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
 import activityLogService from "services/activityLogService";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function ActivityLog() {
   const textColor = useColorModeValue("gray.700", "white");
@@ -170,6 +175,110 @@ function ActivityLog() {
     });
   };
 
+  // Exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+
+    // Título
+    doc.setFontSize(18);
+    doc.text("Bitácora de Actividades del Sistema", 14, 20);
+
+    // Fecha de generación
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleString("es-BO")}`, 14, 28);
+    doc.text(`Total de registros: ${filteredLogs.length}`, 14, 34);
+
+    // Preparar datos para la tabla
+    const tableData = filteredLogs.map((log) => [
+      log.user ? `${log.user.full_name} ${log.user.full_last_name}` : "Sistema",
+      getModuleLabel(log.module),
+      getActionLabel(log.action),
+      log.description,
+      formatDate(log.created_at),
+      log.ip_address || "-",
+    ]);
+
+    // Crear tabla usando autoTable
+    autoTable(doc, {
+      startY: 40,
+      head: [["Usuario", "Módulo", "Acción", "Descripción", "Fecha y Hora", "IP"]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 7, cellPadding: 2 },
+      headStyles: { fillColor: [66, 153, 225], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+      columnStyles: {
+        0: { cellWidth: 35 }, // Usuario
+        1: { cellWidth: 30 }, // Módulo
+        2: { cellWidth: 25 }, // Acción
+        3: { cellWidth: 80 }, // Descripción
+        4: { cellWidth: 40 }, // Fecha
+        5: { cellWidth: 30 }, // IP
+      },
+    });
+
+    // Guardar PDF
+    doc.save(`bitacora_${new Date().toISOString().split("T")[0]}.pdf`);
+
+    toast({
+      title: "PDF Generado",
+      description: "La bitácora de actividades ha sido exportada a PDF",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  // Exportar a Excel
+  const exportToExcel = () => {
+    // Preparar datos
+    const excelData = filteredLogs.map((log) => ({
+      Usuario: log.user
+        ? `${log.user.full_name} ${log.user.full_last_name}`
+        : "Sistema",
+      "Nombre Usuario": log.user?.username || "-",
+      Módulo: getModuleLabel(log.module),
+      Acción: getActionLabel(log.action),
+      Descripción: log.description,
+      "Fecha y Hora": formatDate(log.created_at),
+      "Dirección IP": log.ip_address || "-",
+      "ID Registro": log.id,
+    }));
+
+    // Crear libro de trabajo
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bitácora");
+
+    // Ajustar ancho de columnas
+    const colWidths = [
+      { wch: 30 }, // Usuario
+      { wch: 20 }, // Nombre Usuario
+      { wch: 25 }, // Módulo
+      { wch: 20 }, // Acción
+      { wch: 60 }, // Descripción
+      { wch: 22 }, // Fecha
+      { wch: 18 }, // IP
+      { wch: 40 }, // ID
+    ];
+    ws["!cols"] = colWidths;
+
+    // Generar archivo
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(data, `bitacora_${new Date().toISOString().split("T")[0]}.xlsx`);
+
+    toast({
+      title: "Excel Generado",
+      description: "La bitácora de actividades ha sido exportada a Excel",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
   if (loading) {
     return (
       <Flex direction="column" pt={{ base: "120px", md: "75px" }}>
@@ -283,13 +392,33 @@ function ActivityLog() {
       {/* Tabla de actividades */}
       <Card overflowX={{ sm: "scroll", xl: "hidden" }} pb="0px">
         <CardHeader p="6px 0px 22px 0px">
-          <Flex justify="space-between" align="center">
+          <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
             <Text fontSize="xl" color={textColor} fontWeight="bold">
               Bitácora de Actividades del Sistema
             </Text>
-            <Badge colorScheme="blue" p="6px 12px" borderRadius="8px">
-              {filteredLogs.length} registros
-            </Badge>
+            <Flex align="center" gap={3}>
+              <ButtonGroup size="sm" isAttached variant="outline">
+                <Button
+                  leftIcon={<Icon as={FaFilePdf} />}
+                  colorScheme="red"
+                  onClick={exportToPDF}
+                  isDisabled={filteredLogs.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button
+                  leftIcon={<Icon as={FaFileExcel} />}
+                  colorScheme="green"
+                  onClick={exportToExcel}
+                  isDisabled={filteredLogs.length === 0}
+                >
+                  Excel
+                </Button>
+              </ButtonGroup>
+              <Badge colorScheme="blue" p="6px 12px" borderRadius="8px">
+                {filteredLogs.length} registros
+              </Badge>
+            </Flex>
           </Flex>
         </CardHeader>
         <CardBody>

@@ -61,7 +61,7 @@ export default function AuthNavbar(props) {
   hamburgerColor = { base: "white" };
   var linksAuth = (
     <HStack display={{ sm: "none", lg: "flex" }}>
-      
+
       <NavLink to="/auth/reset-password">
         <Button
           fontSize="sm"
@@ -78,8 +78,8 @@ export default function AuthNavbar(props) {
           <Text>Reset Password</Text>
         </Button>
       </NavLink>
-      
-      <NavLink to="/auth/signup">
+
+      {/* <NavLink to="/auth/signup">
         <Button
           fontSize="sm"
           ms="0px"
@@ -94,7 +94,7 @@ export default function AuthNavbar(props) {
         >
           <Text>Sign Up</Text>
         </Button>
-      </NavLink>
+      </NavLink> */}
       <NavLink to="/auth/signin">
         <Button
           fontSize="sm"

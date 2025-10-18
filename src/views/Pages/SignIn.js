@@ -8,7 +8,10 @@ import {
   FormLabel,
   HStack,
   Input,
+  InputGroup,
+  InputRightElement,
   Icon,
+  IconButton,
   Link,
   Switch,
   Text,
@@ -17,8 +20,8 @@ import {
 } from "@chakra-ui/react";
 // Assets
 import signInImage from "assets/img/signInImage.png";
-import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
-import { useHistory } from "react-router-dom";
+import { FaApple, FaFacebook, FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useHistory, Link as RouterLink } from "react-router-dom";
 import authService from "services/authService";
 
 function SignIn() {
@@ -38,6 +41,7 @@ function SignIn() {
   });
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -212,19 +216,29 @@ function SignIn() {
               <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
                 Password
               </FormLabel>
-              <Input
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-                variant='auth'
-                fontSize='sm'
-                ms='4px'
-                type='password'
-                placeholder='Your password'
-                mb='24px'
-                size='lg'
-              />
+              <InputGroup size='lg' mb='24px'>
+                <Input
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+                  variant='auth'
+                  fontSize='sm'
+                  ms='4px'
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='Your password'
+                />
+                <InputRightElement width='3rem'>
+                  <IconButton
+                    h='1.75rem'
+                    size='sm'
+                    onClick={() => setShowPassword(!showPassword)}
+                    icon={<Icon as={showPassword ? FaEyeSlash : FaEye} />}
+                    variant='ghost'
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  />
+                </InputRightElement>
+              </InputGroup>
               <FormControl display='flex' alignItems='center' mb='24px'>
                 <Switch
                   id='remember-login'
@@ -255,7 +269,7 @@ function SignIn() {
               alignItems='center'
               maxW='100%'
               mt='0px'>
-              <Text color={textColor} fontWeight='medium' mb='10px'>
+              {/* <Text color={textColor} fontWeight='medium' mb='10px'>
                 Don't have an account?
                 <Link
                   color={titleColor}
@@ -265,14 +279,14 @@ function SignIn() {
                   fontWeight='bold'>
                   Sign Up
                 </Link>
-              </Text>
+              </Text> */}
               <Text color={textColor} fontWeight='medium'>
                 Forgot your password?
                 <Link
+                  as={RouterLink}
+                  to='/auth/reset-password'
                   color={titleColor}
-                  as='span'
                   ms='5px'
-                  href='#/auth/reset-password'
                   fontWeight='bold'>
                   Reset Password
                 </Link>
