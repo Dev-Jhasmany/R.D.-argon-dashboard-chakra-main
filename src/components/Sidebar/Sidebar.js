@@ -47,6 +47,13 @@ function Sidebar(props) {
   // Hook de permisos
   const { hasAccessToCategory, hasAccessToSubmenu, loading: permissionsLoading } = usePermissions();
 
+  // Chakra Color Mode - MOVER HOOKS AL INICIO
+  let activeBg = useColorModeValue("white", "navy.700");
+  let inactiveBg = useColorModeValue("white", "navy.700");
+  let activeColor = useColorModeValue("gray.700", "white");
+  let inactiveColor = useColorModeValue("gray.400", "gray.400");
+  let sidebarActiveShadow = "0px 7px 11px rgba(0, 0, 0, 0.04)";
+
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
     return location.pathname === routeName ? "active" : "";
@@ -55,12 +62,6 @@ function Sidebar(props) {
   // this function creates the links and collapses that appear in the sidebar (left menu)
   const { sidebarVariant } = props;
   const createLinks = (routes) => {
-    // Chakra Color Mode
-    let activeBg = useColorModeValue("white", "navy.700");
-    let inactiveBg = useColorModeValue("white", "navy.700");
-    let activeColor = useColorModeValue("gray.700", "white");
-    let inactiveColor = useColorModeValue("gray.400", "gray.400");
-    let sidebarActiveShadow = "0px 7px 11px rgba(0, 0, 0, 0.04)";
     return routes.map((prop, key) => {
       if (prop.redirect) {
         return null;

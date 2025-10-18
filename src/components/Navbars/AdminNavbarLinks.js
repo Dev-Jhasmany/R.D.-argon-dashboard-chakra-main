@@ -18,7 +18,6 @@ import avatar3 from "assets/img/avatars/avatar3.png";
 import { ArgonLogoDark, ArgonLogoLight, ChakraLogoDark, ChakraLogoLight, ProfileIcon, SettingsIcon } from "components/Icons/Icons";
 // Custom Components
 import { ItemContent } from "components/Menu/ItemContent";
-import { SearchBar } from "components/Navbars/SearchBar/SearchBar";
 import { SidebarResponsive } from "components/Sidebar/Sidebar";
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
@@ -66,7 +65,6 @@ export default function HeaderLinks(props) {
       w={{ sm: "100%", md: "auto" }}
       alignItems='center'
       flexDirection='row'>
-      <SearchBar me='18px' />
       <NavLink to='/admin/users/user-info'>
         <Button
           ms='0px'

@@ -85,16 +85,18 @@ function RegisterSale() {
   };
 
   const loadPromotions = async () => {
-    const result = await promotionService.getActivePromotions();
+    const result = await promotionService.getAllPromotions();
     if (result.success) {
-      // Filtrar solo las promociones que están activas y dentro del rango de fechas
-      const now = new Date();
-      const activePromos = result.data.filter((promo) => {
-        const startDate = new Date(promo.start_date);
-        const endDate = new Date(promo.end_date);
-        return promo.is_active && now >= startDate && now <= endDate;
+      // Mostrar todas las promociones registradas (sin filtrar por fechas)
+      setPromotions(result.data);
+    } else {
+      toast({
+        title: 'Error',
+        description: result.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
       });
-      setPromotions(activePromos);
     }
   };
 
@@ -255,6 +257,8 @@ function RegisterSale() {
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        custom_code: item.is_promotion ? item.product_code : undefined,
+        custom_name: item.is_promotion ? item.product_name : undefined,
       })),
     };
 

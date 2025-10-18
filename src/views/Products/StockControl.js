@@ -45,7 +45,9 @@ function StockControl() {
   // Estados
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [lowStockProducts, setLowStockProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [stockLimit, setStockLimit] = useState(10); // Límite de stock bajo por defecto
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -70,11 +72,34 @@ function StockControl() {
       const activeProducts = result.data.filter((p) => p.is_active);
       setProducts(activeProducts);
       setFilteredProducts(activeProducts);
+      calculateLowStock(activeProducts, stockLimit);
     } else {
       toast({
         title: 'Error',
         description: result.error,
         status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Calcular productos con stock bajo
+  const calculateLowStock = (productsList = products, limit = stockLimit) => {
+    const lowStock = productsList.filter(
+      (product) => parseFloat(product.stock) <= parseFloat(limit) && parseFloat(product.stock) > 0
+    );
+    setLowStockProducts(lowStock);
+  };
+
+  // Manejar cambio de límite de stock
+  const handleStockLimitChange = () => {
+    if (stockLimit && stockLimit > 0) {
+      calculateLowStock(products, stockLimit);
+      toast({
+        title: 'Límite actualizado',
+        description: `Se han calculado ${lowStockProducts.length} productos con stock bajo`,
+        status: 'info',
         duration: 3000,
         isClosable: true,
       });
@@ -220,7 +245,7 @@ function StockControl() {
     const stockNum = parseFloat(stock);
     if (stockNum === 0) {
       return <Badge colorScheme='red'>AGOTADO</Badge>;
-    } else if (stockNum < 10) {
+    } else if (stockNum <= parseFloat(stockLimit)) {
       return <Badge colorScheme='orange'>BAJO</Badge>;
     } else {
       return <Badge colorScheme='green'>NORMAL</Badge>;
@@ -243,33 +268,201 @@ function StockControl() {
     }
   };
 
+  // Componente reutilizable para tabla de productos
+  const ProductsTable = ({ productsList, emptyMessage }) => (
+    <Table variant='simple' color={textColor}>
+      <Thead>
+        <Tr>
+          <Th borderColor={borderColor} color='gray.400'>
+            Código
+          </Th>
+          <Th borderColor={borderColor} color='gray.400'>
+            Producto
+          </Th>
+          <Th borderColor={borderColor} color='gray.400'>
+            Categoría
+          </Th>
+          <Th borderColor={borderColor} color='gray.400'>
+            Precio
+          </Th>
+          <Th borderColor={borderColor} color='gray.400'>
+            Stock Actual
+          </Th>
+          <Th borderColor={borderColor} color='gray.400'>
+            Estado
+          </Th>
+          <Th borderColor={borderColor} color='gray.400'>
+            Acciones
+          </Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {productsList.length === 0 ? (
+          <Tr>
+            <Td colSpan={7} textAlign='center'>
+              <Box p={4} bg='blue.50' borderRadius='md'>
+                <Text color='blue.800'>{emptyMessage}</Text>
+              </Box>
+            </Td>
+          </Tr>
+        ) : (
+          productsList.map((product) => (
+            <Tr key={product.id}>
+              <Td borderColor={borderColor}>
+                <Text fontSize='sm' fontWeight='bold'>
+                  {product.code}
+                </Text>
+              </Td>
+              <Td borderColor={borderColor}>
+                <Text fontSize='sm' fontWeight='bold'>
+                  {product.name}
+                </Text>
+                {product.description && (
+                  <Text fontSize='xs' color='gray.600'>
+                    {product.description}
+                  </Text>
+                )}
+              </Td>
+              <Td borderColor={borderColor}>
+                <Text fontSize='sm'>{product.category?.name}</Text>
+              </Td>
+              <Td borderColor={borderColor}>
+                <Text fontSize='sm' fontWeight='bold'>
+                  Bs. {product.price}
+                </Text>
+              </Td>
+              <Td borderColor={borderColor}>
+                <Text fontSize='lg' fontWeight='bold' color='blue.500'>
+                  {product.stock}
+                </Text>
+              </Td>
+              <Td borderColor={borderColor}>{getStockStatus(product.stock)}</Td>
+              <Td borderColor={borderColor}>
+                <Flex gap={2}>
+                  <Tooltip label='Entrada de Stock'>
+                    <IconButton
+                      size='sm'
+                      colorScheme='green'
+                      icon={<AddIcon />}
+                      onClick={() => openMovementModal(product, 'entrada')}
+                    />
+                  </Tooltip>
+                  <Tooltip label='Salida de Stock'>
+                    <IconButton
+                      size='sm'
+                      colorScheme='red'
+                      icon={<MinusIcon />}
+                      onClick={() => openMovementModal(product, 'salida')}
+                    />
+                  </Tooltip>
+                  <Tooltip label='Ver Historial'>
+                    <IconButton
+                      size='sm'
+                      colorScheme='blue'
+                      variant='outline'
+                      icon={<ViewIcon />}
+                      onClick={() => openHistoryModal(product)}
+                    />
+                  </Tooltip>
+                </Flex>
+              </Td>
+            </Tr>
+          ))
+        )}
+      </Tbody>
+    </Table>
+  );
+
   return (
-    <Flex direction='column' pt={{ base: '120px', md: '75px' }}>
-      {/* Tabla de productos con control de stock */}
-      <Card overflowX={{ sm: 'scroll', xl: 'hidden' }}>
+    <Flex direction='column' pt={{ base: '120px', md: '75px' }} gap={6}>
+      {/* Card para configurar límite de stock bajo */}
+      <Card>
         <CardHeader p='12px 5px'>
-          <Flex justify='space-between' align='center' wrap='wrap' gap={4}>
-            <Text fontSize='xl' color={textColor} fontWeight='bold'>
-              Control de Stock de Productos
-            </Text>
-            <Box minW={{ base: '100%', md: '300px' }}>
+          <Text fontSize='lg' color={textColor} fontWeight='bold'>
+            Configuración de Stock Bajo
+          </Text>
+        </CardHeader>
+        <CardBody>
+          <Flex gap={4} align='end' flexWrap='wrap'>
+            <FormControl maxW='200px'>
+              <FormLabel fontSize='sm'>Límite de Stock Bajo</FormLabel>
               <Input
-                placeholder='Buscar por código, nombre o categoría...'
-                value={searchTerm}
-                onChange={handleSearchChange}
-                size='md'
+                type='number'
+                value={stockLimit}
+                onChange={(e) => setStockLimit(e.target.value)}
+                min='1'
+                step='1'
                 bg={inputBg}
                 color={inputTextColor}
               />
-            </Box>
+            </FormControl>
+            <Button colorScheme='blue' onClick={handleStockLimitChange}>
+              Calcular Stock Bajo
+            </Button>
+            <Badge colorScheme='orange' p='8px 16px' borderRadius='8px' fontSize='md'>
+              {lowStockProducts.length} productos con stock bajo
+            </Badge>
+          </Flex>
+        </CardBody>
+      </Card>
+
+      {/* Tabla de productos con stock bajo */}
+      <Card overflowX={{ sm: 'scroll', xl: 'hidden' }}>
+        <CardHeader p='12px 5px'>
+          <Flex justify='space-between' align='center' wrap='wrap' gap={4}>
+            <Text fontSize='xl' color='orange.600' fontWeight='bold'>
+              ⚠️ Productos con Stock Bajo (≤ {stockLimit})
+            </Text>
+            <Badge colorScheme='orange' p='6px 12px' borderRadius='8px'>
+              {lowStockProducts.length} productos
+            </Badge>
           </Flex>
         </CardHeader>
         <CardBody>
           {products.length === 0 ? (
             <Box p={4} bg='orange.100' borderRadius='md'>
               <Text color='orange.800' fontWeight='bold'>
-                ⚠️ No hay productos registrados. Por favor registre productos
-                primero.
+                ⚠️ No hay productos registrados. Por favor registre productos primero.
+              </Text>
+            </Box>
+          ) : (
+            <ProductsTable
+              productsList={lowStockProducts}
+              emptyMessage={`No hay productos con stock menor o igual a ${stockLimit}`}
+            />
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Tabla de todos los productos */}
+      <Card overflowX={{ sm: 'scroll', xl: 'hidden' }}>
+        <CardHeader p='12px 5px'>
+          <Flex justify='space-between' align='center' wrap='wrap' gap={4}>
+            <Text fontSize='xl' color={textColor} fontWeight='bold'>
+              Todos los Productos - Control de Stock
+            </Text>
+            <Flex gap={3} align='center' flexWrap='wrap'>
+              <Box minW={{ base: '100%', md: '300px' }}>
+                <Input
+                  placeholder='Buscar por código, nombre o categoría...'
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  size='md'
+                  bg={inputBg}
+                  color={inputTextColor}
+                />
+              </Box>
+              <Badge colorScheme='blue' p='6px 12px' borderRadius='8px'>
+                {filteredProducts.length} productos
+              </Badge>
+            </Flex>
+          </Flex>
+        </CardHeader>
+        <CardBody>
+          {products.length === 0 ? (
+            <Box p={4} bg='orange.100' borderRadius='md'>
+              <Text color='orange.800' fontWeight='bold'>
+                ⚠️ No hay productos registrados. Por favor registre productos primero.
               </Text>
             </Box>
           ) : filteredProducts.length === 0 ? (
@@ -279,99 +472,10 @@ function StockControl() {
               </Text>
             </Box>
           ) : (
-            <Table variant='simple' color={textColor}>
-              <Thead>
-                <Tr>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Código
-                  </Th>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Producto
-                  </Th>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Categoría
-                  </Th>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Precio
-                  </Th>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Stock Actual
-                  </Th>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Estado
-                  </Th>
-                  <Th borderColor={borderColor} color='gray.400'>
-                    Acciones
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredProducts.map((product) => (
-                  <Tr key={product.id}>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm' fontWeight='bold'>
-                        {product.code}
-                      </Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm' fontWeight='bold'>
-                        {product.name}
-                      </Text>
-                      {product.description && (
-                        <Text fontSize='xs' color='gray.600'>
-                          {product.description}
-                        </Text>
-                      )}
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm'>{product.category?.name}</Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm' fontWeight='bold'>
-                        Bs. {product.price}
-                      </Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='lg' fontWeight='bold' color='blue.500'>
-                        {product.stock}
-                      </Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      {getStockStatus(product.stock)}
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Flex gap={2}>
-                        <Tooltip label='Entrada de Stock'>
-                          <IconButton
-                            size='sm'
-                            colorScheme='green'
-                            icon={<AddIcon />}
-                            onClick={() => openMovementModal(product, 'entrada')}
-                          />
-                        </Tooltip>
-                        <Tooltip label='Salida de Stock'>
-                          <IconButton
-                            size='sm'
-                            colorScheme='red'
-                            icon={<MinusIcon />}
-                            onClick={() => openMovementModal(product, 'salida')}
-                          />
-                        </Tooltip>
-                        <Tooltip label='Ver Historial'>
-                          <IconButton
-                            size='sm'
-                            colorScheme='blue'
-                            variant='outline'
-                            icon={<ViewIcon />}
-                            onClick={() => openHistoryModal(product)}
-                          />
-                        </Tooltip>
-                      </Flex>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
+            <ProductsTable
+              productsList={filteredProducts}
+              emptyMessage='No hay productos disponibles'
+            />
           )}
         </CardBody>
       </Card>

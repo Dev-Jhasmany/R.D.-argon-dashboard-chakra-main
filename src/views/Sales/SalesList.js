@@ -326,9 +326,9 @@ function SalesList() {
                     <Tbody>
                       {selectedSale.details.map((detail) => (
                         <Tr key={detail.id}>
-                          <Td>{detail.product?.code}</Td>
-                          <Td>{detail.product?.name}</Td>
-                          <Td>{detail.quantity}</Td>
+                          <Td>{detail.custom_code || detail.product?.code}</Td>
+                          <Td>{detail.custom_name || detail.product?.name}</Td>
+                          <Td>{parseFloat(detail.quantity).toFixed(2)}</Td>
                           <Td>Bs. {parseFloat(detail.unit_price).toFixed(2)}</Td>
                           <Td>Bs. {parseFloat(detail.subtotal).toFixed(2)}</Td>
                         </Tr>

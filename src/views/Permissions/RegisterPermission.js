@@ -40,7 +40,7 @@ const MENU_CATEGORIES = [
   {
     id: "products",
     name: "Productos e Inventario",
-    submenus: ["Registrar Producto", "Listar Productos", "Entradas de Insumos", "Controlar Stock"]
+    submenus: ["Registrar Producto", "Listar Productos", "Registrar Categorías", "Entradas de Insumos", "Controlar Stock"]
   },
   {
     id: "promotions",
@@ -53,9 +53,9 @@ const MENU_CATEGORIES = [
     submenus: ["Registrar Proveedor", "Listar Proveedores"]
   },
   {
-    id: "payments",
-    name: "Pagos",
-    submenus: ["Registrar Pago", "Métodos de Pago"]
+    id: "sales",
+    name: "Gestión de Ventas",
+    submenus: ["Registrar Venta", "Listar Ventas"]
   },
 ];
 

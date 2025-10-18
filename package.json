@@ -17,7 +17,10 @@
 		"ajv": "^8.17.1",
 		"axios": "^1.12.2",
 		"classnames": "2.3.1",
+		"file-saver": "^2.0.5",
 		"framer-motion": "4.1.17",
+		"jspdf": "^3.0.3",
+		"jspdf-autotable": "^5.0.2",
 		"match-sorter": "6.3.0",
 		"moment": "2.29.1",
 		"nouislider": "15.0.0",
@@ -38,7 +41,8 @@
 		"react-tagsinput": "3.19.0",
 		"sass": "^1.56.1",
 		"stylis": "^4.0.10",
-		"stylis-plugin-rtl": "^2.1.1"
+		"stylis-plugin-rtl": "^2.1.1",
+		"xlsx": "^0.18.5"
 	},
 	"resolutions": {
 		"react-error-overlay": "6.0.9"
