@@ -14,6 +14,9 @@ import {
   Center,
   Spinner,
   Box,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
@@ -371,6 +374,14 @@ function RegisterPromotion() {
             </CardHeader>
             <CardBody>
               <Flex direction='column' w='100%'>
+                {products.length === 0 && (
+                  <Alert status='warning' mb='20px' borderRadius='15px'>
+                    <AlertIcon />
+                    <AlertDescription>
+                      No puede registrar promociones sin tener al menos un producto activo registrado.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <FormControl isRequired mb='20px'>
                   <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
                     Nombre de la Promoción
@@ -482,6 +493,7 @@ function RegisterPromotion() {
                 <Button
                   onClick={handleDiscountSubmit}
                   isLoading={submittingDiscount}
+                  isDisabled={products.length === 0}
                   variant='dark'
                   fontSize='sm'
                   fontWeight='bold'
@@ -503,6 +515,14 @@ function RegisterPromotion() {
             </CardHeader>
             <CardBody>
               <Flex direction='column' w='100%'>
+                {products.length === 0 && (
+                  <Alert status='warning' mb='20px' borderRadius='15px'>
+                    <AlertIcon />
+                    <AlertDescription>
+                      No puede registrar promociones sin tener al menos un producto activo registrado.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <FormControl isRequired mb='20px'>
                   <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
                     Nombre del Combo
@@ -645,6 +665,7 @@ function RegisterPromotion() {
                 <Button
                   onClick={handleComboSubmit}
                   isLoading={submittingCombo}
+                  isDisabled={products.length === 0}
                   variant='dark'
                   fontSize='sm'
                   fontWeight='bold'

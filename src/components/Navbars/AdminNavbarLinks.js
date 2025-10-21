@@ -38,16 +38,38 @@ export default function HeaderLinks(props) {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    // Obtener usuario del localStorage
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setCurrentUser(user);
-      } catch (error) {
-        console.error('Error parsing user from localStorage:', error);
+    // Función para cargar el usuario
+    const loadUser = () => {
+      const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setCurrentUser(user);
+        } catch (error) {
+          console.error('Error parsing user from localStorage:', error);
+        }
       }
-    }
+    };
+
+    // Cargar usuario inicialmente
+    loadUser();
+
+    // Escuchar cambios en el storage (cuando se hace login en otra pestaña o después del login)
+    const handleStorageChange = (e) => {
+      if (e.key === 'user') {
+        loadUser();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Intervalo para verificar cambios (fallback para cuando storage event no se dispara)
+    const interval = setInterval(loadUser, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   // Chakra Color Mode

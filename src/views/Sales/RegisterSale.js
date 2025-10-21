@@ -28,6 +28,9 @@ import {
   StatLabel,
   StatNumber,
   Grid,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from '@chakra-ui/react';
 import { DeleteIcon, AddIcon } from '@chakra-ui/icons';
 import { QRCodeSVG } from 'qrcode.react';
@@ -54,6 +57,11 @@ function RegisterSale() {
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [quantity, setQuantity] = useState('');
   const [cart, setCart] = useState([]);
+  const [hasProducts, setHasProducts] = useState(false);
+  const [salesHistory, setSalesHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [loadingInventory, setLoadingInventory] = useState(false);
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -66,6 +74,8 @@ function RegisterSale() {
   useEffect(() => {
     loadProducts();
     loadPromotions();
+    loadSalesHistory();
+    loadInventory();
   }, []);
 
   const loadProducts = async () => {
@@ -73,6 +83,8 @@ function RegisterSale() {
     if (result.success) {
       const activeProducts = result.data.filter((p) => p.is_active && parseFloat(p.stock) > 0);
       setProducts(activeProducts);
+      // Verificar si hay al menos un producto ACTIVO con stock
+      setHasProducts(activeProducts.length > 0);
     } else {
       toast({
         title: 'Error',
@@ -100,12 +112,66 @@ function RegisterSale() {
     }
   };
 
+  const loadSalesHistory = async () => {
+    setLoadingHistory(true);
+    const result = await salesService.getAllSales();
+    if (result.success) {
+      // Ordenar por fecha más reciente primero y limitar a las últimas 10 ventas
+      const sortedSales = result.data
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 10);
+      setSalesHistory(sortedSales);
+    } else {
+      toast({
+        title: 'Error al cargar historial',
+        description: result.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+    setLoadingHistory(false);
+  };
+
+  const loadInventory = async () => {
+    setLoadingInventory(true);
+    const result = await productService.getAllProducts();
+    if (result.success) {
+      // Ordenar por stock ascendente (productos con menos stock primero)
+      const sortedProducts = result.data
+        .filter((p) => p.is_active) // Solo productos activos
+        .sort((a, b) => parseFloat(a.stock) - parseFloat(b.stock));
+      setAllProducts(sortedProducts);
+    } else {
+      toast({
+        title: 'Error al cargar inventario',
+        description: result.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+    setLoadingInventory(false);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   const openProductModal = () => {
+    // Validar que haya productos activos con stock
+    if (!hasProducts) {
+      toast({
+        title: 'No hay productos disponibles',
+        description: 'Debe tener al menos un producto activo con stock disponible para poder realizar ventas',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setSelectedProduct(null);
     setSelectedPromotion(null);
     setQuantity('');
@@ -278,8 +344,9 @@ function RegisterSale() {
           isClosable: true,
         });
 
-        // Resetear formulario
+        // Resetear formulario y recargar historial
         resetForm();
+        loadSalesHistory();
       }
     } else {
       toast({
@@ -302,12 +369,25 @@ function RegisterSale() {
     });
     setCart([]);
     loadProducts();
+    loadInventory();
   };
 
   const closeQRModal = () => {
+    // Mostrar mensaje de confirmación antes de cerrar
+    if (saleInfo) {
+      toast({
+        title: 'Venta registrada',
+        description: `Venta ${saleInfo.sale_number} registrada exitosamente por QR`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+
     setIsQRModalOpen(false);
     setSaleInfo(null);
     resetForm();
+    loadSalesHistory();
   };
 
   return (
@@ -331,6 +411,15 @@ function RegisterSale() {
               </Flex>
             </CardHeader>
             <CardBody>
+              {!hasProducts && (
+                <Alert status='warning' mb='20px' borderRadius='15px'>
+                  <AlertIcon />
+                  <AlertDescription>
+                    No puede realizar ventas sin tener productos activos con stock disponible.
+                    Por favor, asegúrese de tener al menos un producto activo con stock.
+                  </AlertDescription>
+                </Alert>
+              )}
               {cart.length === 0 ? (
                 <Box p={4} bg='blue.50' borderRadius='md'>
                   <Text color='blue.800'>
@@ -495,6 +584,193 @@ function RegisterSale() {
           </Flex>
         </Grid>
       </form>
+
+      {/* Historial de Ventas */}
+      <Card mt='22px'>
+        <CardHeader p='12px 5px'>
+          <Text fontSize='xl' color={textColor} fontWeight='bold'>
+            Historial de Ventas (Últimas 10)
+          </Text>
+        </CardHeader>
+        <CardBody>
+          {loadingHistory ? (
+            <Box p={4} textAlign='center'>
+              <Text color='gray.500'>Cargando historial...</Text>
+            </Box>
+          ) : salesHistory.length === 0 ? (
+            <Box p={4} bg='gray.50' borderRadius='md'>
+              <Text color='gray.600'>No hay ventas registradas aún.</Text>
+            </Box>
+          ) : (
+            <Box overflowX='auto'>
+              <Table variant='simple' size='sm' color={textColor}>
+                <Thead>
+                  <Tr>
+                    <Th borderColor={borderColor}>N° Venta</Th>
+                    <Th borderColor={borderColor}>Fecha</Th>
+                    <Th borderColor={borderColor}>Cliente</Th>
+                    <Th borderColor={borderColor}>Total (Bs.)</Th>
+                    <Th borderColor={borderColor}>Método de Pago</Th>
+                    <Th borderColor={borderColor}>Estado</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {salesHistory.map((sale) => (
+                    <Tr key={sale.id}>
+                      <Td borderColor={borderColor} fontWeight='bold'>
+                        {sale.sale_number}
+                      </Td>
+                      <Td borderColor={borderColor}>
+                        {new Date(sale.created_at).toLocaleString('es-BO', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </Td>
+                      <Td borderColor={borderColor}>
+                        {sale.customer_name || 'Sin nombre'}
+                      </Td>
+                      <Td borderColor={borderColor} fontWeight='semibold'>
+                        Bs. {parseFloat(sale.total).toFixed(2)}
+                      </Td>
+                      <Td borderColor={borderColor}>
+                        {sale.payment_method === 'efectivo' && 'Efectivo'}
+                        {sale.payment_method === 'qr' && 'QR'}
+                        {sale.payment_method === 'tarjeta' && 'Tarjeta'}
+                        {sale.payment_method === 'transferencia' && 'Transferencia'}
+                      </Td>
+                      <Td borderColor={borderColor}>
+                        {sale.is_active ? (
+                          <Box
+                            as='span'
+                            px={2}
+                            py={1}
+                            borderRadius='md'
+                            fontSize='xs'
+                            fontWeight='bold'
+                            bg='green.100'
+                            color='green.700'>
+                            Activa
+                          </Box>
+                        ) : (
+                          <Box
+                            as='span'
+                            px={2}
+                            py={1}
+                            borderRadius='md'
+                            fontSize='xs'
+                            fontWeight='bold'
+                            bg='red.100'
+                            color='red.700'>
+                            Anulada
+                          </Box>
+                        )}
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Estado del Inventario */}
+      <Card mt='22px'>
+        <CardHeader p='12px 5px'>
+          <Text fontSize='xl' color={textColor} fontWeight='bold'>
+            Estado del Inventario
+          </Text>
+        </CardHeader>
+        <CardBody>
+          {loadingInventory ? (
+            <Box p={4} textAlign='center'>
+              <Text color='gray.500'>Cargando inventario...</Text>
+            </Box>
+          ) : allProducts.length === 0 ? (
+            <Box p={4} bg='gray.50' borderRadius='md'>
+              <Text color='gray.600'>No hay productos activos registrados.</Text>
+            </Box>
+          ) : (
+            <Box overflowX='auto'>
+              <Table variant='simple' size='sm' color={textColor}>
+                <Thead>
+                  <Tr>
+                    <Th borderColor={borderColor}>Código</Th>
+                    <Th borderColor={borderColor}>Producto</Th>
+                    <Th borderColor={borderColor}>Stock Actual</Th>
+                    <Th borderColor={borderColor}>Unidad</Th>
+                    <Th borderColor={borderColor}>Precio (Bs.)</Th>
+                    <Th borderColor={borderColor}>Estado</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {allProducts.map((product) => {
+                    const stock = parseFloat(product.stock);
+                    let stockStatus = 'normal';
+                    let stockColor = 'green';
+                    let stockBg = 'green.100';
+                    let stockText = 'Disponible';
+
+                    // Determinar el estado del stock
+                    if (stock === 0) {
+                      stockStatus = 'out';
+                      stockColor = 'red.700';
+                      stockBg = 'red.100';
+                      stockText = 'Agotado';
+                    } else if (stock <= 5) {
+                      stockStatus = 'low';
+                      stockColor = 'orange.700';
+                      stockBg = 'orange.100';
+                      stockText = 'Stock Bajo';
+                    } else if (stock <= 10) {
+                      stockStatus = 'medium';
+                      stockColor = 'yellow.700';
+                      stockBg = 'yellow.100';
+                      stockText = 'Por Agotarse';
+                    }
+
+                    return (
+                      <Tr key={product.id} bg={stock === 0 ? 'red.50' : stock <= 5 ? 'orange.50' : 'white'}>
+                        <Td borderColor={borderColor} fontWeight='semibold'>
+                          {product.code}
+                        </Td>
+                        <Td borderColor={borderColor}>
+                          {product.name}
+                        </Td>
+                        <Td borderColor={borderColor} fontWeight='bold' color={stockColor}>
+                          {stock.toFixed(2)}
+                        </Td>
+                        <Td borderColor={borderColor}>
+                          {product.unit}
+                        </Td>
+                        <Td borderColor={borderColor}>
+                          Bs. {parseFloat(product.price).toFixed(2)}
+                        </Td>
+                        <Td borderColor={borderColor}>
+                          <Box
+                            as='span'
+                            px={2}
+                            py={1}
+                            borderRadius='md'
+                            fontSize='xs'
+                            fontWeight='bold'
+                            bg={stockBg}
+                            color={stockColor}>
+                            {stockText}
+                          </Box>
+                        </Td>
+                      </Tr>
+                    );
+                  })}
+                </Tbody>
+              </Table>
+            </Box>
+          )}
+        </CardBody>
+      </Card>
 
       {/* Modal para agregar producto o promoción */}
       <Modal isOpen={isProductModalOpen} onClose={closeProductModal} size='lg'>

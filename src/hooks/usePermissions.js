@@ -8,6 +8,7 @@ const CATEGORY_MAP = {
   "Productos e Inventario": "products",
   "Promociones": "promotions",
   "Proveedores": "suppliers",
+  "Gestión de Ventas": "sales",
   "Pagos": "payments",
   "Configuración": "settings"
 };
@@ -26,8 +27,8 @@ export const usePermissions = () => {
 
   const loadUserPermissions = async () => {
     try {
-      // Obtener información del usuario desde localStorage
-      const userStr = localStorage.getItem('user');
+      // Obtener información del usuario desde localStorage o sessionStorage
+      const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
       if (!userStr) {
         setLoading(false);
         return;

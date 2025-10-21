@@ -75,7 +75,7 @@ export default function AuthNavbar(props) {
             <PersonIcon color={navbarIcon} w="12px" h="12px" me="0px" />
           }
         >
-          <Text>Reset Password</Text>
+          <Text>Restablecer contraseña</Text>
         </Button>
       </NavLink>
 
@@ -107,7 +107,7 @@ export default function AuthNavbar(props) {
             <DocumentIcon color={navbarIcon} w="12px" h="12px" me="0px" />
           }
         >
-          <Text>Sign In</Text>
+          <Text>Iniciar sesión</Text>
         </Button>
       </NavLink>
     </HStack>

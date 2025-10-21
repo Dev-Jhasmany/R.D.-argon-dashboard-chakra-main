@@ -68,6 +68,7 @@ function ListPermissions() {
     { value: 'products', label: 'Productos e Inventario' },
     { value: 'promotions', label: 'Promociones' },
     { value: 'suppliers', label: 'Proveedores' },
+    { value: 'sales', label: 'Gestión de Ventas' },
     { value: 'payments', label: 'Pagos' },
     { value: 'settings', label: 'Configuración' },
   ];
@@ -79,6 +80,7 @@ function ListPermissions() {
     products: ['list', 'create', 'edit', 'delete', 'stock', 'categories'],
     promotions: ['list', 'create', 'edit', 'delete', 'active'],
     suppliers: ['list', 'create', 'edit', 'delete', 'view'],
+    sales: ['list', 'create', 'view', 'reports'],
     payments: ['list', 'create', 'view', 'reports'],
     settings: ['general', 'users', 'system', 'security'],
   };
@@ -245,6 +247,7 @@ function ListPermissions() {
       products: 'Productos e Inventario',
       promotions: 'Promociones',
       suppliers: 'Proveedores',
+      sales: 'Gestión de Ventas',
       payments: 'Pagos',
       settings: 'Configuración'
     };
@@ -258,6 +261,7 @@ function ListPermissions() {
       products: 'green',
       promotions: 'orange',
       suppliers: 'cyan',
+      sales: 'teal',
       payments: 'pink',
       settings: 'gray'
     };

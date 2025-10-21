@@ -110,10 +110,10 @@ function ListProducts() {
       loadProducts();
     } else {
       toast({
-        title: "Error",
+        title: "No se puede eliminar",
         description: result.error,
-        status: "error",
-        duration: 3000,
+        status: "warning",
+        duration: 8000,
         isClosable: true,
       });
     }
@@ -406,7 +406,6 @@ function ListProducts() {
                   <Th borderColor={borderColor} color='gray.400'>Precio</Th>
                   <Th borderColor={borderColor} color='gray.400'>Stock</Th>
                   <Th borderColor={borderColor} color='gray.400'>Estado</Th>
-                  <Th borderColor={borderColor} color='gray.400'>Acciones</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -436,25 +435,6 @@ function ListProducts() {
                           borderRadius='8px'>
                           {stockStatus.label}
                         </Badge>
-                      </Td>
-                      <Td borderColor={borderColor}>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          colorScheme='blue'
-                          me='5px'
-                          onClick={() => openEditDialog(product)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          colorScheme='red'
-                          onClick={() => openDeleteDialog(product.id)}
-                        >
-                          Eliminar
-                        </Button>
                       </Td>
                     </Tr>
                   );

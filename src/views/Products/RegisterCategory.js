@@ -18,6 +18,9 @@ import {
   Badge,
   Spinner,
   Center,
+  Alert,
+  AlertIcon,
+  AlertDescription,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -36,6 +39,7 @@ import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
 import categoryService from "services/categoryService";
+import supplyEntryService from "services/supplyEntryService";
 
 function RegisterCategory() {
   const textColor = useColorModeValue("gray.700", "white");
@@ -54,11 +58,22 @@ function RegisterCategory() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editCategory, setEditCategory] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [hasSupplyEntries, setHasSupplyEntries] = useState(false);
   const cancelRef = React.useRef();
 
   useEffect(() => {
     loadCategories();
+    checkSupplyEntries();
   }, []);
+
+  const checkSupplyEntries = async () => {
+    const result = await supplyEntryService.getAllSupplyEntries();
+    if (result.success && result.data && result.data.length > 0) {
+      setHasSupplyEntries(true);
+    } else {
+      setHasSupplyEntries(false);
+    }
+  };
 
   const loadCategories = async () => {
     setLoadingList(true);
@@ -92,6 +107,18 @@ function RegisterCategory() {
         description: "El nombre de la categoría es requerido",
         status: "error",
         duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Validar que existan entradas de insumos
+    if (!hasSupplyEntries) {
+      toast({
+        title: "No se puede registrar categoría",
+        description: "Debe registrar al menos una Entrada de Insumos antes de crear categorías",
+        status: "warning",
+        duration: 5000,
         isClosable: true,
       });
       return;
@@ -242,6 +269,15 @@ function RegisterCategory() {
           </Text>
         </CardHeader>
         <CardBody>
+          {!hasSupplyEntries && (
+            <Alert status='warning' mb='20px' borderRadius='15px'>
+              <AlertIcon />
+              <AlertDescription>
+                No puede registrar categorías sin tener al menos una Entrada de Insumos registrada.
+                Por favor, registre primero una Entrada de Insumos.
+              </AlertDescription>
+            </Alert>
+          )}
           <Flex direction='column' w='100%'>
             <FormControl mb='24px' isRequired>
               <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>

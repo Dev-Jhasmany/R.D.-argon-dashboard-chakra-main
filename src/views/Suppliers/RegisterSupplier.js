@@ -110,7 +110,7 @@ function RegisterSupplier() {
             <Grid templateColumns='repeat(2, 1fr)' gap={6} mb='24px'>
               <FormControl isRequired>
                 <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-                  Nombre del Proveedor
+                  Nombre de la Empresa
                 </FormLabel>
                 <Input
                   name="company_name"

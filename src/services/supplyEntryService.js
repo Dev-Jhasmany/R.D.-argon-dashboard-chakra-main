@@ -14,6 +14,11 @@ const supplyEntryService = {
     }
   },
 
+  // Alias para getAllEntries
+  getAllSupplyEntries: async () => {
+    return supplyEntryService.getAllEntries();
+  },
+
   // Obtener una entrada por ID
   getEntryById: async (id) => {
     try {

@@ -139,9 +139,9 @@ function SignIn() {
               fontWeight='bold'
               textAlign='center'
               mb='22px'>
-              Sign In With
+              Iniciar sesión
             </Text>
-            <HStack spacing='15px' justify='center' mb='22px'>
+            {/*<HStack spacing='15px' justify='center' mb='22px'>
               <Flex
                 justify='center'
                 align='center'
@@ -202,20 +202,21 @@ function SignIn() {
                   />
                 </Link>
               </Flex>
-            </HStack>
-            <Text
+            </HStack>*/}
+            {/*<Text
               fontSize='lg'
               color='gray.400'
               fontWeight='bold'
               textAlign='center'
               mb='22px'>
               or
-            </Text>
+            </Text>*/}
             <FormControl>
-              <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-                Email
+              <FormLabel ms='4px' fontSize='sm' fontWeight='normal' htmlFor='email-input'>
+                Correo electrónico
               </FormLabel>
               <Input
+                id='email-input'
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
@@ -223,15 +224,16 @@ function SignIn() {
                 fontSize='sm'
                 ms='4px'
                 type='email'
-                placeholder='Your email address'
+                placeholder='Su dirección de correo electrónico'
                 mb='24px'
                 size='lg'
               />
-              <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-                Password
+              <FormLabel ms='4px' fontSize='sm' fontWeight='normal' htmlFor='password-input'>
+                Contraseña
               </FormLabel>
               <InputGroup size='lg' mb='24px'>
                 <Input
+                  id='password-input'
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -240,7 +242,7 @@ function SignIn() {
                   fontSize='sm'
                   ms='4px'
                   type={showPassword ? 'text' : 'password'}
-                  placeholder='Your password'
+                  placeholder='Tu contraseña'
                 />
                 <InputRightElement width='3rem'>
                   <IconButton
@@ -262,7 +264,7 @@ function SignIn() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <FormLabel htmlFor='remember-login' mb='0' fontWeight='normal'>
-                  Remember me
+                  Acuérdate de mí
                 </FormLabel>
               </FormControl>
               <Button
@@ -274,7 +276,7 @@ function SignIn() {
                 w='100%'
                 h='45'
                 mb='24px'>
-                SIGN IN
+                INICIAR SESIÓN
               </Button>
             </FormControl>
             <Flex
@@ -295,14 +297,14 @@ function SignIn() {
                 </Link>
               </Text> */}
               <Text color={textColor} fontWeight='medium'>
-                Forgot your password?
+                ¿Olvidaste tu contraseña?
                 <Link
                   as={RouterLink}
                   to='/auth/reset-password'
                   color={titleColor}
                   ms='5px'
                   fontWeight='bold'>
-                  Reset Password
+                  Restablecer contraseña
                 </Link>
               </Text>
             </Flex>

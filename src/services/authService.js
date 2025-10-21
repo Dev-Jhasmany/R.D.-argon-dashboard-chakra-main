@@ -7,12 +7,16 @@ const authService = {
       const response = await api.post('/auth/login', { email, password });
       const { access_token, user } = response.data;
 
-      // Determinar el storage a usar basado en rememberMe
-      const storage = rememberMe ? localStorage : sessionStorage;
+      // Siempre guardar en localStorage para que los permisos funcionen correctamente
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(user));
 
-      // Guardar token y usuario
-      storage.setItem('token', access_token);
-      storage.setItem('user', JSON.stringify(user));
+      // Si rememberMe NO está activado, también guardar en sessionStorage
+      // para que se limpie al cerrar el navegador
+      if (!rememberMe) {
+        sessionStorage.setItem('token', access_token);
+        sessionStorage.setItem('user', JSON.stringify(user));
+      }
 
       // Si rememberMe está activado, guardar las credenciales
       if (rememberMe) {

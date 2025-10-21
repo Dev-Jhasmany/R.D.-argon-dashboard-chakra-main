@@ -214,7 +214,7 @@ function ResetPassword() {
               // Paso 1: Solicitar token
               <FormControl>
                 <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-                  Email
+                  Correo electrónico
                 </FormLabel>
                 <Input
                   value={email}
@@ -223,7 +223,7 @@ function ResetPassword() {
                   fontSize='sm'
                   ms='4px'
                   type='email'
-                  placeholder='Your email address'
+                  placeholder='Su dirección de correo electrónico'
                   mb='24px'
                   size='lg'
                 />
@@ -315,14 +315,14 @@ function ResetPassword() {
               maxW='100%'
               mt='0px'>
               <Text color={textColor} fontWeight='medium'>
-                Remember your password?
+                ¿Recuerdas tu contraseña?
                 <Link
                   as={RouterLink}
                   to='/auth/signin'
                   color={titleColor}
                   ms='5px'
                   fontWeight='bold'>
-                  Sign In
+                  Iniciar sesión
                 </Link>
               </Text>
             </Flex>
