@@ -1,6 +1,46 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from 'services/authService';
 
+/**
+ * CONTEXTO DE AUTENTICACIÓN
+ *
+ * Este contexto proporciona gestión de estado global para la autenticación del usuario.
+ *
+ * FLUJO DE SECUENCIA TÍPICO:
+ * App Load → AuthProvider.useEffect() → authService.validateToken()
+ *                    ↓
+ *          ¿Token válido? → Sí → setUser() + setIsAuthenticated(true)
+ *                         → No → authService.logout()
+ *
+ * RESPONSABILIDADES PRINCIPALES:
+ * - Gestionar estado de autenticación del usuario (user, isAuthenticated, loading)
+ * - Validar token JWT al cargar la aplicación
+ * - Proporcionar funciones de autenticación (login, logout, register)
+ * - Gestionar cambio de contraseña
+ * - Actualizar información del usuario
+ * - Persistir datos en localStorage/sessionStorage
+ *
+ * ESTADO GESTIONADO:
+ * - user: Objeto con datos del usuario autenticado (null si no autenticado)
+ * - loading: Boolean que indica si está validando token inicial
+ * - isAuthenticated: Boolean que indica si el usuario está autenticado
+ *
+ * FUNCIONES PROPORCIONADAS:
+ * - login(email, password): Iniciar sesión
+ * - register(userData): Registrar nuevo usuario
+ * - logout(): Cerrar sesión y limpiar storage
+ * - changePassword(oldPassword, newPassword): Cambiar contraseña
+ * - updateUser(userData): Actualizar datos del usuario en contexto y storage
+ *
+ * USO EN COMPONENTES:
+ * ```
+ * const { user, isAuthenticated, login, logout } = useAuth();
+ * ```
+ *
+ * PROTECCIÓN DE RUTAS:
+ * - Los componentes verifican isAuthenticated para mostrar/ocultar contenido
+ * - Las rutas privadas redirigen a /signin si !isAuthenticated
+ */
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {

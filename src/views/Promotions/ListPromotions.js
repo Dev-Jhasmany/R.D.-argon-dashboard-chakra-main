@@ -21,22 +21,49 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  Textarea,
 } from "@chakra-ui/react";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
 import promotionService from "services/promotionService";
+import productService from "services/productService";
 
 function ListPromotions() {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
   const cancelRef = React.useRef();
 
   const [promotions, setPromotions] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [editingPromotion, setEditingPromotion] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    promotion_type: "discount",
+    discount_percentage: "",
+    combo_price: "",
+    start_date: "",
+    end_date: "",
+    product_id: "",
+  });
 
   useEffect(() => {
     loadPromotions();
@@ -57,6 +84,136 @@ function ListPromotions() {
       });
     }
     setLoading(false);
+  };
+
+  const loadProducts = async () => {
+    setLoadingProducts(true);
+    const result = await productService.getAllProducts();
+    if (result.success) {
+      setProducts(result.data);
+    } else {
+      toast({
+        title: "Error",
+        description: "Error al cargar productos",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+    setLoadingProducts(false);
+  };
+
+  const handleEditClick = async (promotion) => {
+    setEditingPromotion(promotion);
+
+    // Cargar productos si no están cargados
+    if (products.length === 0) {
+      await loadProducts();
+    }
+
+    // Formatear fechas para el input type="date"
+    const formatDateForInput = (dateString) => {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    setEditFormData({
+      name: promotion.name || "",
+      description: promotion.description || "",
+      promotion_type: promotion.promotion_type || "discount",
+      discount_percentage: promotion.discount_percentage || "",
+      combo_price: promotion.combo_price || "",
+      start_date: formatDateForInput(promotion.start_date),
+      end_date: formatDateForInput(promotion.end_date),
+      product_id: promotion.product?.id || "",
+    });
+
+    onEditOpen();
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleEditSubmit = async () => {
+    // Validaciones
+    if (!editFormData.name || !editFormData.start_date || !editFormData.end_date) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos obligatorios",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (editFormData.promotion_type === 'discount' && !editFormData.discount_percentage) {
+      toast({
+        title: "Error",
+        description: "Debe especificar el porcentaje de descuento",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (editFormData.promotion_type === 'combo' && !editFormData.combo_price) {
+      toast({
+        title: "Error",
+        description: "Debe especificar el precio del combo",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Preparar datos para enviar
+    const updateData = {
+      name: editFormData.name,
+      description: editFormData.description,
+      promotion_type: editFormData.promotion_type,
+      start_date: editFormData.start_date,
+      end_date: editFormData.end_date,
+      ...(editFormData.product_id && { product_id: editFormData.product_id }),
+      ...(editFormData.promotion_type === 'discount' && {
+        discount_percentage: parseFloat(editFormData.discount_percentage)
+      }),
+      ...(editFormData.promotion_type === 'combo' && {
+        combo_price: parseFloat(editFormData.combo_price)
+      }),
+    };
+
+    const result = await promotionService.updatePromotion(editingPromotion.id, updateData);
+
+    if (result.success) {
+      toast({
+        title: "Promoción actualizada",
+        description: "La promoción ha sido actualizada exitosamente",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+      onEditClose();
+      loadPromotions();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   const handleToggleActive = async (id) => {
@@ -83,7 +240,7 @@ function ListPromotions() {
 
   const handleDeleteClick = (id) => {
     setDeletingId(id);
-    onOpen();
+    onDeleteOpen();
   };
 
   const handleDeleteConfirm = async () => {
@@ -106,7 +263,7 @@ function ListPromotions() {
         isClosable: true,
       });
     }
-    onClose();
+    onDeleteClose();
     setDeletingId(null);
   };
 
@@ -247,22 +404,29 @@ function ListPromotions() {
                         </Badge>
                       </Td>
                       <Td borderColor={borderColor}>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          colorScheme={promo.is_active ? 'orange' : 'green'}
-                          me='5px'
-                          mb={{ base: '5px', md: '0' }}
-                          onClick={() => handleToggleActive(promo.id)}>
-                          {promo.is_active ? 'Desactivar' : 'Activar'}
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          colorScheme='red'
-                          onClick={() => handleDeleteClick(promo.id)}>
-                          Eliminar
-                        </Button>
+                        <Flex gap={2} flexWrap="wrap">
+                          <Button
+                            size='sm'
+                            colorScheme='blue'
+                            variant='outline'
+                            onClick={() => handleEditClick(promo)}>
+                            Editar
+                          </Button>
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            colorScheme={promo.is_active ? 'orange' : 'green'}
+                            onClick={() => handleToggleActive(promo.id)}>
+                            {promo.is_active ? 'Desactivar' : 'Activar'}
+                          </Button>
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            colorScheme='red'
+                            onClick={() => handleDeleteClick(promo.id)}>
+                            Eliminar
+                          </Button>
+                        </Flex>
                       </Td>
                     </Tr>
                   );
@@ -273,11 +437,130 @@ function ListPromotions() {
         </CardBody>
       </Card>
 
+      {/* Modal de Edición */}
+      <Modal isOpen={isEditOpen} onClose={onEditClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Editar Promoción</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <FormControl mb={4} isRequired>
+              <FormLabel>Nombre de la Promoción</FormLabel>
+              <Input
+                name="name"
+                value={editFormData.name}
+                onChange={handleEditFormChange}
+                placeholder="Ej: Descuento de verano"
+              />
+            </FormControl>
+
+            <FormControl mb={4}>
+              <FormLabel>Descripción</FormLabel>
+              <Textarea
+                name="description"
+                value={editFormData.description}
+                onChange={handleEditFormChange}
+                placeholder="Descripción de la promoción"
+                rows={3}
+              />
+            </FormControl>
+
+            <FormControl mb={4} isRequired>
+              <FormLabel>Tipo de Promoción</FormLabel>
+              <Select
+                name="promotion_type"
+                value={editFormData.promotion_type}
+                onChange={handleEditFormChange}
+              >
+                <option value="discount">Descuento</option>
+                <option value="combo">Combo</option>
+              </Select>
+            </FormControl>
+
+            {editFormData.promotion_type === 'discount' && (
+              <FormControl mb={4} isRequired>
+                <FormLabel>Porcentaje de Descuento (%)</FormLabel>
+                <Input
+                  type="number"
+                  name="discount_percentage"
+                  value={editFormData.discount_percentage}
+                  onChange={handleEditFormChange}
+                  placeholder="Ej: 15"
+                  min="0"
+                  max="100"
+                />
+              </FormControl>
+            )}
+
+            {editFormData.promotion_type === 'combo' && (
+              <FormControl mb={4} isRequired>
+                <FormLabel>Precio del Combo (Bs.)</FormLabel>
+                <Input
+                  type="number"
+                  step="0.01"
+                  name="combo_price"
+                  value={editFormData.combo_price}
+                  onChange={handleEditFormChange}
+                  placeholder="Ej: 25.50"
+                  min="0"
+                />
+              </FormControl>
+            )}
+
+            <FormControl mb={4}>
+              <FormLabel>Producto</FormLabel>
+              <Select
+                name="product_id"
+                value={editFormData.product_id}
+                onChange={handleEditFormChange}
+                isDisabled={loadingProducts}
+              >
+                <option value="">Seleccione un producto (opcional)</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} - {product.code}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Flex gap={4}>
+              <FormControl isRequired>
+                <FormLabel>Fecha de Inicio</FormLabel>
+                <Input
+                  type="date"
+                  name="start_date"
+                  value={editFormData.start_date}
+                  onChange={handleEditFormChange}
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Fecha de Fin</FormLabel>
+                <Input
+                  type="date"
+                  name="end_date"
+                  value={editFormData.end_date}
+                  onChange={handleEditFormChange}
+                />
+              </FormControl>
+            </Flex>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleEditSubmit}>
+              Guardar Cambios
+            </Button>
+            <Button onClick={onEditClose}>Cancelar</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* Alert Dialog para confirmar eliminación */}
       <AlertDialog
-        isOpen={isOpen}
+        isOpen={isDeleteOpen}
         leastDestructiveRef={cancelRef}
-        onClose={onClose}>
+        onClose={onDeleteClose}>
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize='lg' fontWeight='bold'>
@@ -289,7 +572,7 @@ function ListPromotions() {
             </AlertDialogBody>
 
             <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
+              <Button ref={cancelRef} onClick={onDeleteClose}>
                 Cancelar
               </Button>
               <Button colorScheme='red' onClick={handleDeleteConfirm} ml={3}>

@@ -1,5 +1,5 @@
 // Chakra Icons
-import { BellIcon } from "@chakra-ui/icons";
+import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
 // Chakra Imports
 import {
   Box, Button,
@@ -7,8 +7,14 @@ import {
   Menu,
   MenuButton,
   MenuItem,
-  MenuList, Stack, Text, useColorMode,
-  useColorModeValue
+  MenuList,
+  MenuDivider,
+  Stack,
+  Text,
+  useColorMode,
+  useColorModeValue,
+  useToast,
+  Icon,
 } from "@chakra-ui/react";
 // Assets
 import avatar1 from "assets/img/avatars/avatar1.png";
@@ -20,8 +26,9 @@ import { ArgonLogoDark, ArgonLogoLight, ChakraLogoDark, ChakraLogoLight, Profile
 import { ItemContent } from "components/Menu/ItemContent";
 import { SidebarResponsive } from "components/Sidebar/Sidebar";
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 import routes from "routes.js";
+import { FiUser, FiLogOut } from "react-icons/fi";
 
 export default function HeaderLinks(props) {
   const {
@@ -36,6 +43,8 @@ export default function HeaderLinks(props) {
 
   const { colorMode } = useColorMode();
   const [currentUser, setCurrentUser] = useState(null);
+  const history = useHistory();
+  const toast = useToast();
 
   useEffect(() => {
     // Función para cargar el usuario
@@ -72,6 +81,28 @@ export default function HeaderLinks(props) {
     };
   }, []);
 
+  const handleLogout = () => {
+    // Limpiar datos del usuario
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+
+    // Mostrar mensaje de éxito
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión exitosamente",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+    });
+
+    // Redirigir al login
+    setTimeout(() => {
+      history.push('/auth/signin');
+    }, 500);
+  };
+
   // Chakra Color Mode
   let navbarIcon =
     fixed && scrolled
@@ -87,32 +118,51 @@ export default function HeaderLinks(props) {
       w={{ sm: "100%", md: "auto" }}
       alignItems='center'
       flexDirection='row'>
-      <NavLink to='/admin/users/user-info'>
-        <Button
+      <Menu>
+        <MenuButton
+          as={Button}
           ms='0px'
           px='0px'
           me={{ sm: "2px", md: "16px" }}
           color={navbarIcon}
           variant='no-effects'
-          rightIcon={
-            document.documentElement.dir ? (
-              ""
-            ) : (
-              <ProfileIcon color={navbarIcon} w='22px' h='22px' me='0px' />
-            )
-          }
+          rightIcon={<ChevronDownIcon />}
           leftIcon={
             document.documentElement.dir ? (
-              <ProfileIcon color={navbarIcon} w='22px' h='22px' me='0px' />
-            ) : (
               ""
+            ) : (
+              <ProfileIcon color={navbarIcon} w='22px' h='22px' me='0px' />
             )
           }>
           <Text display={{ sm: "none", md: "flex" }}>
             {currentUser ? `${currentUser.full_name || ''} ${currentUser.full_last_name || ''}`.trim() || currentUser.username : 'Sign In'}
           </Text>
-        </Button>
-      </NavLink>
+        </MenuButton>
+        <MenuList bg={menuBg} p='8px'>
+          <MenuItem
+            borderRadius='8px'
+            _hover={{ bg: useColorModeValue("gray.100", "navy.700") }}
+            onClick={() => history.push('/admin/users/user-info')}
+          >
+            <Flex align='center'>
+              <Icon as={FiUser} w='16px' h='16px' me='8px' />
+              <Text fontSize='sm'>Mi Perfil</Text>
+            </Flex>
+          </MenuItem>
+          <MenuDivider />
+          <MenuItem
+            borderRadius='8px'
+            _hover={{ bg: useColorModeValue("red.50", "red.900") }}
+            color='red.500'
+            onClick={handleLogout}
+          >
+            <Flex align='center'>
+              <Icon as={FiLogOut} w='16px' h='16px' me='8px' />
+              <Text fontSize='sm' fontWeight='bold'>Cerrar Sesión</Text>
+            </Flex>
+          </MenuItem>
+        </MenuList>
+      </Menu>
       <SidebarResponsive
         hamburgerColor={"white"}
         logo={

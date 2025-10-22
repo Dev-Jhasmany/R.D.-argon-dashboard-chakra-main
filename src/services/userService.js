@@ -33,9 +33,30 @@ const userService = {
       const response = await api.post('/auth/register', userData);
       return { success: true, data: response.data };
     } catch (error) {
+      console.error('Error completo:', error.response);
+
+      // Extraer el mensaje de error más específico
+      let errorMessage = 'Error al crear usuario';
+
+      if (error.response?.data) {
+        // Si el error es un objeto con mensaje
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          // Puede ser un string o un array de mensajes
+          if (Array.isArray(error.response.data.message)) {
+            errorMessage = error.response.data.message.join(', ');
+          } else {
+            errorMessage = error.response.data.message;
+          }
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+      }
+
       return {
         success: false,
-        error: error.response?.data?.message || 'Error al crear usuario',
+        error: errorMessage,
       };
     }
   },

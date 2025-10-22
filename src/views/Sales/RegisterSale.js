@@ -1,3 +1,54 @@
+/**
+ * COMPONENTE: RegisterSale (Registro de Ventas)
+ *
+ * Este componente maneja el proceso completo de registro de ventas con soporte
+ * para múltiples métodos de pago y gestión de carrito de compras.
+ *
+ * FLUJO DE SECUENCIA:
+ * 1. Usuario agrega productos al carrito
+ * 2. Sistema calcula subtotales y total
+ * 3. Usuario selecciona método de pago
+ * 4. Si es método digital (QR, PayPal, Stripe): abre modal específico
+ * 5. Usuario confirma venta
+ * 6. salesService.createSale() → POST /sales
+ * 7. Backend crea venta, actualiza stock, registra movimientos
+ * 8. Frontend muestra recibo y limpia formulario
+ *
+ * MÉTODOS DE PAGO SOPORTADOS:
+ * - efectivo: Pago en efectivo (default)
+ * - tarjeta: Pago con tarjeta (POS)
+ * - transferencia: Transferencia bancaria
+ * - qr: Código QR con QRCodeSVG (modal)
+ * - paypal: Pago digital con email (modal con estados)
+ * - stripe: Pago digital con WhatsApp/SMS (modal con estados)
+ *
+ * ESTADO GESTIONADO:
+ * - cart: Array de productos en el carrito
+ * - formData: Datos del cliente y venta
+ * - isQRModalOpen, isPayPalModalOpen, isStripeModalOpen: Control de modales
+ * - paypalEmail, paypalStatus: Estado de pago PayPal
+ * - stripePhone, stripeMethod, stripeStatus: Estado de pago Stripe
+ * - products, promotions: Datos desde backend
+ * - salesHistory: Últimas 10 ventas
+ * - allProducts: Inventario completo
+ *
+ * FUNCIONALIDADES:
+ * - Carrito dinámico con agregar/eliminar productos
+ * - Cálculo automático de subtotales y totales
+ * - Aplicación de descuentos y promociones
+ * - Generación de código QR
+ * - Gestión de estados de pago digital
+ * - Historial de ventas recientes
+ * - Alertas de stock bajo
+ * - Validación de stock antes de vender
+ *
+ * DEPENDENCIAS:
+ * - salesService: Crear ventas
+ * - productService: Obtener productos y stock
+ * - promotionService: Obtener promociones activas
+ * - qrcode.react: Generación de códigos QR
+ * - Chakra UI: Componentes de UI
+ */
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -52,7 +103,14 @@ function RegisterSale() {
   const [promotions, setPromotions] = useState([]);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [isPayPalModalOpen, setIsPayPalModalOpen] = useState(false);
+  const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
   const [saleInfo, setSaleInfo] = useState(null);
+  const [paypalEmail, setPaypalEmail] = useState('');
+  const [paypalStatus, setPaypalStatus] = useState('input'); // 'input', 'sending', 'waiting', 'confirmed'
+  const [stripePhone, setStripePhone] = useState('');
+  const [stripeMethod, setStripeMethod] = useState('whatsapp'); // 'whatsapp' o 'sms'
+  const [stripeStatus, setStripeStatus] = useState('input'); // 'input', 'sending', 'waiting', 'confirmed'
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [quantity, setQuantity] = useState('');
@@ -299,6 +357,32 @@ function RegisterSale() {
     return Math.max(0, subtotal - discount);
   };
 
+  /**
+   * FUNCIÓN: handleSubmit
+   *
+   * Maneja el envío del formulario de registro de venta.
+   *
+   * FLUJO DE SECUENCIA:
+   * 1. Valida que el carrito no esté vacío
+   * 2. Construye el objeto saleData con información de cliente y productos
+   * 3. Llama a salesService.createSale(saleData) → POST /sales
+   * 4. Backend:
+   *    - Crea registro de venta en tabla sales
+   *    - Actualiza stock de productos
+   *    - Registra movimientos de inventario
+   *    - Registra actividad en activity_log
+   * 5. Frontend recibe respuesta con datos de venta creada (sale_number, total, etc.)
+   * 6. LÓGICA DE MÉTODOS DE PAGO:
+   *    - 'efectivo', 'tarjeta', 'transferencia': Venta confirmada, resetear formulario
+   *    - 'qr': Abrir modal QR con código para escanear
+   *    - 'paypal': Abrir modal PayPal con flujo de email (input → sending → waiting → confirmed)
+   *    - 'stripe': Abrir modal Stripe con flujo de teléfono (input → sending → waiting → confirmed)
+   *
+   * IMPORTANTE: La venta YA está registrada en la BD cuando se llega al paso 5.
+   * Los modales de pago digital son para CONFIRMAR/VERIFICAR el pago, no para crearlo.
+   *
+   * @param {Event} e - Evento del formulario
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -335,6 +419,14 @@ function RegisterSale() {
       if (formData.payment_method === 'qr') {
         setSaleInfo(result.data);
         setIsQRModalOpen(true);
+      } else if (formData.payment_method === 'paypal') {
+        // Mostrar modal de PayPal
+        setSaleInfo(result.data);
+        setIsPayPalModalOpen(true);
+      } else if (formData.payment_method === 'stripe') {
+        // Mostrar modal de Stripe
+        setSaleInfo(result.data);
+        setIsStripeModalOpen(true);
       } else {
         toast({
           title: 'Venta registrada',
@@ -372,6 +464,21 @@ function RegisterSale() {
     loadInventory();
   };
 
+  /**
+   * FUNCIÓN: closeQRModal
+   *
+   * Cierra el modal de pago con QR y confirma la venta.
+   *
+   * FLUJO:
+   * 1. Muestra toast de confirmación con número de venta
+   * 2. Cierra el modal (setIsQRModalOpen(false))
+   * 3. Limpia la información de venta (setSaleInfo(null))
+   * 4. Resetea el formulario (cart, formData, etc.)
+   * 5. Recarga el historial de ventas actualizado
+   *
+   * NOTA: La venta ya está registrada en la BD. Este cierre solo confirma
+   * que el cliente escaneó el código QR y completó el pago.
+   */
   const closeQRModal = () => {
     // Mostrar mensaje de confirmación antes de cerrar
     if (saleInfo) {
@@ -388,6 +495,243 @@ function RegisterSale() {
     setSaleInfo(null);
     resetForm();
     loadSalesHistory();
+  };
+
+  /**
+   * FUNCIÓN: closePayPalModal
+   *
+   * Cierra el modal de pago con PayPal y confirma la venta.
+   *
+   * FLUJO:
+   * 1. Si paypalStatus === 'confirmed': Muestra toast de confirmación
+   * 2. Cierra el modal (setIsPayPalModalOpen(false))
+   * 3. Limpia los estados de PayPal (email, status)
+   * 4. Resetea el formulario (cart, formData, etc.)
+   * 5. Recarga el historial de ventas actualizado
+   *
+   * ESTADOS DE PAYPAL:
+   * - 'input': Usuario ingresando email
+   * - 'sending': Enviando solicitud de pago
+   * - 'waiting': Esperando confirmación del cliente en app de PayPal
+   * - 'confirmed': Cliente confirmó el pago → Permitir cierre
+   *
+   * NOTA: Solo muestra confirmación si el estado es 'confirmed'
+   */
+  const closePayPalModal = () => {
+    // Mostrar mensaje de confirmación antes de cerrar
+    if (saleInfo && paypalStatus === 'confirmed') {
+      toast({
+        title: 'Venta registrada',
+        description: `Venta ${saleInfo.sale_number} registrada exitosamente con PayPal`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+
+    setIsPayPalModalOpen(false);
+    setSaleInfo(null);
+    setPaypalEmail('');
+    setPaypalStatus('input');
+    resetForm();
+    loadSalesHistory();
+  };
+
+  /**
+   * FUNCIÓN: handleSendPayPalEmail
+   *
+   * Simula el envío de solicitud de pago a PayPal por correo electrónico.
+   *
+   * FLUJO DE ESTADOS (SIMULADO):
+   * 1. 'input' → 'sending' (2 segundos)
+   *    - Valida email (debe contener '@')
+   *    - Muestra toast "Enviando solicitud..."
+   *
+   * 2. 'sending' → 'waiting' (después de 2 segundos)
+   *    - Simula que se envió notificación a la app de PayPal del cliente
+   *    - Muestra toast "Solicitud enviada, esperando confirmación..."
+   *
+   * 3. 'waiting' → 'confirmed' (después de 4 segundos)
+   *    - Simula que el cliente confirmó el pago en su app móvil de PayPal
+   *    - Muestra toast "Pago confirmado"
+   *    - Botón de cierre del modal se habilita en verde
+   *
+   * IMPLEMENTACIÓN REAL (futuro):
+   * - Integrar con PayPal API para enviar solicitudes de pago reales
+   * - Usar webhooks para recibir confirmaciones de pago
+   * - Validar email con PayPal antes de enviar
+   *
+   * @requires paypalEmail - Email del cliente registrado en PayPal
+   */
+  const handleSendPayPalEmail = () => {
+    // Validar email
+    if (!paypalEmail || !paypalEmail.includes('@')) {
+      toast({
+        title: 'Email inválido',
+        description: 'Por favor ingrese un correo electrónico válido',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Simular envío
+    setPaypalStatus('sending');
+
+    toast({
+      title: 'Enviando solicitud',
+      description: `Enviando solicitud de pago a ${paypalEmail}...`,
+      status: 'info',
+      duration: 2000,
+      isClosable: true,
+    });
+
+    // Simular tiempo de envío
+    setTimeout(() => {
+      setPaypalStatus('waiting');
+      toast({
+        title: 'Solicitud enviada',
+        description: 'Esperando confirmación del cliente en su app de PayPal',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Simular confirmación automática después de 4 segundos
+      setTimeout(() => {
+        setPaypalStatus('confirmed');
+        toast({
+          title: 'Pago confirmado',
+          description: 'El cliente ha confirmado el pago en su app de PayPal',
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }, 4000);
+    }, 2000);
+  };
+
+  /**
+   * FUNCIÓN: closeStripeModal
+   *
+   * Cierra el modal de pago con Stripe y confirma la venta.
+   *
+   * FLUJO:
+   * 1. Si stripeStatus === 'confirmed': Muestra toast de confirmación
+   * 2. Cierra el modal (setIsStripeModalOpen(false))
+   * 3. Limpia los estados de Stripe (phone, method, status)
+   * 4. Resetea el formulario (cart, formData, etc.)
+   * 5. Recarga el historial de ventas actualizado
+   *
+   * ESTADOS DE STRIPE:
+   * - 'input': Usuario ingresando teléfono y seleccionando método (WhatsApp/SMS)
+   * - 'sending': Enviando vínculo de pago por WhatsApp o SMS
+   * - 'waiting': Cliente recibió vínculo, esperando que complete pago
+   * - 'confirmed': Cliente completó el pago con Stripe → Permitir cierre
+   *
+   * NOTA: Solo muestra confirmación si el estado es 'confirmed'
+   */
+  const closeStripeModal = () => {
+    // Mostrar mensaje de confirmación antes de cerrar
+    if (saleInfo && stripeStatus === 'confirmed') {
+      toast({
+        title: 'Venta registrada',
+        description: `Venta ${saleInfo.sale_number} registrada exitosamente con Stripe`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+
+    setIsStripeModalOpen(false);
+    setSaleInfo(null);
+    setStripePhone('');
+    setStripeMethod('whatsapp');
+    setStripeStatus('input');
+    resetForm();
+    loadSalesHistory();
+  };
+
+  /**
+   * FUNCIÓN: handleSendStripeLink
+   *
+   * Simula el envío de vínculo de pago de Stripe por WhatsApp o SMS.
+   *
+   * FLUJO DE ESTADOS (SIMULADO):
+   * 1. 'input' → 'sending' (2 segundos)
+   *    - Valida teléfono (mínimo 8 dígitos)
+   *    - Determina método: 'whatsapp' o 'sms'
+   *    - Muestra toast "Enviando vínculo por WhatsApp/SMS..."
+   *
+   * 2. 'sending' → 'waiting' (después de 2 segundos)
+   *    - Simula que se envió vínculo de pago al teléfono del cliente
+   *    - Muestra URL de ejemplo: https://pay.stripe.com/demo/{sale_number}
+   *    - Muestra toast "Vínculo enviado, esperando que el cliente complete el pago..."
+   *
+   * 3. 'waiting' → 'confirmed' (después de 5 segundos)
+   *    - Simula que el cliente abrió el vínculo e ingresó datos de tarjeta
+   *    - Stripe procesó el pago exitosamente
+   *    - Muestra toast "Pago confirmado"
+   *    - Botón de cierre del modal se habilita en verde
+   *
+   * IMPLEMENTACIÓN REAL (futuro):
+   * - Integrar con Stripe API para crear Payment Links reales
+   * - Enviar SMS/WhatsApp mediante servicios como Twilio o WhatsApp Business API
+   * - Usar webhooks de Stripe para recibir confirmaciones de pago
+   * - Validar número de teléfono con Stripe antes de enviar
+   *
+   * @requires stripePhone - Número de teléfono con código de país (ej: 591XXXXXXXX)
+   * @requires stripeMethod - 'whatsapp' o 'sms'
+   */
+  const handleSendStripeLink = () => {
+    // Validar número de teléfono (mínimo 8 dígitos)
+    if (!stripePhone || stripePhone.length < 8) {
+      toast({
+        title: 'Número inválido',
+        description: 'Por favor ingrese un número de teléfono válido',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Simular envío
+    setStripeStatus('sending');
+
+    const methodName = stripeMethod === 'whatsapp' ? 'WhatsApp' : 'SMS';
+    toast({
+      title: 'Enviando vínculo',
+      description: `Enviando vínculo de pago por ${methodName} a +${stripePhone}...`,
+      status: 'info',
+      duration: 2000,
+      isClosable: true,
+    });
+
+    // Simular tiempo de envío
+    setTimeout(() => {
+      setStripeStatus('waiting');
+      toast({
+        title: 'Vínculo enviado',
+        description: `El cliente ha recibido el vínculo por ${methodName}`,
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Simular confirmación automática después de 5 segundos
+      setTimeout(() => {
+        setStripeStatus('confirmed');
+        toast({
+          title: 'Pago confirmado',
+          description: 'El cliente ha completado el pago con Stripe',
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }, 5000);
+    }, 2000);
   };
 
   return (
@@ -556,6 +900,8 @@ function RegisterSale() {
                       {/* <option value='tarjeta'>Tarjeta</option> */}
                       {/* <option value='transferencia'>Transferencia</option> */}
                       <option value='qr'>QR</option>
+                      <option value='paypal'>PayPal</option>
+                      <option value='stripe'>Stripe</option>
                     </Select>
                   </FormControl>
                   <FormControl>
@@ -640,6 +986,8 @@ function RegisterSale() {
                         {sale.payment_method === 'qr' && 'QR'}
                         {sale.payment_method === 'tarjeta' && 'Tarjeta'}
                         {sale.payment_method === 'transferencia' && 'Transferencia'}
+                        {sale.payment_method === 'paypal' && 'PayPal'}
+                        {sale.payment_method === 'stripe' && 'Stripe'}
                       </Td>
                       <Td borderColor={borderColor}>
                         {sale.is_active ? (
@@ -980,6 +1328,474 @@ function RegisterSale() {
             <Button colorScheme='green' onClick={closeQRModal} width='full'>
               Confirmar Pago y Cerrar
             </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal de PayPal para pago */}
+      <Modal
+        isOpen={isPayPalModalOpen}
+        onClose={closePayPalModal}
+        size='xl'
+        closeOnOverlayClick={false}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Pago con PayPal - Venta {saleInfo?.sale_number}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {saleInfo && (
+              <Flex direction='column' align='center' gap='20px' py={4}>
+                <Box p={4} bg='blue.50' borderRadius='md' width='full'>
+                  <Text fontSize='lg' fontWeight='bold' textAlign='center' mb={2}>
+                    Monto a Pagar
+                  </Text>
+                  <Text
+                    fontSize='3xl'
+                    fontWeight='bold'
+                    color='blue.600'
+                    textAlign='center'>
+                    Bs. {parseFloat(saleInfo.total).toFixed(2)}
+                  </Text>
+                </Box>
+
+                <Box
+                  p={8}
+                  bg='white'
+                  borderRadius='md'
+                  boxShadow='xl'
+                  border='2px solid'
+                  borderColor='blue.200'
+                  width='full'>
+                  <Flex direction='column' align='center' gap='20px'>
+                    <Box
+                      fontSize='6xl'
+                      color='blue.600'
+                      textAlign='center'>
+                      💳
+                    </Box>
+                    <Text fontSize='2xl' fontWeight='bold' color='blue.600' textAlign='center'>
+                      PayPal
+                    </Text>
+
+                    {/* Estado: Input - Ingreso de correo */}
+                    {paypalStatus === 'input' && (
+                      <>
+                        <Text fontSize='md' textAlign='center' color='gray.600'>
+                          Ingrese el correo electrónico del cliente registrado en PayPal
+                        </Text>
+
+                        <Box p={4} bg='blue.50' borderRadius='md' width='full'>
+                          <Text fontSize='sm' fontWeight='bold' mb={2}>Detalles de la transacción:</Text>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Venta:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>{saleInfo.sale_number}</Text>
+                          </Flex>
+                          {saleInfo.customer_name && (
+                            <Flex justify='space-between' mb={1}>
+                              <Text fontSize='sm' color='gray.600'>Cliente:</Text>
+                              <Text fontSize='sm' fontWeight='semibold'>{saleInfo.customer_name}</Text>
+                            </Flex>
+                          )}
+                          <Flex justify='space-between'>
+                            <Text fontSize='sm' color='gray.600'>Total:</Text>
+                            <Text fontSize='sm' fontWeight='bold' color='blue.600'>
+                              Bs. {parseFloat(saleInfo.total).toFixed(2)}
+                            </Text>
+                          </Flex>
+                        </Box>
+
+                        <FormControl isRequired width='full'>
+                          <FormLabel fontSize='sm'>Correo electrónico de PayPal</FormLabel>
+                          <Input
+                            type='email'
+                            placeholder='cliente@ejemplo.com'
+                            value={paypalEmail}
+                            onChange={(e) => setPaypalEmail(e.target.value)}
+                            size='lg'
+                            bg={inputBg}
+                            color={inputTextColor}
+                          />
+                        </FormControl>
+
+                        <Button
+                          colorScheme='blue'
+                          size='lg'
+                          width='full'
+                          onClick={handleSendPayPalEmail}
+                          isDisabled={!paypalEmail}>
+                          Enviar solicitud de pago
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Estado: Sending - Enviando solicitud */}
+                    {paypalStatus === 'sending' && (
+                      <>
+                        <Box textAlign='center'>
+                          <Text fontSize='lg' fontWeight='bold' color='blue.600' mb={3}>
+                            Enviando solicitud...
+                          </Text>
+                          <Box fontSize='4xl' mb={3}>📧</Box>
+                          <Text fontSize='sm' color='gray.600'>
+                            Enviando solicitud de pago a:
+                          </Text>
+                          <Text fontSize='md' fontWeight='bold' color='blue.600'>
+                            {paypalEmail}
+                          </Text>
+                        </Box>
+                      </>
+                    )}
+
+                    {/* Estado: Waiting - Esperando confirmación */}
+                    {paypalStatus === 'waiting' && (
+                      <>
+                        <Box textAlign='center'>
+                          <Text fontSize='lg' fontWeight='bold' color='orange.600' mb={3}>
+                            Esperando confirmación del cliente
+                          </Text>
+                          <Box fontSize='5xl' mb={3}>📱</Box>
+                          <Text fontSize='sm' color='gray.600' mb={2}>
+                            Se ha enviado una notificación a la app de PayPal del cliente
+                          </Text>
+                          <Text fontSize='md' fontWeight='semibold' color='orange.600'>
+                            {paypalEmail}
+                          </Text>
+                        </Box>
+
+                        <Alert status='warning' borderRadius='md'>
+                          <AlertIcon />
+                          <AlertDescription fontSize='sm'>
+                            Por favor, solicite al cliente que confirme el pago en su aplicación móvil de PayPal
+                          </AlertDescription>
+                        </Alert>
+
+                        <Box textAlign='center'>
+                          <Text fontSize='xs' color='gray.500'>
+                            Aguardando respuesta...
+                          </Text>
+                        </Box>
+                      </>
+                    )}
+
+                    {/* Estado: Confirmed - Pago confirmado */}
+                    {paypalStatus === 'confirmed' && (
+                      <>
+                        <Box textAlign='center'>
+                          <Text fontSize='2xl' fontWeight='bold' color='green.600' mb={3}>
+                            ¡Pago Validado!
+                          </Text>
+                          <Box fontSize='6xl' mb={3}>✅</Box>
+                          <Text fontSize='md' color='gray.600' mb={2}>
+                            El cliente ha confirmado el pago desde su app de PayPal
+                          </Text>
+                        </Box>
+
+                        <Box p={4} bg='green.50' borderRadius='md' width='full' border='2px solid' borderColor='green.200'>
+                          <Text fontSize='sm' fontWeight='bold' mb={2} color='green.700'>
+                            Detalles del pago validado:
+                          </Text>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Correo PayPal:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>{paypalEmail}</Text>
+                          </Flex>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Venta:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>{saleInfo.sale_number}</Text>
+                          </Flex>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Monto:</Text>
+                            <Text fontSize='sm' fontWeight='bold' color='green.600'>
+                              Bs. {parseFloat(saleInfo.total).toFixed(2)}
+                            </Text>
+                          </Flex>
+                          <Flex justify='space-between'>
+                            <Text fontSize='sm' color='gray.600'>Estado:</Text>
+                            <Text fontSize='sm' fontWeight='bold' color='green.600'>
+                              Confirmado
+                            </Text>
+                          </Flex>
+                        </Box>
+
+                        <Alert status='success' borderRadius='md'>
+                          <AlertIcon />
+                          <AlertDescription fontSize='sm'>
+                            El pago ha sido validado exitosamente. Puede proceder a confirmar la venta.
+                          </AlertDescription>
+                        </Alert>
+                      </>
+                    )}
+                  </Flex>
+                </Box>
+              </Flex>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            {paypalStatus === 'confirmed' ? (
+              <Button colorScheme='green' onClick={closePayPalModal} width='full' size='lg'>
+                Confirmar Pago con PayPal
+              </Button>
+            ) : (
+              <Button variant='ghost' onClick={() => {
+                setIsPayPalModalOpen(false);
+                setPaypalEmail('');
+                setPaypalStatus('input');
+                // No resetear el formulario ni recargar historial si se cancela
+              }} width='full'>
+                Cancelar
+              </Button>
+            )}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal de Stripe para pago */}
+      <Modal
+        isOpen={isStripeModalOpen}
+        onClose={closeStripeModal}
+        size='xl'
+        closeOnOverlayClick={false}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Pago con Stripe - Venta {saleInfo?.sale_number}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {saleInfo && (
+              <Flex direction='column' align='center' gap='20px' py={4}>
+                <Box p={4} bg='purple.50' borderRadius='md' width='full'>
+                  <Text fontSize='lg' fontWeight='bold' textAlign='center' mb={2}>
+                    Monto a Pagar
+                  </Text>
+                  <Text
+                    fontSize='3xl'
+                    fontWeight='bold'
+                    color='purple.600'
+                    textAlign='center'>
+                    Bs. {parseFloat(saleInfo.total).toFixed(2)}
+                  </Text>
+                </Box>
+
+                <Box
+                  p={8}
+                  bg='white'
+                  borderRadius='md'
+                  boxShadow='xl'
+                  border='2px solid'
+                  borderColor='purple.200'
+                  width='full'>
+                  <Flex direction='column' align='center' gap='20px'>
+                    <Box
+                      fontSize='6xl'
+                      color='purple.600'
+                      textAlign='center'>
+                      💳
+                    </Box>
+                    <Text fontSize='2xl' fontWeight='bold' color='purple.600' textAlign='center'>
+                      Stripe
+                    </Text>
+
+                    {/* Estado: Input - Ingreso de teléfono */}
+                    {stripeStatus === 'input' && (
+                      <>
+                        <Text fontSize='md' textAlign='center' color='gray.600'>
+                          Enviaremos un vínculo de pago seguro al teléfono del cliente
+                        </Text>
+
+                        <Box p={4} bg='purple.50' borderRadius='md' width='full'>
+                          <Text fontSize='sm' fontWeight='bold' mb={2}>Detalles de la transacción:</Text>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Venta:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>{saleInfo.sale_number}</Text>
+                          </Flex>
+                          {saleInfo.customer_name && (
+                            <Flex justify='space-between' mb={1}>
+                              <Text fontSize='sm' color='gray.600'>Cliente:</Text>
+                              <Text fontSize='sm' fontWeight='semibold'>{saleInfo.customer_name}</Text>
+                            </Flex>
+                          )}
+                          <Flex justify='space-between'>
+                            <Text fontSize='sm' color='gray.600'>Total:</Text>
+                            <Text fontSize='sm' fontWeight='bold' color='purple.600'>
+                              Bs. {parseFloat(saleInfo.total).toFixed(2)}
+                            </Text>
+                          </Flex>
+                        </Box>
+
+                        <FormControl isRequired width='full'>
+                          <FormLabel fontSize='sm'>Método de envío</FormLabel>
+                          <Select
+                            value={stripeMethod}
+                            onChange={(e) => setStripeMethod(e.target.value)}
+                            size='lg'
+                            bg={inputBg}
+                            color={inputTextColor}>
+                            <option value='whatsapp'>WhatsApp</option>
+                            <option value='sms'>Mensaje de texto (SMS)</option>
+                          </Select>
+                        </FormControl>
+
+                        <FormControl isRequired width='full'>
+                          <FormLabel fontSize='sm'>Número de teléfono</FormLabel>
+                          <Input
+                            type='tel'
+                            placeholder='591 XXXXXXXX'
+                            value={stripePhone}
+                            onChange={(e) => setStripePhone(e.target.value.replace(/\D/g, ''))}
+                            size='lg'
+                            bg={inputBg}
+                            color={inputTextColor}
+                          />
+                          <Text fontSize='xs' color='gray.500' mt={1}>
+                            Ingrese el número con código de país (ej: 591 para Bolivia)
+                          </Text>
+                        </FormControl>
+
+                        <Button
+                          colorScheme='purple'
+                          size='lg'
+                          width='full'
+                          onClick={handleSendStripeLink}
+                          isDisabled={!stripePhone || stripePhone.length < 8}>
+                          Enviar vínculo de pago
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Estado: Sending - Enviando vínculo */}
+                    {stripeStatus === 'sending' && (
+                      <>
+                        <Box textAlign='center'>
+                          <Text fontSize='lg' fontWeight='bold' color='purple.600' mb={3}>
+                            Enviando vínculo...
+                          </Text>
+                          <Box fontSize='4xl' mb={3}>
+                            {stripeMethod === 'whatsapp' ? '📱' : '💬'}
+                          </Box>
+                          <Text fontSize='sm' color='gray.600'>
+                            Enviando por {stripeMethod === 'whatsapp' ? 'WhatsApp' : 'SMS'} a:
+                          </Text>
+                          <Text fontSize='md' fontWeight='bold' color='purple.600'>
+                            +{stripePhone}
+                          </Text>
+                        </Box>
+                      </>
+                    )}
+
+                    {/* Estado: Waiting - Esperando confirmación */}
+                    {stripeStatus === 'waiting' && (
+                      <>
+                        <Box textAlign='center'>
+                          <Text fontSize='lg' fontWeight='bold' color='orange.600' mb={3}>
+                            Esperando que el cliente complete el pago
+                          </Text>
+                          <Box fontSize='5xl' mb={3}>
+                            {stripeMethod === 'whatsapp' ? '💬' : '📱'}
+                          </Box>
+                          <Text fontSize='sm' color='gray.600' mb={2}>
+                            Se ha enviado el vínculo de pago por {stripeMethod === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+                          </Text>
+                          <Text fontSize='md' fontWeight='semibold' color='orange.600'>
+                            +{stripePhone}
+                          </Text>
+                        </Box>
+
+                        <Box p={4} bg='purple.50' borderRadius='md' width='full'>
+                          <Text fontSize='sm' fontWeight='bold' mb={2} color='purple.700'>
+                            Vínculo de pago enviado:
+                          </Text>
+                          <Text fontSize='xs' color='gray.600' fontFamily='monospace' bg='white' p={2} borderRadius='md'>
+                            https://pay.stripe.com/demo/{saleInfo.sale_number}
+                          </Text>
+                        </Box>
+
+                        <Alert status='warning' borderRadius='md'>
+                          <AlertIcon />
+                          <AlertDescription fontSize='sm'>
+                            El cliente debe abrir el vínculo en su dispositivo móvil e ingresar los datos de su tarjeta para completar el pago
+                          </AlertDescription>
+                        </Alert>
+
+                        <Box textAlign='center'>
+                          <Text fontSize='xs' color='gray.500'>
+                            Aguardando confirmación de pago...
+                          </Text>
+                        </Box>
+                      </>
+                    )}
+
+                    {/* Estado: Confirmed - Pago confirmado */}
+                    {stripeStatus === 'confirmed' && (
+                      <>
+                        <Box textAlign='center'>
+                          <Text fontSize='2xl' fontWeight='bold' color='green.600' mb={3}>
+                            ¡Pago Realizado!
+                          </Text>
+                          <Box fontSize='6xl' mb={3}>✅</Box>
+                          <Text fontSize='md' color='gray.600' mb={2}>
+                            El cliente ha completado el pago exitosamente con Stripe
+                          </Text>
+                        </Box>
+
+                        <Box p={4} bg='green.50' borderRadius='md' width='full' border='2px solid' borderColor='green.200'>
+                          <Text fontSize='sm' fontWeight='bold' mb={2} color='green.700'>
+                            Detalles del pago confirmado:
+                          </Text>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Teléfono:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>+{stripePhone}</Text>
+                          </Flex>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Método:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>
+                              {stripeMethod === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+                            </Text>
+                          </Flex>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Venta:</Text>
+                            <Text fontSize='sm' fontWeight='semibold'>{saleInfo.sale_number}</Text>
+                          </Flex>
+                          <Flex justify='space-between' mb={1}>
+                            <Text fontSize='sm' color='gray.600'>Monto:</Text>
+                            <Text fontSize='sm' fontWeight='bold' color='green.600'>
+                              Bs. {parseFloat(saleInfo.total).toFixed(2)}
+                            </Text>
+                          </Flex>
+                          <Flex justify='space-between'>
+                            <Text fontSize='sm' color='gray.600'>Estado:</Text>
+                            <Text fontSize='sm' fontWeight='bold' color='green.600'>
+                              Pagado
+                            </Text>
+                          </Flex>
+                        </Box>
+
+                        <Alert status='success' borderRadius='md'>
+                          <AlertIcon />
+                          <AlertDescription fontSize='sm'>
+                            El pago ha sido procesado exitosamente. Puede proceder a confirmar la venta.
+                          </AlertDescription>
+                        </Alert>
+                      </>
+                    )}
+                  </Flex>
+                </Box>
+              </Flex>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            {stripeStatus === 'confirmed' ? (
+              <Button colorScheme='green' onClick={closeStripeModal} width='full' size='lg'>
+                Confirmar Pago con Stripe
+              </Button>
+            ) : (
+              <Button variant='ghost' onClick={() => {
+                setIsStripeModalOpen(false);
+                setStripePhone('');
+                setStripeMethod('whatsapp');
+                setStripeStatus('input');
+                // No resetear el formulario ni recargar historial si se cancela
+              }} width='full'>
+                Cancelar
+              </Button>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -42,6 +42,8 @@ function SalesList() {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const inputBg = useColorModeValue('white', 'gray.700');
   const inputTextColor = useColorModeValue('gray.800', 'white');
+  const infoBg = useColorModeValue('gray.50', 'gray.700');
+  const totalsBg = useColorModeValue('blue.50', 'blue.900');
   const toast = useToast();
 
   const [sales, setSales] = useState([]);
@@ -420,40 +422,40 @@ function SalesList() {
             {selectedSale && (
               <Flex direction='column' gap='20px'>
                 {/* Información general */}
-                <Box p={4} bg='gray.50' borderRadius='md'>
+                <Box p={4} bg={infoBg} borderRadius='md'>
                   <Flex direction='column' gap={2}>
                     <Flex justify='space-between'>
-                      <Text fontSize='sm' fontWeight='bold'>
+                      <Text fontSize='sm' fontWeight='bold' color={textColor}>
                         Fecha:
                       </Text>
-                      <Text fontSize='sm'>{formatDate(selectedSale.created_at)}</Text>
+                      <Text fontSize='sm' color={textColor}>{formatDate(selectedSale.created_at)}</Text>
                     </Flex>
                     <Flex justify='space-between'>
-                      <Text fontSize='sm' fontWeight='bold'>
+                      <Text fontSize='sm' fontWeight='bold' color={textColor}>
                         Cliente:
                       </Text>
-                      <Text fontSize='sm'>
+                      <Text fontSize='sm' color={textColor}>
                         {selectedSale.customer_name || 'Sin nombre'}
                       </Text>
                     </Flex>
                     <Flex justify='space-between'>
-                      <Text fontSize='sm' fontWeight='bold'>
+                      <Text fontSize='sm' fontWeight='bold' color={textColor}>
                         NIT/CI:
                       </Text>
-                      <Text fontSize='sm'>{selectedSale.customer_nit || '-'}</Text>
+                      <Text fontSize='sm' color={textColor}>{selectedSale.customer_nit || '-'}</Text>
                     </Flex>
                     <Flex justify='space-between'>
-                      <Text fontSize='sm' fontWeight='bold'>
+                      <Text fontSize='sm' fontWeight='bold' color={textColor}>
                         Método de Pago:
                       </Text>
                       {getPaymentMethodBadge(selectedSale.payment_method)}
                     </Flex>
                     {selectedSale.notes && (
                       <Flex justify='space-between'>
-                        <Text fontSize='sm' fontWeight='bold'>
+                        <Text fontSize='sm' fontWeight='bold' color={textColor}>
                           Notas:
                         </Text>
-                        <Text fontSize='sm'>{selectedSale.notes}</Text>
+                        <Text fontSize='sm' color={textColor}>{selectedSale.notes}</Text>
                       </Flex>
                     )}
                   </Flex>
@@ -461,7 +463,7 @@ function SalesList() {
 
                 {/* Productos */}
                 <Box>
-                  <Text fontSize='md' fontWeight='bold' mb={3}>
+                  <Text fontSize='md' fontWeight='bold' mb={3} color={textColor}>
                     Productos Vendidos
                   </Text>
                   <Table size='sm' variant='simple'>
@@ -489,26 +491,26 @@ function SalesList() {
                 </Box>
 
                 {/* Totales */}
-                <Box p={4} bg='blue.50' borderRadius='md'>
+                <Box p={4} bg={totalsBg} borderRadius='md'>
                   <Flex direction='column' gap={2}>
                     <Flex justify='space-between'>
-                      <Text fontSize='sm'>Subtotal:</Text>
-                      <Text fontSize='sm' fontWeight='bold'>
+                      <Text fontSize='sm' color={textColor}>Subtotal:</Text>
+                      <Text fontSize='sm' fontWeight='bold' color={textColor}>
                         Bs. {parseFloat(selectedSale.subtotal).toFixed(2)}
                       </Text>
                     </Flex>
                     <Flex justify='space-between'>
-                      <Text fontSize='sm'>Descuento:</Text>
-                      <Text fontSize='sm' fontWeight='bold'>
+                      <Text fontSize='sm' color={textColor}>Descuento:</Text>
+                      <Text fontSize='sm' fontWeight='bold' color={textColor}>
                         Bs. {parseFloat(selectedSale.discount).toFixed(2)}
                       </Text>
                     </Flex>
                     <Box borderTop='1px' borderColor={borderColor} pt={2}>
                       <Flex justify='space-between'>
-                        <Text fontSize='lg' fontWeight='bold'>
+                        <Text fontSize='lg' fontWeight='bold' color={textColor}>
                           Total:
                         </Text>
-                        <Text fontSize='xl' fontWeight='bold' color='green.500'>
+                        <Text fontSize='xl' fontWeight='bold' color='green.400'>
                           Bs. {parseFloat(selectedSale.total).toFixed(2)}
                         </Text>
                       </Flex>

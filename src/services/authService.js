@@ -1,7 +1,75 @@
+/**
+ * SERVICIO DE AUTENTICACIÓN
+ *
+ * Este servicio maneja todas las operaciones de autenticación y autorización del frontend.
+ *
+ * FLUJO DE SECUENCIA TÍPICO (Login):
+ * SignIn.js → authService.login(email, password, rememberMe)
+ *                    ↓
+ *          api.post('/auth/login') → Backend
+ *                    ↓
+ *          Backend valida credenciales → Retorna { access_token, user }
+ *                    ↓
+ *          authService guarda token y user en localStorage/sessionStorage
+ *                    ↓
+ *          Si rememberMe: Guarda email en localStorage
+ *                    ↓
+ *          Retorna { success: true, data } a SignIn.js
+ *                    ↓
+ *          AuthContext actualiza estado global
+ *
+ * RESPONSABILIDADES PRINCIPALES:
+ * - Gestionar login con soporte de "Recordarme"
+ * - Registrar nuevos usuarios
+ * - Logout y limpieza de storage
+ * - Obtener usuario actual desde storage
+ * - Validar token JWT
+ * - Cambiar contraseña
+ * - Recuperar contraseña olvidada
+ * - Gestionar token en localStorage/sessionStorage
+ *
+ * STORAGE STRATEGY:
+ * - localStorage: Persistente (no se borra al cerrar navegador)
+ * - sessionStorage: Temporal (se borra al cerrar navegador)
+ * - Si rememberMe = true: Solo usa localStorage
+ * - Si rememberMe = false: Usa ambos (sessionStorage tiene prioridad al leer)
+ *
+ * MÉTODOS DISPONIBLES:
+ * - login(email, password, rememberMe): Iniciar sesión
+ * - register(userData): Registrar usuario
+ * - logout(): Cerrar sesión y limpiar storage
+ * - getCurrentUser(): Obtener usuario desde storage
+ * - isAuthenticated(): Verificar si hay token válido
+ * - getToken(): Obtener token JWT
+ * - validateToken(): Validar token con backend
+ * - changePassword(oldPassword, newPassword): Cambiar contraseña
+ * - forgotPassword(email): Solicitar recuperación
+ * - resetPassword(token, newPassword): Restablecer contraseña
+ *
+ * SEGURIDAD:
+ * - Token JWT almacenado en localStorage/sessionStorage
+ * - Contraseñas nunca almacenadas en frontend
+ * - Validación de token al cargar app
+ * - Auto-logout en token expirado (manejado por api.js interceptor)
+ */
 import api from './api';
 
 const authService = {
-  // Login
+  /**
+   * MÉTODO: Login
+   *
+   * FLUJO:
+   * 1. Enviar credenciales al backend
+   * 2. Recibir token y datos de usuario
+   * 3. Guardar en localStorage (siempre)
+   * 4. Si !rememberMe, también guardar en sessionStorage
+   * 5. Si rememberMe, guardar email para pre-llenar formulario
+   *
+   * @param {string} email - Email del usuario
+   * @param {string} password - Contraseña en texto plano
+   * @param {boolean} rememberMe - Mantener sesión activa
+   * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+   */
   login: async (email, password, rememberMe = false) => {
     try {
       const response = await api.post('/auth/login', { email, password });

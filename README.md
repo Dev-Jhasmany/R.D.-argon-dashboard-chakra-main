@@ -4,300 +4,659 @@
 
 ![Product Gif](https://i.ibb.co/WPpvjCn/argon-dashboard-chakra-free.png)
 
-Most trendiest, complex and innovative Free Chakra UI Dashboard Made by [Simmmple](https://simmmple.com?ref=readme-argonchakra) & [Creative Tim](https://creative-tim.com/?ref=readme-argonchakra). Check our latest Free Chakra UI Dashboard.
+# Resumen de Verificación del Frontend
 
-Start your Development with an Innovative Admin Template for Chakra UI and React. If you like the look & feel of the hottest design trend right now, Argon Dashboard Chakra, you will fall in love with this dashboard! It features a huge number of components built to fit together and look amazing.
+## Estado General
 
-**Fully Coded Elements**
+Tu frontend está **muy bien estructurado** y es **profesional**. Es un dashboard completo de gestión para restaurante construido con React y Chakra UI.
 
-Argon Dashboard Chakra is built with over 70+ frontend individual elements, like buttons, inputs, navbars, nav tabs, cards, or alerts, giving you the freedom of choosing and combining. All components can take variations in color, which you can easily modify using JSS files and classes. You will save a lot of time going from prototyping to full-functional code because all elements are implemented. This Premium Chakra UI Dashboard is coming with prebuilt design blocks, so the development process is seamless, switching from our pages to the real website is very easy to be done.
+---
 
-Check all components <a href="https://demos.creative-tim.com/docs-argon-dashboard-chakra?ref=readme-argonchakra" target="_blank">here</a>.
+## Comprehensive Frontend Analysis Report
 
-**Documentation built by Developers**
+Based on my thorough exploration of the R.D.-argon-dashboard-chakra-main project:
 
-Each element is well presented in a very complex documentation.
-You can read more about the <a href="https://demos.creative-tim.com/docs-argon-dashboard-chakra?ref=readme-argonchakra" target="_blank">documentation here</a>.
+---
 
-**Example Pages**
+### 1. PROJECT OVERVIEW
 
-If you want to get inspiration or just show something directly to your clients, you can jump-start your development with our pre-built example pages. Every page is spaced well, with attractive layouts and pleasing shapes. From specially designed dashboards for smart homes, virtual reality, and automotives to CRM admins, Argon Dashboard Chakra UI has everything you need to quickly set up an amazing project.
+**Project Name:** R.D.-argon-dashboard-chakra-main (Restaurante Pika)
+**Primary Purpose:** Dashboard de gestión para restaurante con control de inventario, ventas, usuarios y permisos
+**Deployment:** Docker + Docker Compose
+**Base Template:** Argon Dashboard Chakra v1.0.0 (Creative Tim)
 
-View <a href="https://demos.creative-tim.com/argon-dashboard-chakra?ref=readme-argonchakra" target="_blank">example pages here</a>.
+---
 
-**HELPFUL LINKS**
+### 2. TECHNOLOGY STACK
 
-- View <a href="https://github.com/creativetimofficial/argon-dashboard-chakra" target="_blank">Github Repository</a>
+#### Core Framework & Libraries
+- **React**: v17.0.2 - Biblioteca UI principal
+- **React Router DOM**: v5.2.0 - Enrutamiento del lado del cliente
+- **Chakra UI**: v1.8.8 - Biblioteca de componentes y framework UI
+- **Emotion**: v11.x - Estilos CSS-in-JS
 
-- Check <a href="https://www.creative-tim.com/knowledge-center?ref=readme-argonchakra" target="_blank">FAQ Page</a>
+#### Build & Development Tools
+- **React Scripts**: 5.0.0 - Herramienta de build de Create React App
+- **Sass**: v1.56.1 - Preprocesador CSS
+- **Gulp**: 4.0.2 - Automatización de tareas
+- **Babel**: v7.14+ - Transpilador de JavaScript
 
-#### Special thanks
+#### HTTP Client
+- **Axios**: v1.12.2 - Peticiones HTTP con interceptores para autenticación
 
-During the development of this dashboard, we have used many existing resources from awesome developers. We want to thank them for providing their tools open source:
+#### UI Components & Icons
+- **React Icons**: v4.2.0 - Biblioteca de iconos
+- **Chakra UI Icons**: v1.1.5 - Iconos específicos de Chakra
+- **React Bootstrap Sweetalert**: v5.2.0 - Componentes de alerta/modal
 
-- [Chakra UI](https://chakra-ui.com/?ref=creative-tim) - Modern Open source framework
-- [ApexCharts.js](https://apexcharts.com?ref=creative-tim) - Modern & Interactive Open-source charts
-- [Quill Editor](https://www.npmjs.com/package/react-quill?ref=creative-tim) - ReactJS Text Editor provided by Quill
-- [React Table](https://react-table.tanstack.com/docs/overview?ref=creative-tim) - Collection of hooks for building powerful ReactJD tables
-- [ReactJS](https://reactjs.org?ref=creative-tim) - A popular JavaScript library for building user interfaces
+#### Data Handling & Tables
+- **React Table**: v7.7.0 - Gestión avanzada de tablas
+- **Framer Motion**: v4.1.17 - Animaciones
+- **React Custom Scrollbars**: v4.2.1 - Estilo de scrollbars personalizados
 
-Let us know your thoughts below. And good luck with development!
+#### Additional Features
+- **jsPDF & jsPDF-autotable**: Funcionalidad de exportación a PDF
+- **file-saver**: Descarga de archivos al cliente
+- **QR Code**: qrcode.react - Generación de códigos QR
+- **XLSX**: Exportación a archivos Excel
+- **React Datetime**: Selector de fecha/hora
+- **React Tagsinput**: Componente de entrada de etiquetas
+- **React Big Calendar**: Componente de calendario
+- **React Swipeable Views**: Funcionalidad de carrusel/deslizamiento
+- **Moment.js**: Manipulación de fechas
 
-## Table of Contents
+---
 
-- [Argon Dashboard Chakra] (https://demos.creative-tim.com/argon-dashboard-chakra/?ref=readme-argonchakra)
-- [Table of Contents](#table-of-contents)
-- [Versions](#versions)
-- [Demo](#demo)
-- [Quick start](#quick-start)
-- [Deploy](#deploy)
-- [Documentation](#documentation)
-- [File Structure](#file-structure)
-- [Browser Support](#browser-support)
-- [Resources](#resources)
-- [Reporting Issues](#reporting-issues)
-- [Licensing](#licensing)
-- [Useful Links](#useful-links)
-- [Social Media](#social-media)
-
-## Versions
-
-[<img src="https://github.com/creativetimofficial/public-assets/blob/master/logos/html-logo.jpg?raw=true" width="60" height="60" />](https://www.creative-tim.com/product/argon-dashboard-chakra-react?ref=readme-argonchakra)[<img src="https://github.com/creativetimofficial/public-assets/blob/master/logos/react-logo.jpg?raw=true" width="60" height="60" />](https://www.creative-tim.com/product/argon-dashboard-chakra?ref=readme-argonchakra)
-
-| Bootstrap | Chakra |
-| --- | --- |
-| [![Argon Dashboard Bootstrap](https://s3.amazonaws.com/creativetim_bucket/products/96/original/argon-dashboard-2.jpg?1643114907)](https://www.creative-tim.com/product/argon-dashboard?ref=readme-argonchakra) | [![Argon Dashboard Chakra](https://i.ibb.co/WPpvjCn/argon-dashboard-chakra-free.png)](https://www.creative-tim.com/product/argon-dashboard-chakra?ref=readme-argonchakra) 
-
-## Demo
-
-[View all Pages](https://demos.creative-tim.com/argon-dashboard-chakra?ref=readme-argonchakra).
-
-# Quick start
-
-Quick start options:
-
-- Buy from [Creative Tim](https://www.creative-tim.com/product/argon-dashboard-chakra?ref=readme-argonchakra).
-
-## Terminal Commands
-
-1. Download and Install NodeJs LTS version from [NodeJs Official Page](https://nodejs.org/en/download/).
-2. Navigate to the root / directory and run yarn install/npm install to install our local dependencies.
-
-## Deploy
-
-:rocket: You can deploy your own version of the template to Genezio with one click:
-
-[![Deploy to Genezio](https://raw.githubusercontent.com/Genez-io/graphics/main/svg/deploy-button.svg)](https://app.genez.io/start/deploy?repository=https://github.com/creativetimofficial/argon-dashboard-chakra&utm_source=github&utm_medium=referral&utm_campaign=github-creativetim&utm_term=deploy-project&utm_content=button-head)
-
-
-## Documentation
-
-The documentation for the Argon Dashboard Chakra is hosted at our [website](https://demos.creative-tim.com/docs-argon-dashboard-chakra?ref=readme-argonchakra).
-
-## File Structure
-
-Within the download you'll find the following directories and files:
+### 3. PROJECT STRUCTURE
 
 ```
-argon-dashboard-chakra/
-├── .gitattributes
-├── .gitigonore
-├── CHANGELOG.md
-├── commit.sh
-├── gulpfile.js
-├── ISSUE_TEMPLATE.md
-├── jsconfig.json
-├── package.json
-├── README.md
-├── public
-│   ├── favicon.png
-│   ├── index.html
-│   ├── apple-icon.png
-│   ├── robots.txt
-│   └── manifest.json
-└── src
-    ├── assets
-    │   ├── img
-    │   └── svg
-    ├── components
-    │   ├── Card
-    │   │   ├── Card.js
-    │   │   ├── CardBody.js
-    │   │   └── CardHeader.js
-    │   ├── Charts
-    │   │   ├── BarChart.js
-    │   │   └── LineChart.js
-    │   ├── Configurator
-    │   │   └── Configurator.js
-    │   ├── FixedPlugin
-    │   │   └── FixedPlugin.js
-    │   ├── Footer
-    │   │   └── Footer.js
-    │   ├── Icons
-    │   │   ├── IconBox.js
-    │   │   └── Icons.js
-    │   ├── Layout
-    │   │   ├── MainPanel.js
-    │   │   ├── PanelContainer.js
-    │   │   └── PanelContent.js
-    │   ├── Menu
-    │   │   └── ItemContent.js
-    │   ├── Navbars
-    │   │   ├── Searchbar
-    │   │   │   └── SearchBar.js
-    │   │   ├── AdminNavbar.js
-    │   │   ├── AdminNavbarLinks.js
-    │   │   └── AuthNavbar.js
-    │   ├── RTLProvider
-    │   │   └── RTLProvider.js
-    │   ├── Separator
-    │   │   └── Separator.js
-    │   ├── Sidebar
-    │   │   ├── Sidebar.js
-    │   │   └── SidebarHelp.js
-    │   └── Tables
-    │       ├── BillingRow.js
-    │       ├── DashboardTableRow.js
-    │       ├── InvoicesRow.js
-    │       ├── TablesProjectRow.js
-    │       ├── TablesTableRow.js
-    │       ├── TimelineRow.js
-    │       └── TransactionRow.js
-    ├── layouts
-    │   ├── Admin.js
-    │   ├── Auth.js
-    │   └── RTL.js
-    ├── theme
-    │   ├── additions
-    │   │   ├── card
-    │   │   │   └── Card.js
-    │   │   ├── layout
-    │   │   │   ├── MainPanel.js
-    │   │   │   ├── PanelContainer.js
-    │   │   │   └── PanelContent.js
-    │   ├── components
-    │   │   ├── badge.js
-    │   │   ├── button.js
-    │   │   ├── input.js
-    │   │   └── link.js
-    │   ├── foundations
-    │   │   └── breakpoints.js
-    │   ├── styles.js
-    │   └── theme.js
-    ├── variables
-    │   ├── charts.js
-    │   └── general.js
-    ├── views
-    │   ├── Dashboard
-    │   │   ├── Billing.js
-    │   │   ├── Dashboard.js
-    │   │   ├── Profile.js
-    │   │   └── Tables.js
-    │   ├── Pages
-    │   │   ├── SignIn.js
-    │   │   └── SignUp.js
-    │   └── RTL
-    │       └── RTLPage.js
-    ├── index.js
-    └── routes.js
+R.D.-argon-dashboard-chakra-main/
+├── src/
+│   ├── assets/               # Imágenes, SVGs, archivos estáticos
+│   │   ├── img/              # Imágenes PNG
+│   │   ├── svg/              # Iconos SVG
+│   │   └── avatars/          # Avatares de usuario
+│   ├── components/           # Componentes React reutilizables
+│   │   ├── Card/             # Componentes de contenedor Card
+│   │   ├── Sidebar/          # Barra lateral de navegación
+│   │   ├── Navbars/          # Barras de navegación
+│   │   ├── Footer/           # Componente de pie de página
+│   │   ├── Layout/           # Wrappers de layout (MainPanel, PanelContainer, etc.)
+│   │   ├── Tables/           # Componentes de filas de tabla
+│   │   ├── Icons/            # Componentes de iconos personalizados
+│   │   ├── Configurator/     # Configurador de tema
+│   │   ├── FixedPlugin/      # Widget de plugin fijo
+│   │   ├── RTLProvider/      # Soporte para idiomas RTL
+│   │   ├── Scrollbar/        # Scrollbar personalizado
+│   │   ├── Separator/        # Separador/divisor
+│   │   └── Menu/             # Componentes de menú
+│   ├── views/                # Componentes de página
+│   │   ├── Dashboard/        # Páginas de dashboard (Dashboard.js, Profile.js, Billing.js, Tables.js)
+│   │   ├── Pages/            # Páginas de autenticación (SignIn.js, SignUp.js, ResetPassword.js)
+│   │   ├── Users/            # Gestión de usuarios (RegisterUser.js, ListUsers.js, ChangePassword.js, UserInfo.js)
+│   │   ├── Roles/            # Gestión de roles (RegisterRole.js, ListRoles.js, RegisterGroup.js, ListGroups.js)
+│   │   ├── Permissions/      # Gestión de permisos (RegisterPermission.js, ListPermissions.js)
+│   │   ├── Products/         # Gestión de productos (RegisterProduct.js, ListProducts.js, RegisterCategory.js, SupplyEntry.js, StockControl.js)
+│   │   ├── Promotions/       # Gestión de promociones (RegisterPromotion.js, ListPromotions.js)
+│   │   ├── Suppliers/        # Gestión de proveedores (RegisterSupplier.js, ListSuppliers.js)
+│   │   ├── Sales/            # Gestión de ventas (RegisterSale.js, SalesList.js)
+│   │   ├── Settings/         # Páginas de configuración (ActivityLog.js, Logout.js)
+│   │   ├── Payments/         # Páginas de pago (comentadas, no activas)
+│   │   └── RTL/              # Página demo RTL
+│   ├── services/             # Capa de integración con API
+│   │   ├── api.js            # Configuración de Axios con interceptores
+│   │   ├── authService.js    # Llamadas API de autenticación
+│   │   ├── userService.js    # Llamadas API de gestión de usuarios
+│   │   ├── roleService.js    # Llamadas API de roles
+│   │   ├── permissionService.js - Llamadas API de permisos
+│   │   ├── productService.js - Llamadas API de productos
+│   │   ├── categoryService.js - Llamadas API de categorías
+│   │   ├── supplierService.js - Llamadas API de proveedores
+│   │   ├── promotionService.js - Llamadas API de promociones
+│   │   ├── salesService.js   - Llamadas API de ventas
+│   │   ├── stockMovementService.js - Llamadas API de movimientos de stock
+│   │   ├── supplyEntryService.js - Llamadas API de entradas de suministros
+│   │   ├── activityLogService.js - Llamadas API de registro de actividades
+│   │   ├── dashboardService.js - Llamadas API de datos del dashboard
+│   │   └── groupService.js   - Llamadas API de grupos
+│   ├── contexts/             # React Context para gestión de estado
+│   │   └── AuthContext.js    # Contexto de autenticación con hook useAuth
+│   ├── hooks/                # Custom React hooks
+│   │   └── usePermissions.js - Hook de verificación de permisos con control de acceso basado en roles
+│   ├── layouts/              # Componentes wrapper de layout
+│   │   ├── Admin.js          # Layout de administración con sidebar
+│   │   ├── Auth.js           # Layout de autenticación
+│   │   └── RTL.js            # Layout RTL
+│   ├── theme/                # Personalización del tema de Chakra UI
+│   │   ├── theme.js          - Exportación del tema principal
+│   │   ├── styles/           - Estilos globales
+│   │   ├── foundations/      - Design tokens (breakpoints, colors, etc.)
+│   │   ├── components/       - Overrides de tema de componentes
+│   │   └── additions/        - Temas de componentes personalizados
+│   ├── variables/            # Constantes y datos de configuración
+│   ├── routes.js             # Definiciones de rutas
+│   ├── index.js              # Punto de entrada de la aplicación
+├── public/                   # Archivos estáticos
+│   ├── index.html            # Plantilla HTML
+│   ├── favicon.png           # Favicon
+│   ├── apple-icon.png        # Icono de Apple touch
+│   └── manifest.json         # Manifiesto PWA
+├── package.json              # Dependencias y scripts
+├── jsconfig.json             # Configuración de JavaScript
+├── .env                      # Variables de entorno
+├── Dockerfile                # Configuración de Docker
+├── docker-compose.yml        # Setup de Docker Compose
+├── gulpfile.js               # Configuración de tareas de Gulp
+└── README.md                 # Documentación
 ```
 
-## Browser Support
+---
 
-At present, we officially aim to support the last two versions of the following browsers:
+### 4. TECHNOLOGY STACK SUMMARY
 
-<img src="https://github.com/creativetimofficial/public-assets/blob/master/logos/chrome-logo.png?raw=true" width="64" height="64"> <img src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/firefox-logo.png" width="64" height="64"> <img src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/edge-logo.png" width="64" height="64"> <img src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/safari-logo.png" width="64" height="64"> <img src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/opera-logo.png" width="64" height="64">
+| Categoría | Tecnología |
+|-----------|------------|
+| **Framework Frontend** | React 17 con Hooks |
+| **Biblioteca UI** | Chakra UI 1.8.8 |
+| **Estilos** | Emotion CSS-in-JS + Sass + Chakra Theme |
+| **Gestión de Estado** | React Context API (AuthContext) |
+| **Enrutamiento** | React Router v5 (HashRouter para SPA) |
+| **Cliente HTTP** | Axios con interceptores |
+| **Autenticación** | Bearer token JWT (localStorage) |
+| **Autorización** | Control de Acceso Basado en Roles (RBAC) con hook personalizado |
+| **Tablas de Datos** | React Table v7 |
+| **Formularios** | HTML form + componentes de formulario de Chakra UI |
+| **Iconos** | React Icons + Chakra UI Icons |
+| **Animaciones** | Framer Motion |
+| **Exportación** | PDF (jsPDF), Excel (XLSX) |
+| **Herramienta de Build** | React Scripts (Create React App) |
+| **Task Runner** | Gulp |
+| **Runtime** | Node.js 20 (Docker) |
 
-## Resources
+---
 
-- [Live Preview](https://demos.creative-tim.com/argon-dashboard-chakra?ref=readme-argonchakra)
-- [Buy Page](https://www.creative-tim.com/product/argon-dashboard-chakra-pro?ref=readme-argonchakra)
-- License Agreement: <https://www.creative-tim.com/license?ref=readme-argonchakra>
-- Documentation is [here](https://demos.creative-tim.com/docs-argon-dashboard-chakra?ref=readme-argonchakra)
-- [Support](https://www.creative-tim.com/contact-us?ref=readme-argonchakra)
-- Issues: [Github Issues Page](https://github.com/creativetimofficial/argon-dashboard-chakra/issues)
+### 5. CONFIGURATION & ENVIRONMENT
 
-## Reporting Issues
-
-We use GitHub Issues as the official bug tracker for the Argon Dashboard Chakra. Here are some advices for our users that want to report an issue:
-
-1. Make sure that you are using the latest version of the Argon Dashboard Chakra. Check the CHANGELOG from your dashboard on our [CHANGE LOG File](https://github.com/creativetimofficial/argon-dashboard-chakra/blob/main/CHANGELOG.md?ref=readme-argonchakra).
-2. Providing us reproducible steps for the issue will shorten the time it takes for it to be fixed.
-3. Some issues may be browser specific, so specifying in what browser you encountered the issue might help.
-
-## Technical Support or Questions
-
-If you have questions or need help integrating the product please [contact us](https://www.creative-tim.com/contact-us?ref=readme-argonchakra) instead of opening an issue.
-
-## Licensing
-
-- Copyright 2022 [Creative Tim](https://www.creative-tim.com?ref=readme-argonchakra)
-
-- Creative Tim [License](https://www.creative-tim.com/license?ref=readme-argonchakra)
-
-## Useful Links
-
-- [More products](https://www.creative-tim.com/templates?ref=readme-argonchakra) from Creative Tim
-
-- [Tutorials](https://www.youtube.com/channel/UCVyTG4sCw-rOvB9oHkzZD1w)
-
-- [Freebies](https://www.creative-tim.com/bootstrap-themes/free?ref=readme-argonchakra) from Creative Tim
-
-- [Affiliate Program](https://www.creative-tim.com/affiliates/new?ref=readme-argonchakra) (earn money)
-
-- [More products](https://simmmple.com/?ref=readme-argonchakra) from Simmmple
-
-### Social Media - Creative Tim
-
-Twitter: <https://twitter.com/CreativeTim>
-
-Facebook: <https://www.facebook.com/CreativeTim>
-
-Dribbble: <https://dribbble.com/creativetim>
-
-Instagram: <https://www.instagram.com/CreativeTimOfficial>
-
-### Social Media - Simmmple
-
-Twitter: <https://twitter.com/simmmple_web>
-
-Facebook: <https://www.facebook.com/simmmple.web>
-
-Dribbble: <https://dribbble.com/simmmple>
-
-Instagram: <https://www.instagram.com/simmmple.web>
-
+#### Variables de Entorno (.env)
+```
+GENERATE_SOURCEMAP=false
+REACT_APP_API_URL=http://34.135.23.61:3000
 ```
 
-  | Ruta             | Nombre    | Componente   | Icono      |
-  |------------------|-----------|--------------|------------|
-  | /admin/dashboard | Dashboard | Dashboard.js | HomeIcon   |
-  | /admin/tables    | Tables    | Tables.js    | StatsIcon  |
-  | /admin/billing   | Billing   | Billing.js   | CreditIcon |
-  | /admin/profile   | Profile   | Profile.js   | PersonIcon |
+#### Configuración de JavaScript (jsconfig.json)
+- **baseUrl**: "src" (permite imports absolutos desde src/)
+- Facilita imports como `import Card from 'components/Card'`
 
-  Rutas de Autenticación (Layout: /auth)
+#### Docker Configuration
+- **Base Image**: node:20-alpine
+- **Multi-stage build**: Optimizado para producción
+- **Puerto**: 3001:3000 (externo:interno)
 
-  | Ruta                 | Nombre         | Componente       | Descripción            |
-  |----------------------|----------------|------------------|------------------------|
-  | /auth/signin         | Sign In        | SignIn.js        | Iniciar sesión         |
-  | /auth/signup         | Sign Up        | SignUp.js        | Registrarse            |
-  | /auth/reset-password | Reset Password | ResetPassword.js | Restablecer contraseña |
+---
 
-  Ruta RTL (Layout: /rtl)
+### 6. MAIN MODULES & PAGES (34+ Pages)
 
-  | Ruta                  | Nombre | Componente |
-  |-----------------------|--------|------------|
-  | /rtl/rtl-support-page | RTL    | RTLPage.js |
+#### Autenticación (Layout: Auth)
+- **SignIn.js** - Página de inicio de sesión
+- **SignUp.js** - Página de registro
+- **ResetPassword.js** - Restablecimiento de contraseña
 
-  URLs completas (con Docker en puerto 3001):
+#### Dashboard Principal
+- **Dashboard.js** - Dashboard principal con estadísticas
+- **Profile.js** - Perfil de usuario
+- **Billing.js** - Facturación (demo)
+- **Tables.js** - Demo de tablas
 
-  - http://localhost:3001/#/admin/dashboard
-  - http://localhost:3001/#/admin/tables
-  - http://localhost:3001/#/admin/billing
-  - http://localhost:3001/#/admin/profile
-  - http://localhost:3001/#/auth/signin
-  - http://localhost:3001/#/auth/signup
-  - http://localhost:3001/#/auth/reset-password
-  - http://localhost:3001/#/rtl/rtl-support-page
-  ```
+#### Gestión de Usuarios (4 pages)
+- **RegisterUser.js** - Registrar nuevo usuario
+- **ListUsers.js** - Listar todos los usuarios
+- **ChangePassword.js** - Cambiar contraseña
+- **UserInfo.js** - Información del perfil de usuario
+
+#### Roles y Permisos (4 pages)
+- **RegisterRole.js** - Crear rol
+- **ListRoles.js** - Listar roles
+- **RegisterGroup.js** - Crear grupo de usuarios
+- **ListGroups.js** - Listar grupos
+
+#### Permisos (2 pages)
+- **RegisterPermission.js** - Crear permiso
+- **ListPermissions.js** - Listar permisos
+
+#### Productos e Inventario (5 pages)
+- **RegisterProduct.js** - Agregar producto
+- **ListProducts.js** - Listar productos
+- **RegisterCategory.js** - Agregar categoría
+- **SupplyEntry.js** - Entrada de suministros
+- **StockControl.js** - Control de stock
+
+#### Promociones (2 pages)
+- **RegisterPromotion.js** - Crear promoción
+- **ListPromotions.js** - Listar promociones
+
+#### Proveedores (2 pages)
+- **RegisterSupplier.js** - Agregar proveedor
+- **ListSuppliers.js** - Listar proveedores
+
+#### Ventas (2 pages)
+- **RegisterSale.js** - Registrar venta
+- **SalesList.js** - Listar ventas
+
+#### Configuración (2 pages)
+- **ActivityLog.js** - Registro de actividades
+- **Logout.js** - Cerrar sesión
+
+---
+
+### 7. SERVICE LAYER (API Integration)
+
+**15 archivos de servicio** proporcionando abstracción de API:
+
+#### Configuración Base
+- **api.js**: Instancia de Axios configurada
+  - Base URL: `process.env.REACT_APP_API_URL`
+  - Timeout: 10 segundos
+  - Content-Type: application/json
+  - Request Interceptor: Agrega Bearer token automáticamente
+  - Response Interceptor: Maneja errores 401 y redirecciona a login
+
+#### Servicios de API
+
+| Servicio | Propósito | Métodos Principales |
+|----------|-----------|---------------------|
+| **authService.js** | Autenticación | login, register, forgotPassword, resetPassword |
+| **userService.js** | Gestión de usuarios | getAllUsers, getUserById, createUser, deleteUser, changePassword, updateUser |
+| **roleService.js** | Gestión de roles | getAllRoles, getRoleById, createRole, updateRole, deleteRole |
+| **permissionService.js** | Gestión de permisos | getAllPermissions, getPermissionById, createPermission, updatePermission, deletePermission |
+| **productService.js** | Gestión de productos | getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, toggleProductStatus |
+| **categoryService.js** | Gestión de categorías | getAllCategories, getCategoryById, createCategory, updateCategory, deleteCategory |
+| **supplierService.js** | Gestión de proveedores | getAllSuppliers, getSupplierById, createSupplier, updateSupplier, deleteSupplier |
+| **promotionService.js** | Gestión de promociones | getAllPromotions, getPromotionById, createPromotion, updatePromotion, deletePromotion |
+| **salesService.js** | Gestión de ventas | getAllSales, getSaleById, createSale |
+| **stockMovementService.js** | Movimientos de inventario | getAllStockMovements, getStockMovementById, createStockMovement |
+| **supplyEntryService.js** | Entradas de suministros | getAllSupplyEntries, getSupplyEntryById, createSupplyEntry, updateSupplyEntry, deleteSupplyEntry |
+| **activityLogService.js** | Registro de actividades | getAllActivityLogs, getActivityLogsByModule, getActivityLogsByUser, getActivityLogsByDateRange |
+| **dashboardService.js** | Datos del dashboard | getGeneralStats, getTodaySales, getTopProducts, getSalesByPeriod, getLowStockProducts, getRecentActivity |
+| **groupService.js** | Gestión de grupos | getAllGroups, getGroupById, createGroup, updateGroup, deleteGroup |
+
+---
+
+### 8. STATE MANAGEMENT (React Context API)
+
+#### AuthContext Implementation
+**Ubicación:** `/src/contexts/AuthContext.js`
+
+**Estado Gestionado:**
+- `user`: Datos del usuario autenticado
+- `token`: Token JWT
+- `loading`: Estado de carga durante autenticación
+- `isAuthenticated`: Boolean de autenticación
+
+**Funciones Proporcionadas:**
+- `login(email, password, rememberMe)`: Iniciar sesión
+- `logout()`: Cerrar sesión y limpiar storage
+- `validateToken()`: Validar token al cargar la app
+- `changePassword(currentPassword, newPassword)`: Cambiar contraseña
+- `updateUserProfile(userData)`: Actualizar perfil de usuario
+
+**Hook Personalizado:**
+```javascript
+const { user, token, login, logout, isAuthenticated, loading } = useAuth();
+```
+
+**Storage Strategy:**
+- `localStorage`: Almacenamiento persistente (para "Recordarme")
+- `sessionStorage`: Almacenamiento de sesión (se limpia al cerrar navegador)
+- **Keys**: `token`, `user`, `rememberedEmail`, `rememberMe`
+
+---
+
+### 9. AUTHORIZATION (RBAC - Role-Based Access Control)
+
+#### usePermissions Hook
+**Ubicación:** `/src/hooks/usePermissions.js`
+
+**Funcionalidades:**
+- Filtrado de menú basado en permisos del usuario
+- Verificación de acceso a categorías y submenús
+- Detección de Super Admin (jerarquía nivel 0)
+- Mapeo de categorías a IDs de permisos
+
+**Mapeo de Categorías:**
+```javascript
+{
+  'users': 1,       // Usuarios
+  'roles': 2,       // Roles y Grupos
+  'products': 3,    // Productos
+  'sales': 4,       // Ventas
+  'suppliers': 5,   // Proveedores
+  'promotions': 6,  // Promociones
+  'settings': 7     // Configuración
+}
+```
+
+**Lógica de Permisos:**
+- **Super Admin (nivel 0)**: Acceso total a todas las funcionalidades
+- **Otros Roles**: Acceso basado en permisos asignados
+- **Filtrado de Menú**: Solo muestra elementos permitidos
+
+**Uso en Componentes:**
+```javascript
+const filteredRoutes = usePermissions(routes);
+```
+
+---
+
+### 10. ROUTING STRUCTURE
+
+**39 rutas definidas** en `routes.js`
+
+#### Configuración de Router
+- **Tipo**: HashRouter (navegación estilo SPA)
+- **Redirect**: Ruta raíz redirige a `/auth/signin`
+- **Rutas Anidadas**: Categorías de menú colapsables con vistas anidadas
+
+#### Estructura de Rutas
+```javascript
+{
+  path: "/path",
+  name: "Nombre Visible",
+  icon: <IconComponent />,
+  component: ComponentName,
+  layout: "/admin" | "/auth",
+  category: "users" | "roles" | "products" | etc.
+}
+```
+
+#### Categorías de Rutas
+- **users**: Gestión de usuarios
+- **roles**: Roles, grupos y permisos
+- **products**: Productos, categorías, inventario
+- **sales**: Ventas y transacciones
+- **suppliers**: Proveedores
+- **promotions**: Promociones y descuentos
+- **settings**: Configuración y logs
+
+---
+
+### 11. THEME CUSTOMIZATION (Chakra UI)
+
+#### Theme Structure
+**Ubicación:** `/src/theme/`
+
+**Archivos de Tema:**
+- **theme.js**: Exportación del tema principal
+- **styles.js**: Estilos globales
+- **foundations/**: Tokens de diseño
+  - breakpoints.js: Puntos de quiebre responsive
+  - colors.js: Paleta de colores
+- **components/**: Overrides de componentes
+  - button.js
+  - badge.js
+  - link.js
+  - input.js
+- **additions/**: Componentes personalizados
+  - card/
+  - layout/
+
+#### Color Mode Support
+- **Light Mode**: Tema claro predeterminado
+- **Dark Mode**: Tema oscuro alternativo
+- **Hooks**:
+  - `useColorMode()`: Alternar entre modos
+  - `useColorModeValue(light, dark)`: Valores dinámicos según modo
+
+#### Fuentes
+- Open Sans
+- Raleway
+- Roboto
+- Material Icons
+
+---
+
+### 12. AUTHENTICATION FLOW
+
+```
+Usuario ingresa credenciales
+        ↓
+SignIn.js → authService.login(email, password)
+        ↓
+Backend /auth/login → Valida credenciales
+        ↓
+Retorna { token, user }
+        ↓
+AuthContext.login() → Guarda en localStorage/sessionStorage
+        ↓
+Axios interceptor → Agrega Bearer token a todas las peticiones
+        ↓
+Usuario autenticado → Redirige a /admin/dashboard
+```
+
+#### Token Validation Flow
+```
+App Load → AuthContext.validateToken()
+        ↓
+¿Token existe en storage?
+        ↓ Sí
+Validar con backend
+        ↓
+¿Token válido?
+        ↓ Sí          ↓ No
+Mantener sesión   Logout y redirigir a /signin
+```
+
+#### 401 Error Handling
+```
+Cualquier API request → Respuesta 401 Unauthorized
+        ↓
+Axios Response Interceptor → Detecta 401
+        ↓
+AuthContext.logout() → Limpia storage
+        ↓
+Redirecciona a /auth/signin
+```
+
+---
+
+### 13. COMPONENT ARCHITECTURE
+
+#### Layout Hierarchy
+```
+index.js
+  ├── BrowserRouter
+  │   ├── AuthContext.Provider
+  │   │   ├── Switch
+  │   │   │   ├── Route /auth → Auth Layout
+  │   │   │   │   └── SignIn/SignUp/ResetPassword
+  │   │   │   ├── Route /admin → Admin Layout
+  │   │   │   │   ├── Sidebar (filtrado por permisos)
+  │   │   │   │   ├── AdminNavbar
+  │   │   │   │   ├── MainPanel
+  │   │   │   │   │   └── Pages (Dashboard, Users, Products, etc.)
+  │   │   │   │   └── Footer
+  │   │   │   └── Route /rtl → RTL Layout
+```
+
+#### Core Components
+- **Card**: Contenedor de tarjetas reutilizable
+- **Sidebar**: Navegación lateral con colapsables
+- **AdminNavbar**: Barra de navegación superior
+- **MainPanel**: Panel principal de contenido
+- **PanelContainer**: Contenedor con padding
+- **PanelContent**: Contenido con scroll
+
+---
+
+### 14. BUILD & DEPLOYMENT
+
+#### NPM Scripts
+```json
+{
+  "start": "react-scripts start",           // Servidor de desarrollo
+  "build": "react-scripts build && gulp",   // Build de producción
+  "test": "react-scripts test --env=jsdom", // Ejecutar tests
+  "eject": "react-scripts eject",           // Eject de CRA
+  "deploy": "npm run build",                // Solo build
+  "lint:check": "eslint . --ext=js,jsx",    // Verificar linting
+  "lint:fix": "eslint . --ext=js,jsx --fix", // Corregir linting
+  "install:clean": "rm -rf node_modules && npm install && npm start" // Instalación limpia
+}
+```
+
+#### Desarrollo
+1. `npm install` - Instalar dependencias
+2. `npm start` - Servidor de desarrollo en http://localhost:3000
+3. Hot reload habilitado vía react-scripts
+
+#### Producción
+1. `npm run build` - Crear bundle optimizado
+2. Tareas de Gulp ejecutadas para optimización
+3. Source maps deshabilitados (`GENERATE_SOURCEMAP=false`)
+4. Salida en directorio `build/`
+
+#### Docker Deployment
+```yaml
+services:
+  frontend:
+    build: .
+    ports:
+      - "3001:3000"
+    environment:
+      - REACT_APP_API_URL=http://34.135.23.61:3000
+```
+
+---
+
+### 15. KEY FEATURES IMPLEMENTED
+
+#### Dashboard Features ✅
+- Estadísticas en tiempo real
+- Productos más vendidos
+- Alertas de stock bajo
+- Registro de actividad reciente
+- Widgets personalizables
+- Soporte para modo oscuro/claro
+
+#### User Management ✅
+- Registro y listado de usuarios
+- Cambio de contraseña
+- Gestión de perfil de usuario
+- Registro de auditoría de actividades
+
+#### Role-Based Access Control ✅
+- Creación y gestión de roles
+- Asignación de permisos
+- Permisos a nivel de submenú
+- Control de acceso basado en categorías
+
+#### Inventory Management ✅
+- Registro y listado de productos
+- Gestión de categorías
+- Control y seguimiento de stock
+- Gestión de entradas de suministros
+- Historial de movimientos de stock
+
+#### Sales Management ✅
+- Registro de ventas
+- Listado e historial de ventas
+- Reportes de ventas
+
+#### Additional Features ✅
+- Gestión de promociones
+- Gestión de proveedores
+- Exportación a PDF y Excel
+- Generación de códigos QR
+- Personalización de tema (Chakra UI)
+- Soporte para idiomas RTL (Right-to-Left)
+- Diseño responsive
+
+---
+
+### 16. DEPLOYMENT INFO
+
+- **Frontend Deployment:** Google Cloud en 34.135.23.61:3001
+- **Backend API:** http://34.135.23.61:3000
+- **Environment:** Producción con Docker
+- **Node Version:** 20 (Alpine para tamaño de imagen mínimo)
+
+---
+
+### 17. STRENGTHS & BEST PRACTICES
+
+#### Fortalezas ✅
+- Separación clara de responsabilidades (services, components, layouts)
+- Context API para gestión de estado simple
+- Custom hooks para lógica reutilizable
+- Sistema de permisos completo con RBAC
+- Interceptores de Axios para autenticación
+- Diseño responsive con Chakra UI
+- Soporte de personalización de tema
+- Abstracción de capa de servicios
+- Soporte multi-idioma (RTL)
+- Exportación de datos (PDF, Excel)
+- Generación de códigos QR
+
+#### Áreas a Considerar
+- No hay Redux/gestión de estado avanzada (Context API es suficiente para el alcance actual)
+- HashRouter usado (enrutamiento SPA basado en URL)
+- Token almacenado en localStorage (considerar alternativas más seguras)
+- No hay implementación visible de error boundary completo
+- No hay estrategia de caché visible
+
+---
+
+### 18. SECURITY CONSIDERATIONS
+
+#### Autenticación
+- ✅ Bearer token JWT
+- ✅ Token almacenado en localStorage
+- ✅ Auto-logout en 401 con redirección
+- ✅ Manejo de errores de red
+
+#### Autorización
+- ✅ RBAC con jerarquía de roles
+- ✅ Filtrado de menú dinámico
+- ✅ Permisos a nivel de ruta
+- ✅ Super Admin con acceso completo
+
+#### Recomendaciones de Seguridad
+- ⚠️ Considerar usar httpOnly cookies en lugar de localStorage para tokens
+- ⚠️ Implementar refresh tokens
+- ⚠️ Agregar CSRF protection
+- ⚠️ Implementar rate limiting en frontend
+- ⚠️ Agregar validación de entrada más robusta
+
+---
+
+### 19. FILE STATISTICS
+
+- **Total Views**: 34+ componentes de página
+- **Total Services**: 15 archivos de servicio API
+- **Total Components**: 14+ directorios de componentes
+- **Routes**: 39+ rutas definidas
+- **Dependencies**: 40+ paquetes npm
+- **Dev Dependencies**: 7+ paquetes
+
+---
+
+### 20. MISSING CONFIGURATION IN PROJECT
+
+Elementos importantes NO encontrados que deberían configurarse:
+
+- **Error Boundaries**: No hay boundaries de error visibles
+- **Service Worker**: No hay SW para PWA capabilities
+- **Tests**: No hay tests unitarios o de integración visibles
+- **.env.example**: No hay archivo de ejemplo de variables de entorno
+- **API Mocking**: No hay configuración de mocking para desarrollo
+
+---
+
+## Conclusión
+
+Este es un dashboard profesional y completo de gestión para restaurante construido con React y Chakra UI, con características completas de control de acceso basado en roles, gestión de inventario, seguimiento de ventas y capacidades de administración de usuarios. La aplicación está bien estructurada, sigue las mejores prácticas de React moderno, y está lista para producción con Docker.
+
+---
+
+**Última actualización:** 2025-10-22
+**Aplicación:** Restaurante Pika Dashboard
+**Template Base:** Argon Dashboard Chakra v1.0.0

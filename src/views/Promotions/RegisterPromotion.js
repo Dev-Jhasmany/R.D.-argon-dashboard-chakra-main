@@ -422,7 +422,7 @@ function RegisterPromotion() {
                 </FormControl>
                 <FormControl isRequired mb='20px'>
                   <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
-                    Porcentaje de Descuento
+                    Nuevo precio por Reducción
                   </FormLabel>
                   <Input
                     name="discount_percentage"
