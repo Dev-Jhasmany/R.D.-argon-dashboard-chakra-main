@@ -23,41 +23,11 @@ import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
 import permissionService from "services/permissionService";
 import roleService from "services/roleService";
+import { getMenuCategories } from "config/menuConfig";
 
-// Definición de menús disponibles basados en routes.js
+// Obtener las categorías de menú desde la configuración centralizada
 // NOTA: Dashboard y Configuración son siempre visibles para todos, no se incluyen aquí
-const MENU_CATEGORIES = [
-  {
-    id: "users",
-    name: "Usuarios",
-    submenus: ["Registrar Usuario", "Listar Usuarios", "Cambiar Contraseña", "Mi Perfil"]
-  },
-  {
-    id: "roles",
-    name: "Roles y Permisos",
-    submenus: ["Registrar Rol", "Listar Roles", "Registrar Permiso", "Listar Permisos"]
-  },
-  {
-    id: "products",
-    name: "Productos e Inventario",
-    submenus: ["Registrar Producto", "Listar Productos", "Registrar Categorías", "Entradas de Insumos", "Controlar Stock"]
-  },
-  {
-    id: "promotions",
-    name: "Promociones",
-    submenus: ["Registrar Promoción", "Listar Promociones"]
-  },
-  {
-    id: "suppliers",
-    name: "Proveedores",
-    submenus: ["Registrar Proveedor", "Listar Proveedores"]
-  },
-  {
-    id: "sales",
-    name: "Gestión de Ventas",
-    submenus: ["Registrar Venta", "Listar Ventas"]
-  },
-];
+const MENU_CATEGORIES = getMenuCategories();
 
 function RegisterPermission() {
   const textColor = useColorModeValue("gray.700", "white");

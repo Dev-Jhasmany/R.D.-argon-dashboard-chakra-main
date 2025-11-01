@@ -1,20 +1,9 @@
 import { useState, useEffect } from 'react';
 import permissionService from 'services/permissionService';
+import { getCategoryMap, ALWAYS_VISIBLE_CATEGORIES } from 'config/menuConfig';
 
-// Mapeo de nombres de categorías a sus IDs
-const CATEGORY_MAP = {
-  "Usuarios": "users",
-  "Roles y Permisos": "roles",
-  "Productos e Inventario": "products",
-  "Promociones": "promotions",
-  "Proveedores": "suppliers",
-  "Gestión de Ventas": "sales",
-  "Pagos": "payments",
-  "Configuración": "settings"
-};
-
-// Categorías que siempre deben estar visibles para todos
-const ALWAYS_VISIBLE_CATEGORIES = ["Dashboard", "Configuración"];
+// Mapeo de nombres de categorías a sus IDs - Obtenido desde configuración centralizada
+const CATEGORY_MAP = getCategoryMap();
 
 export const usePermissions = () => {
   const [permissions, setPermissions] = useState([]);

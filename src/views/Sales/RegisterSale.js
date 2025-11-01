@@ -91,6 +91,11 @@ import CardHeader from 'components/Card/CardHeader';
 import salesService from 'services/salesService';
 import productService from 'services/productService';
 import promotionService from 'services/promotionService';
+import orderService from 'services/orderService';
+import settingsService from 'services/settingsService';
+import cashRegisterService from 'services/cashRegisterService';
+import { useAuth } from 'contexts/AuthContext';
+import TicketReceipt from 'components/TicketReceipt/TicketReceipt';
 
 function RegisterSale() {
   const textColor = useColorModeValue('gray.700', 'white');
@@ -98,6 +103,7 @@ function RegisterSale() {
   const inputBg = useColorModeValue('white', 'gray.700');
   const inputTextColor = useColorModeValue('gray.800', 'white');
   const toast = useToast();
+  const { user } = useAuth();
 
   const [products, setProducts] = useState([]);
   const [promotions, setPromotions] = useState([]);
@@ -105,6 +111,7 @@ function RegisterSale() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isPayPalModalOpen, setIsPayPalModalOpen] = useState(false);
   const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [saleInfo, setSaleInfo] = useState(null);
   const [paypalEmail, setPaypalEmail] = useState('');
   const [paypalStatus, setPaypalStatus] = useState('input'); // 'input', 'sending', 'waiting', 'confirmed'
@@ -120,6 +127,9 @@ function RegisterSale() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
   const [loadingInventory, setLoadingInventory] = useState(false);
+  const [businessInfo, setBusinessInfo] = useState(null);
+  const [openCashRegisters, setOpenCashRegisters] = useState([]);
+  const [selectedCashRegister, setSelectedCashRegister] = useState(null);
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -134,6 +144,8 @@ function RegisterSale() {
     loadPromotions();
     loadSalesHistory();
     loadInventory();
+    loadBusinessSettings();
+    loadOpenCashRegisters();
   }, []);
 
   const loadProducts = async () => {
@@ -212,12 +224,68 @@ function RegisterSale() {
     setLoadingInventory(false);
   };
 
+  const loadBusinessSettings = async () => {
+    const result = await settingsService.getBusinessSettings();
+    if (result.success) {
+      setBusinessInfo({
+        name: result.data.business_name,
+        branch: result.data.branch_name,
+        address: result.data.address,
+        phone: result.data.phone,
+        website: result.data.website,
+      });
+    } else {
+      // Si falla, usar configuración por defecto
+      setBusinessInfo({
+        name: 'RESTAURANTE PIKA',
+        branch: 'Sucursal UDABOL',
+        address: 'UDABOL, Santa Cruz Bolivia',
+        phone: '755-60-845',
+        website: 'www.restaurantepika.com',
+      });
+    }
+  };
+
+  const loadOpenCashRegisters = async () => {
+    const result = await cashRegisterService.getAllCashRegisters();
+    if (result.success) {
+      // Filtrar solo las cajas abiertas
+      const openRegisters = result.data.filter((cr) => cr.status === 'open');
+      setOpenCashRegisters(openRegisters);
+
+      // Si hay al menos una caja abierta, seleccionarla automáticamente
+      if (openRegisters.length > 0) {
+        setSelectedCashRegister(openRegisters[0].id);
+      }
+    } else {
+      toast({
+        title: 'Error al cargar cajas',
+        description: result.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   const openProductModal = () => {
+    // Validar que haya una caja seleccionada
+    if (!selectedCashRegister) {
+      toast({
+        title: 'No hay caja seleccionada',
+        description: 'Debe seleccionar una caja abierta antes de agregar productos',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
     // Validar que haya productos activos con stock
     if (!hasProducts) {
       toast({
@@ -358,6 +426,92 @@ function RegisterSale() {
   };
 
   /**
+   * FUNCIÓN: createOrderFromSale
+   *
+   * Crea automáticamente un pedido en el sistema de cocina después de registrar una venta.
+   *
+   * FLUJO:
+   * 1. Recibe los datos de la venta creada (con sale.id)
+   * 2. Obtiene los productos/promociones del carrito para obtener preparationTime
+   * 3. Construye los detalles del pedido con información de preparación
+   * 4. Llama a orderService.createOrder() → POST /orders
+   * 5. El pedido queda en estado 'pending' esperando ser recepcionado por el cocinero
+   *
+   * @param {Object} sale - Datos de la venta creada (incluye sale.id, sale_number, etc.)
+   */
+  const createOrderFromSale = async (sale) => {
+    try {
+      // Validar que el usuario esté autenticado
+      if (!user || !user.id) {
+        console.warn('No se puede crear pedido: usuario no autenticado');
+        return;
+      }
+
+      // Construir detalles del pedido con información de preparación
+      const orderDetails = cart.map((item) => {
+        let preparationTime = 5; // Tiempo por defecto
+        let itemType = 'product';
+
+        // Determinar si es promoción basado en el flag is_promotion
+        if (item.is_promotion) {
+          itemType = 'promotion';
+          preparationTime = 10; // Tiempo por defecto para promociones
+
+          // Intentar obtener tiempo real de la promoción
+          const promo = promotions.find(p => p.id === item.promotion_id);
+          if (promo && promo.preparationTime) {
+            preparationTime = promo.preparationTime;
+          }
+        } else {
+          // Es un producto regular
+          preparationTime = 5; // Tiempo por defecto para productos
+
+          // Intentar obtener tiempo real del producto
+          const product = allProducts.find(p => p.id === item.product_id);
+          if (product && product.preparationTime) {
+            preparationTime = product.preparationTime;
+          }
+        }
+
+        return {
+          type: itemType,
+          productId: itemType === 'product' ? item.product_id : null,
+          promotionId: itemType === 'promotion' ? item.promotion_id : null,
+          name: item.product_name,
+          quantity: item.quantity,
+          unitPrice: parseFloat(item.unit_price),
+          subtotal: parseFloat(item.unit_price) * item.quantity,
+          preparationTime,
+        };
+      });
+
+      // Crear el pedido
+      // Generar notas con nombres de productos
+      const productNames = cart.map(item => `${item.quantity}x ${item.product_name}`).join(', ');
+      const orderNotes = formData.notes || productNames;
+
+      const orderData = {
+        saleId: sale.id,
+        sellerId: user.id,
+        details: orderDetails,
+        notes: orderNotes,
+      };
+
+      console.log('Creando pedido con datos:', orderData); // Para debug
+
+      const orderResult = await orderService.createOrder(orderData);
+
+      if (orderResult.success) {
+        console.log('✅ Pedido creado exitosamente:', orderResult.data);
+      } else {
+        console.error('❌ Error al crear pedido:', orderResult.error);
+      }
+    } catch (error) {
+      console.error('❌ Error al crear pedido desde venta:', error);
+    }
+  };
+
+  /**
    * FUNCIÓN: handleSubmit
    *
    * Maneja el envío del formulario de registro de venta.
@@ -386,6 +540,17 @@ function RegisterSale() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!selectedCashRegister) {
+      toast({
+        title: 'No hay caja seleccionada',
+        description: 'Debe seleccionar una caja abierta para realizar la venta',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     if (cart.length === 0) {
       toast({
         title: 'Carrito vacío',
@@ -403,6 +568,8 @@ function RegisterSale() {
       discount: parseFloat(formData.discount) || 0,
       payment_method: formData.payment_method,
       notes: formData.notes || null,
+      cash_register_id: selectedCashRegister,
+      created_by_id: user?.id || null,
       details: cart.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
@@ -415,6 +582,9 @@ function RegisterSale() {
     const result = await salesService.createSale(saleData);
 
     if (result.success) {
+      // Crear pedido automáticamente después de la venta
+      await createOrderFromSale(result.data);
+
       // Si el método de pago es QR, mostrar modal con QR
       if (formData.payment_method === 'qr') {
         setSaleInfo(result.data);
@@ -430,14 +600,15 @@ function RegisterSale() {
       } else {
         toast({
           title: 'Venta registrada',
-          description: `Venta ${result.data.sale_number} registrada exitosamente`,
+          description: `Venta ${result.data.sale_number} registrada exitosamente. Pedido enviado a cocina.`,
           status: 'success',
           duration: 5000,
           isClosable: true,
         });
 
-        // Resetear formulario y recargar historial
-        resetForm();
+        // Guardar información de la venta y mostrar ticket
+        setSaleInfo(result.data);
+        setIsTicketModalOpen(true);
         loadSalesHistory();
       }
     } else {
@@ -462,6 +633,17 @@ function RegisterSale() {
     setCart([]);
     loadProducts();
     loadInventory();
+  };
+
+  /**
+   * FUNCIÓN: closeTicketModal
+   *
+   * Cierra el modal del ticket y resetea el formulario.
+   */
+  const closeTicketModal = () => {
+    setIsTicketModalOpen(false);
+    setSaleInfo(null);
+    resetForm();
   };
 
   /**
@@ -492,8 +674,8 @@ function RegisterSale() {
     }
 
     setIsQRModalOpen(false);
-    setSaleInfo(null);
-    resetForm();
+    // Mostrar ticket después de cerrar modal de QR
+    setIsTicketModalOpen(true);
     loadSalesHistory();
   };
 
@@ -530,10 +712,10 @@ function RegisterSale() {
     }
 
     setIsPayPalModalOpen(false);
-    setSaleInfo(null);
     setPaypalEmail('');
     setPaypalStatus('input');
-    resetForm();
+    // Mostrar ticket después de cerrar modal de PayPal
+    setIsTicketModalOpen(true);
     loadSalesHistory();
   };
 
@@ -645,11 +827,11 @@ function RegisterSale() {
     }
 
     setIsStripeModalOpen(false);
-    setSaleInfo(null);
     setStripePhone('');
     setStripeMethod('whatsapp');
     setStripeStatus('input');
-    resetForm();
+    // Mostrar ticket después de cerrar modal de Stripe
+    setIsTicketModalOpen(true);
     loadSalesHistory();
   };
 
@@ -820,6 +1002,32 @@ function RegisterSale() {
               </CardHeader>
               <CardBody>
                 <Flex direction='column' gap='15px'>
+                  {/* Selector de Caja */}
+                  <FormControl isRequired>
+                    <FormLabel fontSize='sm'>Caja Abierta</FormLabel>
+                    {openCashRegisters.length === 0 ? (
+                      <Alert status='warning' size='sm' borderRadius='md'>
+                        <AlertIcon />
+                        <AlertDescription fontSize='xs'>
+                          No hay cajas abiertas. Debe abrir una caja para realizar ventas.
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <Select
+                        value={selectedCashRegister || ''}
+                        onChange={(e) => setSelectedCashRegister(e.target.value)}
+                        size='sm'
+                        bg={inputBg}
+                        color={inputTextColor}>
+                        {openCashRegisters.map((cashRegister) => (
+                          <option key={cashRegister.id} value={cashRegister.id}>
+                            {cashRegister.name || `Caja #${cashRegister.id}`}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </FormControl>
+
                   <Flex justify='space-between'>
                     <Text fontSize='sm'>Subtotal:</Text>
                     <Text fontSize='sm' fontWeight='bold'>
@@ -955,7 +1163,9 @@ function RegisterSale() {
                     <Th borderColor={borderColor}>N° Venta</Th>
                     <Th borderColor={borderColor}>Fecha</Th>
                     <Th borderColor={borderColor}>Cliente</Th>
+                    <Th borderColor={borderColor}>Caja Abierta</Th>
                     <Th borderColor={borderColor}>Total (Bs.)</Th>
+                    <Th borderColor={borderColor}>Stock Actual</Th>
                     <Th borderColor={borderColor}>Método de Pago</Th>
                     <Th borderColor={borderColor}>Estado</Th>
                   </Tr>
@@ -978,8 +1188,27 @@ function RegisterSale() {
                       <Td borderColor={borderColor}>
                         {sale.customer_name || 'Sin nombre'}
                       </Td>
+                      <Td borderColor={borderColor}>
+                        {sale.cash_register?.name || 'N/A'}
+                      </Td>
                       <Td borderColor={borderColor} fontWeight='semibold'>
                         Bs. {parseFloat(sale.total).toFixed(2)}
+                      </Td>
+                      <Td borderColor={borderColor}>
+                        {sale.details && sale.details.length > 0 ? (
+                          <Box>
+                            {sale.details.map((detail, idx) => (
+                              <Text key={idx} fontSize='xs' color={textColor}>
+                                {detail.custom_name || detail.product?.name || 'Producto'}:
+                                <Text as='span' fontWeight='bold' color='blue.400' ml={1}>
+                                  {detail.product?.stock != null ? parseFloat(detail.product.stock).toFixed(2) : 'N/A'}
+                                </Text>
+                              </Text>
+                            ))}
+                          </Box>
+                        ) : (
+                          <Text fontSize='xs' color={useColorModeValue('gray.500', 'gray.400')}>Sin detalles</Text>
+                        )}
                       </Td>
                       <Td borderColor={borderColor}>
                         {sale.payment_method === 'efectivo' && 'Efectivo'}
@@ -1799,6 +2028,14 @@ function RegisterSale() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Modal de Ticket de Venta */}
+      <TicketReceipt
+        isOpen={isTicketModalOpen}
+        onClose={closeTicketModal}
+        saleData={saleInfo}
+        businessInfo={businessInfo}
+      />
     </Flex>
   );
 }

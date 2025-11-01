@@ -65,6 +65,32 @@ const salesService = {
       };
     }
   },
+
+  // Anular una venta
+  cancelSale: async (id, reason) => {
+    try {
+      const response = await api.patch(`/sales/${id}/cancel`, { reason });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error al anular venta',
+      };
+    }
+  },
+
+  // Devolver una venta
+  returnSale: async (id, reason) => {
+    try {
+      const response = await api.patch(`/sales/${id}/return`, { reason });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error al devolver venta',
+      };
+    }
+  },
 };
 
 export default salesService;

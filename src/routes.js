@@ -20,6 +20,7 @@ import RegisterProduct from "views/Products/RegisterProduct.js";
 import ListProducts from "views/Products/ListProducts.js";
 import RegisterCategory from "views/Products/RegisterCategory.js";
 import SupplyEntry from "views/Products/SupplyEntry.js";
+import WasteReport from "views/Products/WasteReport.js";
 import StockControl from "views/Products/StockControl.js";
 import RegisterPromotion from "views/Promotions/RegisterPromotion.js";
 import ListPromotions from "views/Promotions/ListPromotions.js";
@@ -27,6 +28,11 @@ import RegisterSupplier from "views/Suppliers/RegisterSupplier.js";
 import ListSuppliers from "views/Suppliers/ListSuppliers.js";
 import RegisterSale from "views/Sales/RegisterSale.js";
 import SalesList from "views/Sales/SalesList.js";
+import CashRegister from "views/CashRegister/CashRegister.js";
+import ReturnsCancellations from "views/ReturnsCancellations/ReturnsCancellations.js";
+import OrdersList from "views/Orders/OrdersList.js";
+import OrdersAdministration from "views/Orders/OrdersAdministration.js";
+import OrdersHistory from "views/Orders/OrdersHistory.js";
 // import RegisterPayment from "views/Payments/RegisterPayment.js";
 // import PaymentMethods from "views/Payments/PaymentMethods.js";
 import ActivityLog from "views/Settings/ActivityLog.js";
@@ -189,6 +195,23 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
+        path: "/stock-control",
+        name: "Controlar Stock",
+        rtlName: "مراقبة المخزون",
+        icon: <CreditIcon color='inherit' />,
+        component: StockControl,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
+    name: "Insumos",
+    category: "supplies",
+    rtlName: "الإمدادات",
+    state: "suppliesCollapse",
+    icon: <DocumentIcon color='inherit' />,
+    views: [
+      {
         path: "/supply-entry",
         name: "Entradas de Insumos",
         rtlName: "إدخالات الإمدادات",
@@ -197,11 +220,11 @@ var dashRoutes = [
         layout: "/admin",
       },
       {
-        path: "/stock-control",
-        name: "Controlar Stock",
-        rtlName: "مراقبة المخزون",
-        icon: <CreditIcon color='inherit' />,
-        component: StockControl,
+        path: "/waste-report",
+        name: "Reporte Desperdicios",
+        rtlName: "تقرير النفايات",
+        icon: <StatsIcon color='inherit' />,
+        component: WasteReport,
         layout: "/admin",
       },
     ],
@@ -281,6 +304,64 @@ var dashRoutes = [
       },
     ],
   },
+  {
+    name: "Arqueo de caja",
+    category: "cash_audit",
+    rtlName: "تدقيق النقد",
+    state: "cashAuditCollapse",
+    icon: <CreditIcon color='inherit' />,
+    views: [
+      {
+        path: "/cash-register",
+        name: "Control de Caja",
+        rtlName: "مراقبة النقد",
+        icon: <CreditIcon color='inherit' />,
+        component: CashRegister,
+        layout: "/admin",
+      },
+      {
+        path: "/returns-cancellations",
+        name: "Devoluciones y Anulaciones",
+        rtlName: "المرتجعات والإلغاءات",
+        icon: <DocumentIcon color='inherit' />,
+        component: ReturnsCancellations,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
+    name: "Pedidos",
+    category: "orders",
+    rtlName: "الطلبات",
+    state: "ordersCollapse",
+    icon: <DocumentIcon color='inherit' />,
+    views: [
+      {
+        path: "/orders-list",
+        name: "Ver Pedidos",
+        rtlName: "عرض الطلبات",
+        icon: <StatsIcon color='inherit' />,
+        component: OrdersList,
+        layout: "/admin",
+      },
+      {
+        path: "/orders-administration",
+        name: "Administrar Pedidos",
+        rtlName: "إدارة الطلبات",
+        icon: <DocumentIcon color='inherit' />,
+        component: OrdersAdministration,
+        layout: "/admin",
+      },
+      {
+        path: "/orders-history",
+        name: "Historial de Pedidos",
+        rtlName: "سجل الطلبات",
+        icon: <StatsIcon color='inherit' />,
+        component: OrdersHistory,
+        layout: "/admin",
+      },
+    ],
+  },
   // {
   //   name: "Pagos",
   //   category: "payments",
@@ -307,20 +388,29 @@ var dashRoutes = [
   //   ],
   // },
   {
+    name: "Bitácora",
+    category: "activity_log",
+    rtlName: "سجل النشاط",
+    state: "activityLogCollapse",
+    icon: <DocumentIcon color='inherit' />,
+    views: [
+      {
+        path: "/activity-log",
+        name: "Ver Bitácora",
+        rtlName: "عرض سجل النشاط",
+        icon: <DocumentIcon color='inherit' />,
+        component: ActivityLog,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
     name: "Configuración",
     category: "settings",
     rtlName: "الإعدادات",
     state: "settingsCollapse",
     icon: <SupportIcon color='inherit' />,
     views: [
-      {
-        path: "/activity-log",
-        name: "Bitácora",
-        rtlName: "سجل النشاط",
-        icon: <DocumentIcon color='inherit' />,
-        component: ActivityLog,
-        layout: "/admin",
-      },
       {
         path: "/logout",
         name: "Cerrar Sesión",

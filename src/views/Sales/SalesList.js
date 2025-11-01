@@ -153,11 +153,11 @@ function SalesList() {
 
   // Exportar a PDF
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF('landscape'); // Modo horizontal para más columnas
 
     // Título
     doc.setFontSize(18);
-    doc.text('Listado de Ventas', 14, 20);
+    doc.text('Listado de Ventas con Stock', 14, 20);
 
     // Fecha de generación
     doc.setFontSize(10);
@@ -170,38 +170,57 @@ function SalesList() {
     doc.text(`Total de ventas: ${filteredSales.length}`, 14, 34);
     doc.text(`Monto total: Bs. ${totalVentas.toFixed(2)}`, 14, 40);
 
-    // Preparar datos para la tabla
-    const tableData = filteredSales.map(sale => [
-      sale.sale_number,
-      formatDate(sale.created_at),
-      sale.customer_name || 'Sin nombre',
-      sale.customer_nit || '-',
-      sale.payment_method.toUpperCase(),
-      `Bs. ${parseFloat(sale.total).toFixed(2)}`,
-    ]);
+    let currentY = 46;
 
-    // Crear tabla usando autoTable
-    autoTable(doc, {
-      startY: 46,
-      head: [['Nº Venta', 'Fecha', 'Cliente', 'NIT/CI', 'Método Pago', 'Total']],
-      body: tableData,
-      theme: 'grid',
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [66, 153, 225], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 247, 250] },
-      foot: [[
-        { content: 'TOTAL GENERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold' } },
-        { content: `Bs. ${totalVentas.toFixed(2)}`, styles: { fontStyle: 'bold', fillColor: [220, 252, 231] } }
-      ]],
-      footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
+    // Iterar sobre cada venta para mostrar detalles con stock
+    filteredSales.forEach((sale, index) => {
+      // Verificar si necesitamos una nueva página
+      if (currentY > 180) {
+        doc.addPage('landscape');
+        currentY = 20;
+      }
+
+      // Encabezado de venta
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${sale.sale_number} - ${sale.customer_name || 'Sin nombre'}`, 14, currentY);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(9);
+      doc.text(`Fecha: ${formatDate(sale.created_at)} | Total: Bs. ${parseFloat(sale.total).toFixed(2)}`, 14, currentY + 5);
+
+      currentY += 10;
+
+      // Tabla de productos con stock
+      if (sale.details && sale.details.length > 0) {
+        const productsData = sale.details.map(detail => [
+          detail.custom_code || detail.product?.code || '-',
+          detail.custom_name || detail.product?.name || 'Producto',
+          parseFloat(detail.quantity).toFixed(2),
+          `Bs. ${parseFloat(detail.unit_price).toFixed(2)}`,
+          `Bs. ${parseFloat(detail.subtotal).toFixed(2)}`,
+          detail.product ? `${parseFloat(detail.product.stock).toFixed(2)} ${detail.product.unit}` : 'N/A',
+        ]);
+
+        autoTable(doc, {
+          startY: currentY,
+          head: [['Código', 'Producto', 'Cantidad', 'Precio Unit.', 'Subtotal', 'Stock Actual']],
+          body: productsData,
+          theme: 'grid',
+          styles: { fontSize: 7, cellPadding: 1.5 },
+          headStyles: { fillColor: [66, 153, 225], textColor: 255, fontSize: 8 },
+          margin: { left: 14 },
+        });
+
+        currentY = doc.lastAutoTable.finalY + 8;
+      }
     });
 
     // Guardar PDF
-    doc.save(`ventas_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`ventas_con_stock_${new Date().toISOString().split('T')[0]}.pdf`);
 
     toast({
       title: 'PDF Generado',
-      description: 'El listado de ventas ha sido exportado a PDF',
+      description: 'El listado de ventas con stock ha sido exportado a PDF',
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -213,59 +232,109 @@ function SalesList() {
     // Preparar datos de resumen
     const totalVentas = filteredSales.reduce((sum, sale) => sum + parseFloat(sale.total), 0);
 
-    // Preparar datos principales
-    const excelData = filteredSales.map(sale => ({
-      'Nº Venta': sale.sale_number,
-      'Fecha': formatDate(sale.created_at),
-      'Cliente': sale.customer_name || 'Sin nombre',
-      'NIT/CI': sale.customer_nit || '-',
-      'Método de Pago': sale.payment_method.toUpperCase(),
-      'Subtotal': `Bs. ${parseFloat(sale.subtotal).toFixed(2)}`,
-      'Descuento': `Bs. ${parseFloat(sale.discount).toFixed(2)}`,
-      'Total': `Bs. ${parseFloat(sale.total).toFixed(2)}`,
-      'Notas': sale.notes || '',
-    }));
+    // Preparar datos detallados con productos y stock
+    const excelData = [];
 
-    // Agregar fila de total
+    filteredSales.forEach(sale => {
+      // Agregar encabezado de venta
+      excelData.push({
+        'Nº Venta': sale.sale_number,
+        'Fecha': formatDate(sale.created_at),
+        'Cliente': sale.customer_name || 'Sin nombre',
+        'NIT/CI': sale.customer_nit || '-',
+        'Método de Pago': sale.payment_method.toUpperCase(),
+        'Total Venta': `Bs. ${parseFloat(sale.total).toFixed(2)}`,
+        'Código Producto': '',
+        'Producto': '',
+        'Cantidad': '',
+        'Precio Unit.': '',
+        'Subtotal Línea': '',
+        'Stock Actual': '',
+      });
+
+      // Agregar detalles de productos
+      if (sale.details && sale.details.length > 0) {
+        sale.details.forEach(detail => {
+          excelData.push({
+            'Nº Venta': '',
+            'Fecha': '',
+            'Cliente': '',
+            'NIT/CI': '',
+            'Método de Pago': '',
+            'Total Venta': '',
+            'Código Producto': detail.custom_code || detail.product?.code || '-',
+            'Producto': detail.custom_name || detail.product?.name || 'Producto',
+            'Cantidad': parseFloat(detail.quantity).toFixed(2),
+            'Precio Unit.': `Bs. ${parseFloat(detail.unit_price).toFixed(2)}`,
+            'Subtotal Línea': `Bs. ${parseFloat(detail.subtotal).toFixed(2)}`,
+            'Stock Actual': detail.product ? `${parseFloat(detail.product.stock).toFixed(2)} ${detail.product.unit}` : 'N/A',
+          });
+        });
+      }
+
+      // Agregar fila en blanco como separador
+      excelData.push({
+        'Nº Venta': '',
+        'Fecha': '',
+        'Cliente': '',
+        'NIT/CI': '',
+        'Método de Pago': '',
+        'Total Venta': '',
+        'Código Producto': '',
+        'Producto': '',
+        'Cantidad': '',
+        'Precio Unit.': '',
+        'Subtotal Línea': '',
+        'Stock Actual': '',
+      });
+    });
+
+    // Agregar fila de total general
     excelData.push({
       'Nº Venta': '',
       'Fecha': '',
       'Cliente': '',
       'NIT/CI': '',
-      'Método de Pago': '',
-      'Subtotal': '',
-      'Descuento': 'TOTAL GENERAL:',
-      'Total': `Bs. ${totalVentas.toFixed(2)}`,
-      'Notas': '',
+      'Método de Pago': 'TOTAL GENERAL:',
+      'Total Venta': `Bs. ${totalVentas.toFixed(2)}`,
+      'Código Producto': '',
+      'Producto': '',
+      'Cantidad': '',
+      'Precio Unit.': '',
+      'Subtotal Línea': '',
+      'Stock Actual': '',
     });
 
     // Crear libro de trabajo
     const ws = XLSX.utils.json_to_sheet(excelData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
+    XLSX.utils.book_append_sheet(wb, ws, 'Ventas con Stock');
 
     // Ajustar ancho de columnas
     const colWidths = [
-      { wch: 15 }, // Nº Venta
+      { wch: 18 }, // Nº Venta
       { wch: 20 }, // Fecha
       { wch: 25 }, // Cliente
       { wch: 15 }, // NIT/CI
       { wch: 15 }, // Método Pago
-      { wch: 12 }, // Subtotal
-      { wch: 12 }, // Descuento
-      { wch: 12 }, // Total
-      { wch: 30 }, // Notas
+      { wch: 15 }, // Total Venta
+      { wch: 15 }, // Código Producto
+      { wch: 30 }, // Producto
+      { wch: 12 }, // Cantidad
+      { wch: 12 }, // Precio Unit.
+      { wch: 15 }, // Subtotal Línea
+      { wch: 15 }, // Stock Actual
     ];
     ws['!cols'] = colWidths;
 
     // Generar archivo
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(data, `ventas_${new Date().toISOString().split('T')[0]}.xlsx`);
+    saveAs(data, `ventas_con_stock_${new Date().toISOString().split('T')[0]}.xlsx`);
 
     toast({
       title: 'Excel Generado',
-      description: 'El listado de ventas ha sido exportado a Excel',
+      description: 'El listado de ventas con stock ha sido exportado a Excel',
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -474,6 +543,7 @@ function SalesList() {
                         <Th>Cantidad</Th>
                         <Th>Precio Unit.</Th>
                         <Th>Subtotal</Th>
+                        <Th>Stock Actual</Th>
                       </Tr>
                     </Thead>
                     <Tbody>
@@ -484,6 +554,27 @@ function SalesList() {
                           <Td>{parseFloat(detail.quantity).toFixed(2)}</Td>
                           <Td>Bs. {parseFloat(detail.unit_price).toFixed(2)}</Td>
                           <Td>Bs. {parseFloat(detail.subtotal).toFixed(2)}</Td>
+                          <Td>
+                            {detail.product ? (
+                              <Badge
+                                colorScheme={
+                                  parseFloat(detail.product.stock) === 0
+                                    ? 'red'
+                                    : parseFloat(detail.product.stock) <= 5
+                                    ? 'orange'
+                                    : parseFloat(detail.product.stock) <= 10
+                                    ? 'yellow'
+                                    : 'green'
+                                }
+                              >
+                                {parseFloat(detail.product.stock).toFixed(2)} {detail.product.unit}
+                              </Badge>
+                            ) : (
+                              <Text fontSize='xs' color='gray.500'>
+                                N/A
+                              </Text>
+                            )}
+                          </Td>
                         </Tr>
                       ))}
                     </Tbody>

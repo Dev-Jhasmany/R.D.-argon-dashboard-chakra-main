@@ -34,12 +34,20 @@ import {
   Select,
   Checkbox,
   Stack,
+  Box,
+  Collapse,
+  Icon,
+  VStack,
+  HStack,
+  Divider,
 } from "@chakra-ui/react";
+import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
 import permissionService from "services/permissionService";
 import roleService from "services/roleService";
+import { getMenuCategoriesForList, getAvailableSubmenus } from "config/menuConfig";
 
 function ListPermissions() {
   const textColor = useColorModeValue("gray.700", "white");
@@ -59,31 +67,14 @@ function ListPermissions() {
     submenus: [],
     description: '',
   });
+  const [expandedRoles, setExpandedRoles] = useState({});
   const cancelRef = React.useRef();
 
-  // Opciones disponibles de categorías
-  const menuCategories = [
-    { value: 'users', label: 'Usuarios' },
-    { value: 'roles', label: 'Roles y Permisos' },
-    { value: 'products', label: 'Productos e Inventario' },
-    { value: 'promotions', label: 'Promociones' },
-    { value: 'suppliers', label: 'Proveedores' },
-    { value: 'sales', label: 'Gestión de Ventas' },
-    { value: 'payments', label: 'Pagos' },
-    { value: 'settings', label: 'Configuración' },
-  ];
+  // Opciones disponibles de categorías - Obtenidas desde configuración centralizada
+  const menuCategories = getMenuCategoriesForList();
 
-  // Submenús disponibles por categoría
-  const availableSubmenus = {
-    users: ['list', 'create', 'edit', 'delete', 'view'],
-    roles: ['list', 'create', 'edit', 'delete', 'permissions'],
-    products: ['list', 'create', 'edit', 'delete', 'stock', 'categories'],
-    promotions: ['list', 'create', 'edit', 'delete', 'active'],
-    suppliers: ['list', 'create', 'edit', 'delete', 'view'],
-    sales: ['list', 'create', 'view', 'reports'],
-    payments: ['list', 'create', 'view', 'reports'],
-    settings: ['general', 'users', 'system', 'security'],
-  };
+  // Submenús disponibles por categoría - Obtenidos desde configuración centralizada
+  const availableSubmenus = getAvailableSubmenus();
 
   useEffect(() => {
     loadPermissions();
@@ -268,6 +259,59 @@ function ListPermissions() {
     return colors[category] || 'gray';
   };
 
+  // Agrupar permisos por rol
+  const groupPermissionsByRole = () => {
+    const grouped = {};
+
+    permissions.forEach(permission => {
+      const roleId = permission.role?.id;
+      const roleName = permission.role?.name || 'Sin rol';
+
+      if (!grouped[roleId]) {
+        grouped[roleId] = {
+          role: permission.role,
+          categories: {}
+        };
+      }
+
+      const category = permission.menuCategory;
+      if (!grouped[roleId].categories[category]) {
+        grouped[roleId].categories[category] = [];
+      }
+
+      grouped[roleId].categories[category].push(permission);
+    });
+
+    return Object.values(grouped);
+  };
+
+  const toggleRoleExpansion = (roleId) => {
+    setExpandedRoles(prev => ({
+      ...prev,
+      [roleId]: !prev[roleId]
+    }));
+  };
+
+  const getSubmenuLabel = (submenu) => {
+    const labels = {
+      list: 'Listar',
+      create: 'Registrar',
+      edit: 'Editar',
+      delete: 'Eliminar',
+      view: 'Ver',
+      permissions: 'Permisos',
+      stock: 'Stock',
+      categories: 'Categorías',
+      active: 'Activar',
+      reports: 'Reportes',
+      general: 'General',
+      users: 'Usuarios',
+      system: 'Sistema',
+      security: 'Seguridad'
+    };
+    return labels[submenu] || submenu;
+  };
+
   if (loading) {
     return (
       <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
@@ -299,83 +343,154 @@ function ListPermissions() {
               </Text>
             </Center>
           ) : (
-            <Table variant='simple' color={textColor}>
-              <Thead>
-                <Tr>
-                  <Th borderColor={borderColor} color='gray.400'>Rol</Th>
-                  <Th borderColor={borderColor} color='gray.400'>Categoría de Menú</Th>
-                  <Th borderColor={borderColor} color='gray.400'>Submenús Permitidos</Th>
-                  <Th borderColor={borderColor} color='gray.400'>Descripción</Th>
-                  <Th borderColor={borderColor} color='gray.400'>Acciones</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {permissions.map((permission) => (
-                  <Tr key={permission.id}>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm' fontWeight='bold'>
-                        {permission.role?.name || 'Sin rol'}
-                      </Text>
-                      <Badge colorScheme='gray' fontSize='xs' mt={1}>
-                        Nivel {permission.role?.hierarchyLevel || 'N/A'}
+            <VStack spacing={4} align="stretch">
+              {groupPermissionsByRole().map((roleGroup, roleIndex) => {
+                const roleId = roleGroup.role?.id;
+                const isExpanded = expandedRoles[roleId];
+
+                return (
+                  <Box
+                    key={roleId || roleIndex}
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    borderRadius="lg"
+                    overflow="hidden"
+                  >
+                    {/* Header del rol - clickeable para expandir/colapsar */}
+                    <Flex
+                      p={4}
+                      bg={useColorModeValue("gray.50", "gray.700")}
+                      cursor="pointer"
+                      onClick={() => toggleRoleExpansion(roleId)}
+                      justify="space-between"
+                      align="center"
+                      _hover={{ bg: useColorModeValue("gray.100", "gray.600") }}
+                    >
+                      <HStack spacing={4}>
+                        <Icon
+                          as={isExpanded ? ChevronUpIcon : ChevronDownIcon}
+                          w={6}
+                          h={6}
+                          color="teal.500"
+                        />
+                        <Box>
+                          <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                            {roleGroup.role?.name || 'Sin rol'}
+                          </Text>
+                          <Badge colorScheme='gray' fontSize='sm' mt={1}>
+                            Nivel {roleGroup.role?.hierarchyLevel || 'N/A'}
+                          </Badge>
+                        </Box>
+                      </HStack>
+                      <Badge colorScheme="blue" fontSize="md" p={2} borderRadius="md">
+                        {Object.keys(roleGroup.categories).length} módulos
                       </Badge>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Badge
-                        colorScheme={getCategoryColor(permission.menuCategory)}
-                        fontSize='sm'
-                        p='3px 10px'
-                        borderRadius='8px'
-                      >
-                        {getCategoryLabel(permission.menuCategory)}
-                      </Badge>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Flex wrap='wrap' gap={1}>
-                        {permission.submenus && permission.submenus.length > 0 ? (
-                          permission.submenus.map((submenu, idx) => (
-                            <Badge
-                              key={idx}
-                              colorScheme='teal'
-                              fontSize='xs'
-                              p='2px 8px'
-                              borderRadius='6px'
-                              mb={1}
+                    </Flex>
+
+                    {/* Contenido expandible con los permisos agrupados por categoría */}
+                    <Collapse in={isExpanded} animateOpacity>
+                      <Box p={4}>
+                        <VStack spacing={4} align="stretch">
+                          {Object.entries(roleGroup.categories).map(([category, categoryPermissions]) => (
+                            <Box
+                              key={category}
+                              p={4}
+                              borderWidth="1px"
+                              borderColor={borderColor}
+                              borderRadius="md"
+                              bg={useColorModeValue("white", "gray.800")}
                             >
-                              {submenu}
-                            </Badge>
-                          ))
-                        ) : (
-                          <Text fontSize='xs' color='gray.500'>Sin submenús</Text>
-                        )}
-                      </Flex>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Text fontSize='sm'>{permission.description || "Sin descripción"}</Text>
-                    </Td>
-                    <Td borderColor={borderColor}>
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        colorScheme='blue'
-                        me='5px'
-                        onClick={() => openEditDialog(permission)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        colorScheme='red'
-                        onClick={() => openDeleteDialog(permission.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
+                              <HStack justify="space-between" mb={3}>
+                                <HStack>
+                                  <Badge
+                                    colorScheme={getCategoryColor(category)}
+                                    fontSize='sm'
+                                    p='4px 12px'
+                                    borderRadius='8px'
+                                  >
+                                    {getCategoryLabel(category)}
+                                  </Badge>
+                                  <Text fontSize="sm" color="gray.500">
+                                    ({categoryPermissions.length} permiso{categoryPermissions.length > 1 ? 's' : ''})
+                                  </Text>
+                                </HStack>
+                              </HStack>
+
+                              <Divider mb={3} />
+
+                              {/* Submenús del permiso */}
+                              <VStack spacing={3} align="stretch">
+                                {categoryPermissions.map((permission) => (
+                                  <Box key={permission.id}>
+                                    <Flex justify="space-between" align="start">
+                                      <Box flex="1">
+                                        <Flex wrap='wrap' gap={2} mb={2}>
+                                          {permission.submenus && permission.submenus.length > 0 ? (
+                                            permission.submenus.map((submenu, idx) => (
+                                              <Badge
+                                                key={idx}
+                                                colorScheme='teal'
+                                                fontSize='sm'
+                                                p='4px 10px'
+                                                borderRadius='6px'
+                                              >
+                                                {getSubmenuLabel(submenu)}
+                                              </Badge>
+                                            ))
+                                          ) : (
+                                            <Text fontSize='sm' color='gray.500'>Sin submenús</Text>
+                                          )}
+                                        </Flex>
+                                        {permission.description && (
+                                          <Text fontSize='sm' color='gray.600' fontStyle="italic">
+                                            {permission.description}
+                                          </Text>
+                                        )}
+                                      </Box>
+
+                                      <HStack spacing={2} ml={4}>
+                                        <Button
+                                          size='sm'
+                                          variant='outline'
+                                          colorScheme='blue'
+                                          onClick={() => openEditDialog(permission)}
+                                        >
+                                          Editar
+                                        </Button>
+                                        <Button
+                                          size='sm'
+                                          variant='outline'
+                                          colorScheme='red'
+                                          onClick={() => openDeleteDialog(permission.id)}
+                                        >
+                                          Eliminar
+                                        </Button>
+                                      </HStack>
+                                    </Flex>
+                                    {categoryPermissions.indexOf(permission) < categoryPermissions.length - 1 && (
+                                      <Divider mt={3} />
+                                    )}
+                                  </Box>
+                                ))}
+                              </VStack>
+
+                              {/* Descripción general si existe */}
+                              {categoryPermissions[0]?.description && (
+                                <Box mt={3} p={2} bg={useColorModeValue("gray.50", "gray.700")} borderRadius="md">
+                                  <Text fontSize='xs' color='gray.600'>
+                                    <strong>Permisos de {category}</strong> para el rol {roleGroup.role?.name}
+                                  </Text>
+                                </Box>
+                              )}
+                            </Box>
+                          ))}
+                        </VStack>
+                      </Box>
+                    </Collapse>
+                  </Box>
+                );
+              })}
+            </VStack>
           )}
         </CardBody>
       </Card>

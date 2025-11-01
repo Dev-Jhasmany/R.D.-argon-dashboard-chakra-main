@@ -65,6 +65,7 @@ function SupplyEntry() {
     unit: "",
     unit_price: "",
     total_price: "",
+    minimum_stock: "",
     entry_date: new Date().toISOString().split('T')[0],
     expiration_date: "",
     notes: "",
@@ -122,7 +123,7 @@ function SupplyEntry() {
 
   const handleSubmit = async () => {
     // Validaciones
-    if (!formData.product_name || !formData.quantity || !formData.unit || !formData.unit_price || !formData.supplier_id) {
+    if (!formData.product_name || !formData.quantity || !formData.unit || !formData.unit_price || !formData.supplier_id || !formData.minimum_stock) {
       toast({
         title: "Error",
         description: "Por favor complete todos los campos requeridos",
@@ -151,6 +152,7 @@ function SupplyEntry() {
       quantity: parseFloat(formData.quantity),
       unit_price: parseFloat(formData.unit_price),
       total_price: parseFloat(formData.total_price),
+      minimum_stock: parseFloat(formData.minimum_stock),
     };
 
     const result = await supplyEntryService.createEntry(entryData);
@@ -172,6 +174,7 @@ function SupplyEntry() {
         unit: "",
         unit_price: "",
         total_price: "",
+        minimum_stock: "",
         entry_date: new Date().toISOString().split('T')[0],
         expiration_date: "",
         notes: "",
@@ -226,6 +229,7 @@ function SupplyEntry() {
       unit: entry.unit,
       unit_price: entry.unit_price,
       total_price: entry.total_price,
+      minimum_stock: entry.minimum_stock || "",
       entry_date: entry.entry_date,
       expiration_date: entry.expiration_date || "",
       notes: entry.notes || "",
@@ -254,7 +258,7 @@ function SupplyEntry() {
   };
 
   const handleUpdate = async () => {
-    if (!editFormData.product_name || !editFormData.quantity || !editFormData.unit || !editFormData.unit_price || !editFormData.supplier_id) {
+    if (!editFormData.product_name || !editFormData.quantity || !editFormData.unit || !editFormData.unit_price || !editFormData.supplier_id || !editFormData.minimum_stock) {
       toast({
         title: "Error",
         description: "Por favor complete todos los campos requeridos",
@@ -270,6 +274,7 @@ function SupplyEntry() {
       quantity: parseFloat(editFormData.quantity),
       unit_price: parseFloat(editFormData.unit_price),
       total_price: parseFloat(editFormData.total_price),
+      minimum_stock: parseFloat(editFormData.minimum_stock),
     };
 
     const result = await supplyEntryService.updateEntry(editEntry.id, entryData);
@@ -460,6 +465,22 @@ function SupplyEntry() {
                     color={inputTextColor}
                   />
                 </FormControl>
+                <FormControl isRequired>
+                  <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
+                    Stock Mínimo
+                  </FormLabel>
+                  <Input
+                    name="minimum_stock"
+                    value={formData.minimum_stock}
+                    onChange={handleChange}
+                    borderRadius='15px'
+                    fontSize='sm'
+                    type='number'
+                    step='0.01'
+                    placeholder='0.00'
+                    size='lg'
+                  />
+                </FormControl>
               </Grid>
               <FormControl mb='24px'>
                 <FormLabel ms='4px' fontSize='sm' fontWeight='normal'>
@@ -518,6 +539,7 @@ function SupplyEntry() {
                   <Th borderColor={borderColor} color='gray.400'>F. Caducidad</Th>
                   <Th borderColor={borderColor} color='gray.400'>Producto</Th>
                   <Th borderColor={borderColor} color='gray.400'>Cantidad</Th>
+                  <Th borderColor={borderColor} color='gray.400'>Stock Mínimo</Th>
                   <Th borderColor={borderColor} color='gray.400'>Precio Unit.</Th>
                   <Th borderColor={borderColor} color='gray.400'>Total</Th>
                   <Th borderColor={borderColor} color='gray.400'>Proveedor</Th>
@@ -542,6 +564,11 @@ function SupplyEntry() {
                     </Td>
                     <Td borderColor={borderColor}>
                       <Text fontSize='sm'>{entry.quantity} {entry.unit}</Text>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Badge colorScheme='green' fontSize='sm'>
+                        {entry.minimum_stock || 1} {entry.unit}
+                      </Badge>
                     </Td>
                     <Td borderColor={borderColor}>
                       <Text fontSize='sm'>Bs. {parseFloat(entry.unit_price).toFixed(2)}</Text>
@@ -652,7 +679,7 @@ function SupplyEntry() {
                 />
               </FormControl>
             </Grid>
-            <Grid templateColumns='repeat(2, 1fr)' gap={4} mb='16px'>
+            <Grid templateColumns='repeat(3, 1fr)' gap={4} mb='16px'>
               <FormControl isRequired>
                 <FormLabel fontSize='sm'>Precio Unitario</FormLabel>
                 <Input
@@ -674,6 +701,17 @@ function SupplyEntry() {
                   isReadOnly
                   bg={readOnlyBg}
                   color={inputTextColor}
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel fontSize='sm'>Stock Mínimo</FormLabel>
+                <Input
+                  name="minimum_stock"
+                  value={editFormData.minimum_stock || ""}
+                  onChange={handleEditChange}
+                  type='number'
+                  step='0.01'
+                  size='md'
                 />
               </FormControl>
             </Grid>
