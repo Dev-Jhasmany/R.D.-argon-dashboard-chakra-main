@@ -50,6 +50,7 @@ function ResetPassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -65,6 +66,7 @@ function ResetPassword() {
         status: "success",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
 
       // Mostrar el token en la interfaz (solo para desarrollo/pruebas)
@@ -82,6 +84,7 @@ function ResetPassword() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -95,6 +98,7 @@ function ResetPassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -106,6 +110,7 @@ function ResetPassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -117,6 +122,7 @@ function ResetPassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -132,6 +138,7 @@ function ResetPassword() {
         status: "success",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       // Redirigir al login
       setTimeout(() => {
@@ -144,6 +151,7 @@ function ResetPassword() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

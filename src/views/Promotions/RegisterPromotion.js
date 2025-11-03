@@ -75,6 +75,7 @@ function RegisterPromotion() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -125,6 +126,7 @@ function RegisterPromotion() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -137,6 +139,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -150,6 +153,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -162,6 +166,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -183,6 +188,7 @@ function RegisterPromotion() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
 
       // Limpiar formulario
@@ -201,6 +207,7 @@ function RegisterPromotion() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
 
@@ -216,6 +223,7 @@ function RegisterPromotion() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -228,6 +236,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -241,6 +250,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -252,6 +262,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -265,6 +276,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -277,6 +289,7 @@ function RegisterPromotion() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -311,6 +324,7 @@ function RegisterPromotion() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
 
       // Limpiar formulario
@@ -330,6 +344,7 @@ function RegisterPromotion() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
 

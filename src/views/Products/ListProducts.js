@@ -92,6 +92,7 @@ function ListProducts() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -106,6 +107,7 @@ function ListProducts() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadProducts();
     } else {
@@ -115,6 +117,7 @@ function ListProducts() {
         status: "warning",
         duration: 8000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -192,6 +195,7 @@ function ListProducts() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -203,6 +207,7 @@ function ListProducts() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -227,6 +232,7 @@ function ListProducts() {
         status: 'success',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadProducts();
       closeEditDialog();
@@ -237,6 +243,7 @@ function ListProducts() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -293,6 +300,7 @@ function ListProducts() {
       status: "success",
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
@@ -346,6 +354,7 @@ function ListProducts() {
       status: "success",
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 

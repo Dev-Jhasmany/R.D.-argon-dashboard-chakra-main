@@ -63,6 +63,7 @@ function RegisterUser() {
           status: "warning",
           duration: 5000,
           isClosable: true,
+        position: "top-right",
         });
       }
     } else {
@@ -72,6 +73,7 @@ function RegisterUser() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingRoles(false);
@@ -94,6 +96,7 @@ function RegisterUser() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -107,6 +110,7 @@ function RegisterUser() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -118,6 +122,7 @@ function RegisterUser() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -129,6 +134,7 @@ function RegisterUser() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -165,6 +171,7 @@ function RegisterUser() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       // Resetear formulario
       setFormData({
@@ -190,6 +197,7 @@ function RegisterUser() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

@@ -45,7 +45,7 @@ export default function Dashboard(props) {
         if (collapseActiveRoute !== activeRoute) {
           return collapseActiveRoute;
         }
-      } else if (routes[i].category) {
+      } else if (routes[i].category && routes[i].views) {
         let categoryActiveRoute = getActiveRoute(routes[i].views);
         if (categoryActiveRoute !== activeRoute) {
           return categoryActiveRoute;
@@ -64,7 +64,7 @@ export default function Dashboard(props) {
   const getActiveNavbar = (routes) => {
     let activeNavbar = false;
     for (let i = 0; i < routes.length; i++) {
-      if (routes[i].category) {
+      if (routes[i].category && routes[i].views) {
         let categoryActiveNavbar = getActiveNavbar(routes[i].views);
         if (categoryActiveNavbar !== activeNavbar) {
           return categoryActiveNavbar;
@@ -86,7 +86,7 @@ export default function Dashboard(props) {
       if (prop.collapse) {
         return getRoutes(prop.views);
       }
-      if (prop.category === "account") {
+      if (prop.category === "account" && prop.views) {
         return getRoutes(prop.views);
       }
       if (prop.layout === "/rtl" || prop.layout === "/admin") {

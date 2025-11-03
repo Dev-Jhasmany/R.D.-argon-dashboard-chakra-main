@@ -57,6 +57,7 @@ function RegisterSupplier() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -74,6 +75,7 @@ function RegisterSupplier() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar formulario
       setFormData({
@@ -93,6 +95,7 @@ function RegisterSupplier() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

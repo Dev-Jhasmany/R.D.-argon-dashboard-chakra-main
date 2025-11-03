@@ -38,6 +38,7 @@ import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
 import CardHeader from "components/Card/CardHeader";
 import supplyEntryService from "services/supplyEntryService";
+import wasteReportService from "services/wasteReportService";
 
 function WasteReport() {
   const textColor = useColorModeValue("gray.700", "white");
@@ -83,15 +84,33 @@ function WasteReport() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingSupplies(false);
   };
 
   const loadWasteReports = async () => {
-    // Aquí se cargarán los reportes de desperdicio desde el servicio
-    // Por ahora usamos un array vacío
-    setWasteReports([]);
+    const result = await wasteReportService.getAllReports();
+    if (result.success) {
+      // Transformar datos para incluir información del supply entry
+      const reportsWithSupplyInfo = result.data.map(report => ({
+        ...report,
+        product_name: report.supplyEntry?.product_name || 'N/A',
+        unit: report.supplyEntry?.unit || '',
+        supply_entry_id: report.supplyEntry?.id || '',
+      }));
+      setWasteReports(reportsWithSupplyInfo);
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -104,7 +123,7 @@ function WasteReport() {
 
   const getSelectedSupply = () => {
     if (!formData.supply_entry_id) return null;
-    return supplies.find(s => s.id === parseInt(formData.supply_entry_id));
+    return supplies.find(s => s.id === formData.supply_entry_id);
   };
 
   const handleSubmit = async () => {
@@ -116,6 +135,7 @@ function WasteReport() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -128,6 +148,7 @@ function WasteReport() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -142,6 +163,7 @@ function WasteReport() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -153,27 +175,28 @@ function WasteReport() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
 
     setLoading(true);
 
-    // Aquí se enviará al backend cuando el servicio esté implementado
-    // const wasteData = {
-    //   ...formData,
-    //   waste_quantity: wasteQty,
-    // };
-    // const result = await wasteReportService.createWasteReport(wasteData);
+    const wasteData = {
+      ...formData,
+      waste_quantity: wasteQty,
+    };
 
-    // Simulación temporal
-    setTimeout(() => {
+    const result = await wasteReportService.createReport(wasteData);
+
+    if (result.success) {
       toast({
         title: "Desperdicio registrado",
         description: "El reporte de desperdicio ha sido registrado correctamente",
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
 
       // Limpiar formulario
@@ -185,23 +208,49 @@ function WasteReport() {
         notes: "",
       });
 
-      setLoading(false);
+      // Recargar listas
       loadWasteReports();
-    }, 1000);
+      loadSupplies(); // Recargar supplies para actualizar cantidades
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+
+    setLoading(false);
   };
 
   const handleDelete = async () => {
-    // Aquí se implementará el delete cuando el servicio esté listo
-    toast({
-      title: "Reporte eliminado",
-      description: "El reporte ha sido eliminado correctamente",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+    const result = await wasteReportService.deleteReport(deleteId);
+
+    if (result.success) {
+      toast({
+        title: "Reporte eliminado",
+        description: "El reporte ha sido eliminado correctamente",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      loadWasteReports();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+
     setIsDeleteOpen(false);
     setDeleteId(null);
-    loadWasteReports();
   };
 
   const openDeleteDialog = (id) => {
@@ -237,21 +286,44 @@ function WasteReport() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
 
-    // Aquí se implementará el update cuando el servicio esté listo
-    toast({
-      title: "Reporte actualizado",
-      description: "El reporte ha sido actualizado correctamente",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+    const updateData = {
+      supply_entry_id: editFormData.supply_entry_id,
+      waste_quantity: parseFloat(editFormData.waste_quantity),
+      waste_date: editFormData.waste_date,
+      reason: editFormData.reason,
+      notes: editFormData.notes,
+    };
+
+    const result = await wasteReportService.updateReport(editReport.id, updateData);
+
+    if (result.success) {
+      toast({
+        title: "Reporte actualizado",
+        description: "El reporte ha sido actualizado correctamente",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      loadWasteReports();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+
     setIsEditOpen(false);
     setEditReport(null);
-    loadWasteReports();
   };
 
   if (loadingSupplies) {

@@ -31,6 +31,7 @@ function Logout() {
       status: "success",
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
 
     // Cerrar sesión después de 1 segundo

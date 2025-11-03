@@ -46,6 +46,7 @@ function ChangePassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -57,6 +58,7 @@ function ChangePassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -68,6 +70,7 @@ function ChangePassword() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -83,6 +86,7 @@ function ChangePassword() {
         status: "success",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar el formulario
       setFormData({
@@ -97,6 +101,7 @@ function ChangePassword() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

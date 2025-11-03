@@ -162,6 +162,7 @@ function RegisterSale() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -178,6 +179,7 @@ function RegisterSale() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -198,6 +200,7 @@ function RegisterSale() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingHistory(false);
@@ -219,6 +222,7 @@ function RegisterSale() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingInventory(false);
@@ -264,6 +268,7 @@ function RegisterSale() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -282,6 +287,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -294,6 +300,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -320,6 +327,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -336,6 +344,7 @@ function RegisterSale() {
           status: 'warning',
           duration: 3000,
           isClosable: true,
+        position: "top-right",
         });
         return;
       }
@@ -348,6 +357,7 @@ function RegisterSale() {
           status: 'warning',
           duration: 2000,
           isClosable: true,
+        position: "top-right",
         });
         return;
       }
@@ -381,15 +391,29 @@ function RegisterSale() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
 
-    const existingItem = cart.find((item) => item.product_id === selectedProduct.id && !item.is_promotion);
+    // Extraer el ID real del producto (puede ser un ID compuesto con promoción)
+    const realProductId = selectedProduct._originalProductId || selectedProduct.id.split('_promo_')[0] || selectedProduct.id;
+    const isPromotionProduct = selectedProduct.promotion && selectedProduct.promotion.is_active;
+
+    // Para productos con promoción, usar el precio final
+    const productPrice = isPromotionProduct && selectedProduct.final_price
+      ? parseFloat(selectedProduct.final_price)
+      : parseFloat(selectedProduct.price);
+
+    const productName = isPromotionProduct
+      ? `${selectedProduct.name} - ${selectedProduct.promotion.name}`
+      : selectedProduct.name;
+
+    const existingItem = cart.find((item) => item.product_id === realProductId && item.product_name === productName);
     if (existingItem) {
       setCart(
         cart.map((item) =>
-          item.product_id === selectedProduct.id && !item.is_promotion
+          item.product_id === realProductId && item.product_name === productName
             ? { ...item, quantity: item.quantity + qty }
             : item
         )
@@ -398,12 +422,13 @@ function RegisterSale() {
       setCart([
         ...cart,
         {
-          product_id: selectedProduct.id,
-          product_name: selectedProduct.name,
+          product_id: realProductId,
+          product_name: productName,
           product_code: selectedProduct.code,
           quantity: qty,
-          unit_price: parseFloat(selectedProduct.price),
-          is_promotion: false,
+          unit_price: productPrice,
+          is_promotion: isPromotionProduct,
+          promotion_info: isPromotionProduct ? selectedProduct.promotion : null,
         },
       ]);
     }
@@ -411,8 +436,8 @@ function RegisterSale() {
     closeProductModal();
   };
 
-  const handleRemoveFromCart = (productId) => {
-    setCart(cart.filter((item) => item.product_id !== productId));
+  const handleRemoveFromCart = (productId, productName) => {
+    setCart(cart.filter((item) => !(item.product_id === productId && item.product_name === productName)));
   };
 
   const calculateSubtotal = () => {
@@ -547,6 +572,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -558,6 +584,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -604,6 +631,7 @@ function RegisterSale() {
           status: 'success',
           duration: 5000,
           isClosable: true,
+        position: "top-right",
         });
 
         // Guardar información de la venta y mostrar ticket
@@ -618,6 +646,7 @@ function RegisterSale() {
         status: 'error',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -670,6 +699,7 @@ function RegisterSale() {
         status: 'success',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
 
@@ -708,6 +738,7 @@ function RegisterSale() {
         status: 'success',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
 
@@ -754,6 +785,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -767,6 +799,7 @@ function RegisterSale() {
       status: 'info',
       duration: 2000,
       isClosable: true,
+        position: "top-right",
     });
 
     // Simular tiempo de envío
@@ -778,6 +811,7 @@ function RegisterSale() {
         status: 'info',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
 
       // Simular confirmación automática después de 4 segundos
@@ -789,6 +823,7 @@ function RegisterSale() {
           status: 'success',
           duration: 4000,
           isClosable: true,
+        position: "top-right",
         });
       }, 4000);
     }, 2000);
@@ -823,6 +858,7 @@ function RegisterSale() {
         status: 'success',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
 
@@ -875,6 +911,7 @@ function RegisterSale() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -889,6 +926,7 @@ function RegisterSale() {
       status: 'info',
       duration: 2000,
       isClosable: true,
+        position: "top-right",
     });
 
     // Simular tiempo de envío
@@ -900,6 +938,7 @@ function RegisterSale() {
         status: 'info',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
 
       // Simular confirmación automática después de 5 segundos
@@ -911,6 +950,7 @@ function RegisterSale() {
           status: 'success',
           duration: 4000,
           isClosable: true,
+        position: "top-right",
         });
       }, 5000);
     }, 2000);
@@ -965,8 +1005,8 @@ function RegisterSale() {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {cart.map((item) => (
-                      <Tr key={item.product_id}>
+                    {cart.map((item, index) => (
+                      <Tr key={`${item.product_id}_${item.product_name}_${index}`}>
                         <Td borderColor={borderColor}>{item.product_code}</Td>
                         <Td borderColor={borderColor}>{item.product_name}</Td>
                         <Td borderColor={borderColor}>{item.quantity}</Td>
@@ -980,7 +1020,7 @@ function RegisterSale() {
                             colorScheme='red'
                             variant='ghost'
                             size='sm'
-                            onClick={() => handleRemoveFromCart(item.product_id)}
+                            onClick={() => handleRemoveFromCart(item.product_id, item.product_name)}
                           />
                         </Td>
                       </Tr>

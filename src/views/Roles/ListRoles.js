@@ -76,6 +76,7 @@ function ListRoles() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -90,6 +91,7 @@ function ListRoles() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadRoles();
     } else {
@@ -99,6 +101,7 @@ function ListRoles() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -154,6 +157,7 @@ function ListRoles() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -165,6 +169,7 @@ function ListRoles() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -185,6 +190,7 @@ function ListRoles() {
         status: 'success',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadRoles();
       closeEditDialog();
@@ -195,6 +201,7 @@ function ListRoles() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

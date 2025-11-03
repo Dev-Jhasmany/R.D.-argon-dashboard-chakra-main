@@ -31,6 +31,9 @@ const MENU_CATEGORIES = getMenuCategories();
 
 function RegisterPermission() {
   const textColor = useColorModeValue("gray.700", "white");
+  const categorySelectedBg = useColorModeValue("blue.50", "blue.900");
+  const categoryUnselectedBg = useColorModeValue("white", "gray.800");
+  const categoryUnselectedBorder = useColorModeValue("gray.200", "gray.600");
   const toast = useToast();
 
   const [formData, setFormData] = useState({
@@ -59,6 +62,7 @@ function RegisterPermission() {
           status: "warning",
           duration: 5000,
           isClosable: true,
+        position: "top-right",
         });
       }
     } else {
@@ -68,6 +72,7 @@ function RegisterPermission() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingRoles(false);
@@ -149,6 +154,7 @@ function RegisterPermission() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -160,6 +166,7 @@ function RegisterPermission() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -176,6 +183,7 @@ function RegisterPermission() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -187,6 +195,7 @@ function RegisterPermission() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return false;
     }
@@ -219,10 +228,11 @@ function RegisterPermission() {
     if (allSuccess) {
       toast({
         title: "Permisos registrados",
-        description: `Se registraron ${results.length} permisos correctamente`,
+        description: `Se registraron ${results.length} permisos correctamente. Los cambios se aplicarán automáticamente en máximo 5 minutos. Los usuarios afectados pueden cerrar sesión y volver a entrar para ver los cambios inmediatamente.`,
         status: "success",
-        duration: 3000,
+        duration: 8000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar formulario
       setFormData({
@@ -238,6 +248,7 @@ function RegisterPermission() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -316,8 +327,8 @@ function RegisterPermission() {
                       borderWidth="1px"
                       borderRadius="12px"
                       p={4}
-                      bg={isCategorySelected ? useColorModeValue("blue.50", "blue.900") : useColorModeValue("white", "gray.800")}
-                      borderColor={isCategorySelected ? "blue.300" : useColorModeValue("gray.200", "gray.600")}
+                      bg={isCategorySelected ? categorySelectedBg : categoryUnselectedBg}
+                      borderColor={isCategorySelected ? "blue.300" : categoryUnselectedBorder}
                       transition="all 0.2s"
                     >
                       {/* Header de la categoría */}

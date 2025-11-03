@@ -75,6 +75,8 @@ function ReturnsCancellations() {
         description: result.error,
         status: 'error',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -108,11 +110,9 @@ function ReturnsCancellations() {
   const canReturn = (sale) => {
     if (!user) return false;
 
-    // El usuario puede hacer devoluciones si:
-    // 1. Es el usuario que creó la venta, o
-    // 2. Es el usuario que abrió la caja (para ventas sin created_by)
-    const saleUserId = sale.created_by?.id || sale.cash_register?.opened_by?.id;
-    return saleUserId === user.id;
+    // CUALQUIER usuario autenticado puede hacer devoluciones
+    // La devolución solo cambia el estado de "active" a "returned" pero NO desactiva la venta
+    return true;
   };
 
   // Verificar si el usuario actual puede anular ventas
@@ -143,6 +143,8 @@ function ReturnsCancellations() {
         description: 'Debe ingresar el motivo de la devolución',
         status: 'warning',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -155,6 +157,8 @@ function ReturnsCancellations() {
         description: 'La venta ha sido devuelta exitosamente',
         status: 'success',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       setIsReturnModalOpen(false);
       loadSales();
@@ -164,6 +168,8 @@ function ReturnsCancellations() {
         description: result.error,
         status: 'error',
         duration: 5000,
+        isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -175,6 +181,8 @@ function ReturnsCancellations() {
         description: 'Debe ingresar el motivo de la anulación',
         status: 'warning',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -187,6 +195,8 @@ function ReturnsCancellations() {
         description: 'La venta ha sido anulada exitosamente',
         status: 'success',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       setIsCancelModalOpen(false);
       loadSales();
@@ -196,6 +206,8 @@ function ReturnsCancellations() {
         description: result.error,
         status: 'error',
         duration: 5000,
+        isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -332,7 +344,9 @@ function ReturnsCancellations() {
                                 : sale.sale_status === 'returned'
                                 ? 'Esta venta ya fue devuelta'
                                 : !canReturn(sale)
-                                ? 'Solo el vendedor que realizó esta venta puede hacer devoluciones'
+                                ? sale.created_by || sale.cash_register
+                                  ? 'Solo el vendedor que realizó esta venta puede hacer devoluciones'
+                                  : 'Solo administradores pueden procesar devoluciones de ventas online'
                                 : 'Procesar devolución de productos'
                             }
                             placement='top'

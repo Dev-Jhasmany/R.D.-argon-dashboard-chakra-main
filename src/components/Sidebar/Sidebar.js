@@ -72,17 +72,25 @@ function Sidebar(props) {
         return null;
       }
 
+      // Si es una ruta simple con categoría (sin submenús) - validar permisos
+      if (prop.category && !prop.views) {
+        if (!hasAccessToCategory(prop.name)) {
+          return null; // No mostrar si no tiene acceso
+        }
+        // Continuar con el render normal (return más abajo)
+      }
+
       // Si es una categoría con submenús
-      if (prop.category) {
+      if (prop.category && prop.views) {
         // Verificar si el usuario tiene acceso a esta categoría
         if (!hasAccessToCategory(prop.name)) {
           return null; // No mostrar la categoría si no tiene acceso
         }
 
         // Filtrar los submenús según permisos
-        const filteredViews = prop.views?.filter(view =>
+        const filteredViews = prop.views.filter(view =>
           hasAccessToSubmenu(prop.name, view.name)
-        ) || [];
+        );
 
         // Si no tiene acceso a ningún submenú, no mostrar la categoría
         if (filteredViews.length === 0) {
@@ -374,17 +382,25 @@ export function SidebarResponsive(props) {
         return null;
       }
 
+      // Si es una ruta simple con categoría (sin submenús) - validar permisos
+      if (prop.category && !prop.views) {
+        if (!hasAccessToCategory(prop.name)) {
+          return null; // No mostrar si no tiene acceso
+        }
+        // Continuar con el render normal (return más abajo)
+      }
+
       // Si es una categoría con submenús
-      if (prop.category) {
+      if (prop.category && prop.views) {
         // Verificar si el usuario tiene acceso a esta categoría
         if (!hasAccessToCategory(prop.name)) {
           return null; // No mostrar la categoría si no tiene acceso
         }
 
         // Filtrar los submenús según permisos
-        const filteredViews = prop.views?.filter(view =>
+        const filteredViews = prop.views.filter(view =>
           hasAccessToSubmenu(prop.name, view.name)
-        ) || [];
+        );
 
         // Si no tiene acceso a ningún submenú, no mostrar la categoría
         if (filteredViews.length === 0) {

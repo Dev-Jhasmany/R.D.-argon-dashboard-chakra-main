@@ -95,6 +95,7 @@ export default function HeaderLinks(props) {
       status: "success",
       duration: 2000,
       isClosable: true,
+        position: "top-right",
     });
 
     // Redirigir al login

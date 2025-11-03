@@ -28,15 +28,23 @@ import RegisterSupplier from "views/Suppliers/RegisterSupplier.js";
 import ListSuppliers from "views/Suppliers/ListSuppliers.js";
 import RegisterSale from "views/Sales/RegisterSale.js";
 import SalesList from "views/Sales/SalesList.js";
+import ConfirmPayment from "views/Sales/ConfirmPayment.js";
 import CashRegister from "views/CashRegister/CashRegister.js";
 import ReturnsCancellations from "views/ReturnsCancellations/ReturnsCancellations.js";
 import OrdersList from "views/Orders/OrdersList.js";
 import OrdersAdministration from "views/Orders/OrdersAdministration.js";
 import OrdersHistory from "views/Orders/OrdersHistory.js";
+import OnlineOrders from "views/Orders/OnlineOrders.js";
 // import RegisterPayment from "views/Payments/RegisterPayment.js";
 // import PaymentMethods from "views/Payments/PaymentMethods.js";
 import ActivityLog from "views/Settings/ActivityLog.js";
 import Logout from "views/Settings/Logout.js";
+// Customer E-commerce
+import Shop from "views/Customer/Shop.js";
+import Cart from "views/Customer/Cart.js";
+import Checkout from "views/Customer/Checkout.js";
+import OrderSuccess from "views/Customer/OrderSuccess.js";
+import MyOrders from "views/Customer/MyOrders.js";
 
 import {
   HomeIcon,
@@ -52,6 +60,7 @@ var dashRoutes = [
   {
     path: "/dashboard",
     name: "Dashboard",
+    category: "dashboard",
     rtlName: "لوحة القيادة",
     icon: <HomeIcon color='inherit' />,
     component: Dashboard,
@@ -302,6 +311,14 @@ var dashRoutes = [
         component: SalesList,
         layout: "/admin",
       },
+      {
+        path: "/confirm-payment",
+        name: "Confirmar Pago",
+        rtlName: "تأكيد الدفع",
+        icon: <DocumentIcon color='inherit' />,
+        component: ConfirmPayment,
+        layout: "/admin",
+      },
     ],
   },
   {
@@ -325,6 +342,63 @@ var dashRoutes = [
         rtlName: "المرتجعات والإلغاءات",
         icon: <DocumentIcon color='inherit' />,
         component: ReturnsCancellations,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
+    name: "Tienda Online",
+    category: "customer",
+    rtlName: "المتجر عبر الإنترنت",
+    state: "customerCollapse",
+    icon: <RocketIcon color='inherit' />,
+    views: [
+      {
+        path: "/shop",
+        name: "Tienda",
+        rtlName: "المتجر",
+        icon: <RocketIcon color='inherit' />,
+        component: Shop,
+        layout: "/customer",
+      },
+      {
+        path: "/cart",
+        name: "Carrito",
+        rtlName: "عربة التسوق",
+        icon: <CreditIcon color='inherit' />,
+        component: Cart,
+        layout: "/customer",
+      },
+      {
+        path: "/checkout",
+        name: "Checkout",
+        rtlName: "الدفع",
+        icon: <CreditIcon color='inherit' />,
+        component: Checkout,
+        layout: "/customer",
+      },
+      {
+        path: "/order-success",
+        name: "Pedidos Exitosos",
+        rtlName: "الطلبات الناجحة",
+        icon: <DocumentIcon color='inherit' />,
+        component: OrderSuccess,
+        layout: "/customer",
+      },
+      {
+        path: "/orders",
+        name: "Mis Pedidos",
+        rtlName: "طلباتي",
+        icon: <DocumentIcon color='inherit' />,
+        component: MyOrders,
+        layout: "/customer",
+      },
+      {
+        path: "/online-orders",
+        name: "Pedidos Online (Admin)",
+        rtlName: "الطلبات عبر الإنترنت",
+        icon: <PersonIcon color='inherit' />,
+        component: OnlineOrders,
         layout: "/admin",
       },
     ],

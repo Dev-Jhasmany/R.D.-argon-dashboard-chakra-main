@@ -100,6 +100,7 @@ function OrdersAdministration() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -117,6 +118,7 @@ function OrdersAdministration() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       setEditingProduct(null);
       loadData();
@@ -127,6 +129,7 @@ function OrdersAdministration() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -141,6 +144,7 @@ function OrdersAdministration() {
         status: "warning",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -158,6 +162,7 @@ function OrdersAdministration() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       setEditingPromotion(null);
       loadData();
@@ -168,6 +173,7 @@ function OrdersAdministration() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

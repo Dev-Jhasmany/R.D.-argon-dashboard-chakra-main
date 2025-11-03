@@ -4,6 +4,12 @@
 
 export const MENU_STRUCTURE = [
   {
+    id: "dashboard",
+    name: "Dashboard",
+    category: "dashboard",
+    submenus: ["Dashboard"]
+  },
+  {
     id: "users",
     name: "Usuarios",
     category: "users",
@@ -43,13 +49,19 @@ export const MENU_STRUCTURE = [
     id: "sales",
     name: "Gestión de Ventas",
     category: "sales",
-    submenus: ["Registrar Venta", "Listar Ventas"]
+    submenus: ["Registrar Venta", "Listar Ventas", "Confirmar Pago"]
   },
   {
     id: "cash_audit",
     name: "Arqueo de caja",
     category: "cash_audit",
     submenus: ["Control de Caja", "Devoluciones y Anulaciones"]
+  },
+  {
+    id: "customer",
+    name: "Tienda Online",
+    category: "customer",
+    submenus: ["Tienda", "Carrito", "Checkout", "Pedidos Exitosos", "Mis Pedidos", "Pedidos Online (Admin)"]
   },
   {
     id: "orders",
@@ -66,7 +78,7 @@ export const MENU_STRUCTURE = [
 ];
 
 // Categorías y menús que siempre son visibles para todos los usuarios
-export const ALWAYS_VISIBLE_CATEGORIES = ["Dashboard", "Configuración"];
+export const ALWAYS_VISIBLE_CATEGORIES = ["Configuración"];
 
 // Función helper para obtener el mapeo de nombres a IDs
 export const getCategoryMap = () => {

@@ -52,6 +52,10 @@ import { getMenuCategoriesForList, getAvailableSubmenus } from "config/menuConfi
 function ListPermissions() {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("gray.200", "gray.600");
+  const roleHeaderBg = useColorModeValue("gray.50", "gray.700");
+  const roleHeaderHoverBg = useColorModeValue("gray.100", "gray.600");
+  const categoryCardBg = useColorModeValue("white", "gray.800");
+  const submenuBoxBg = useColorModeValue("gray.50", "gray.700");
   const toast = useToast();
 
   const [permissions, setPermissions] = useState([]);
@@ -62,7 +66,7 @@ function ListPermissions() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingPermission, setEditingPermission] = useState(null);
   const [editForm, setEditForm] = useState({
-    role_id: '',
+    roleId: '',
     menuCategory: '',
     submenus: [],
     description: '',
@@ -93,6 +97,7 @@ function ListPermissions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -103,10 +108,11 @@ function ListPermissions() {
     if (result.success) {
       toast({
         title: "Permiso eliminado",
-        description: "El permiso ha sido eliminado correctamente",
+        description: "Los cambios se aplicarán automáticamente en máximo 5 minutos. Los usuarios afectados pueden cerrar sesión y volver a entrar para ver los cambios inmediatamente.",
         status: "success",
-        duration: 3000,
+        duration: 8000,
         isClosable: true,
+        position: "top-right",
       });
       loadPermissions();
     } else {
@@ -116,6 +122,7 @@ function ListPermissions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -137,7 +144,7 @@ function ListPermissions() {
   const openEditDialog = (permission) => {
     setEditingPermission(permission);
     setEditForm({
-      role_id: permission.role?.id || '',
+      roleId: permission.role?.id || '',
       menuCategory: permission.menuCategory,
       submenus: permission.submenus || [],
       description: permission.description || '',
@@ -149,7 +156,7 @@ function ListPermissions() {
     setIsEditOpen(false);
     setEditingPermission(null);
     setEditForm({
-      role_id: '',
+      roleId: '',
       menuCategory: '',
       submenus: [],
       description: '',
@@ -178,13 +185,14 @@ function ListPermissions() {
 
   const handleEditSubmit = async () => {
     // Validaciones básicas
-    if (!editForm.role_id) {
+    if (!editForm.roleId) {
       toast({
         title: 'Campo requerido',
         description: 'Debe seleccionar un rol',
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -196,13 +204,14 @@ function ListPermissions() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
 
     // Preparar datos para actualizar
     const updateData = {
-      role_id: editForm.role_id,
+      roleId: editForm.roleId,
       menuCategory: editForm.menuCategory,
       submenus: editForm.submenus,
       description: editForm.description,
@@ -213,10 +222,11 @@ function ListPermissions() {
     if (result.success) {
       toast({
         title: 'Permiso actualizado',
-        description: 'El permiso ha sido actualizado correctamente',
+        description: 'Los cambios se aplicarán automáticamente en máximo 5 minutos. Los usuarios afectados pueden cerrar sesión y volver a entrar para ver los cambios inmediatamente.',
         status: 'success',
-        duration: 3000,
+        duration: 8000,
         isClosable: true,
+        position: "top-right",
       });
       loadPermissions();
       closeEditDialog();
@@ -227,6 +237,7 @@ function ListPermissions() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -359,12 +370,12 @@ function ListPermissions() {
                     {/* Header del rol - clickeable para expandir/colapsar */}
                     <Flex
                       p={4}
-                      bg={useColorModeValue("gray.50", "gray.700")}
+                      bg={roleHeaderBg}
                       cursor="pointer"
                       onClick={() => toggleRoleExpansion(roleId)}
                       justify="space-between"
                       align="center"
-                      _hover={{ bg: useColorModeValue("gray.100", "gray.600") }}
+                      _hover={{ bg: roleHeaderHoverBg }}
                     >
                       <HStack spacing={4}>
                         <Icon
@@ -398,7 +409,7 @@ function ListPermissions() {
                               borderWidth="1px"
                               borderColor={borderColor}
                               borderRadius="md"
-                              bg={useColorModeValue("white", "gray.800")}
+                              bg={categoryCardBg}
                             >
                               <HStack justify="space-between" mb={3}>
                                 <HStack>
@@ -476,7 +487,7 @@ function ListPermissions() {
 
                               {/* Descripción general si existe */}
                               {categoryPermissions[0]?.description && (
-                                <Box mt={3} p={2} bg={useColorModeValue("gray.50", "gray.700")} borderRadius="md">
+                                <Box mt={3} p={2} bg={submenuBoxBg} borderRadius="md">
                                   <Text fontSize='xs' color='gray.600'>
                                     <strong>Permisos de {category}</strong> para el rol {roleGroup.role?.name}
                                   </Text>
@@ -533,8 +544,8 @@ function ListPermissions() {
             <FormControl mb={4} isRequired>
               <FormLabel>Rol</FormLabel>
               <Select
-                name='role_id'
-                value={editForm.role_id}
+                name='roleId'
+                value={editForm.roleId}
                 onChange={handleEditChange}
                 placeholder='Seleccionar rol'
               >

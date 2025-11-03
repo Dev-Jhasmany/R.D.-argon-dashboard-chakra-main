@@ -84,6 +84,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingCategories(false);
@@ -101,6 +102,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingList(false);
@@ -123,6 +125,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -134,6 +137,7 @@ function RegisterProduct() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -157,6 +161,7 @@ function RegisterProduct() {
         status: "success",
         duration: 4000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar formulario
       setFormData({
@@ -175,6 +180,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -188,6 +194,7 @@ function RegisterProduct() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadProducts();
     } else {
@@ -197,6 +204,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -237,6 +245,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -256,6 +265,7 @@ function RegisterProduct() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadProducts();
       setIsEditOpen(false);
@@ -267,6 +277,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -280,6 +291,7 @@ function RegisterProduct() {
         status: "success",
         duration: 2000,
         isClosable: true,
+        position: "top-right",
       });
       loadProducts();
     } else {
@@ -289,6 +301,7 @@ function RegisterProduct() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

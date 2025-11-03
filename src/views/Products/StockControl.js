@@ -87,6 +87,7 @@ function StockControl() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -109,6 +110,7 @@ function StockControl() {
         status: 'info',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -163,6 +165,7 @@ function StockControl() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -175,6 +178,7 @@ function StockControl() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -196,6 +200,7 @@ function StockControl() {
         status: 'success',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
 
       closeMovementModal();
@@ -207,6 +212,7 @@ function StockControl() {
         status: 'error',
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -226,6 +232,7 @@ function StockControl() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       setProductHistory([]);
     }
@@ -318,6 +325,7 @@ function StockControl() {
       status: 'success',
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
@@ -362,6 +370,7 @@ function StockControl() {
       status: 'success',
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
@@ -412,6 +421,7 @@ function StockControl() {
       status: 'success',
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
@@ -458,6 +468,7 @@ function StockControl() {
       status: 'success',
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 

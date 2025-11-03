@@ -87,6 +87,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingList(false);
@@ -108,6 +109,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -120,6 +122,7 @@ function RegisterCategory() {
         status: "warning",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -137,6 +140,7 @@ function RegisterCategory() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar formulario
       setFormData({
@@ -151,6 +155,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -164,6 +169,7 @@ function RegisterCategory() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadCategories();
     } else {
@@ -173,6 +179,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -209,6 +216,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -222,6 +230,7 @@ function RegisterCategory() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadCategories();
       setIsEditOpen(false);
@@ -233,6 +242,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -246,6 +256,7 @@ function RegisterCategory() {
         status: "success",
         duration: 2000,
         isClosable: true,
+        position: "top-right",
       });
       loadCategories();
     } else {
@@ -255,6 +266,7 @@ function RegisterCategory() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

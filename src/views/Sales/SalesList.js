@@ -68,6 +68,7 @@ function SalesList() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -113,6 +114,7 @@ function SalesList() {
         status: 'success',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadSales();
     } else {
@@ -122,6 +124,7 @@ function SalesList() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -224,6 +227,7 @@ function SalesList() {
       status: 'success',
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
@@ -338,6 +342,7 @@ function SalesList() {
       status: 'success',
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 

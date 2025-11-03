@@ -42,6 +42,7 @@ function RegisterGroup() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -57,6 +58,7 @@ function RegisterGroup() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar formulario
       setFormData({
@@ -70,6 +72,7 @@ function RegisterGroup() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

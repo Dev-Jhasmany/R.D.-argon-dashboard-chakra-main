@@ -90,6 +90,7 @@ function SupplyEntry() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingSuppliers(false);
@@ -130,6 +131,7 @@ function SupplyEntry() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -141,6 +143,7 @@ function SupplyEntry() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -166,6 +169,7 @@ function SupplyEntry() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       // Limpiar formulario
       setFormData({
@@ -188,6 +192,7 @@ function SupplyEntry() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -201,6 +206,7 @@ function SupplyEntry() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadEntries();
     } else {
@@ -210,6 +216,7 @@ function SupplyEntry() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -265,6 +272,7 @@ function SupplyEntry() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -286,6 +294,7 @@ function SupplyEntry() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadEntries();
       setIsEditOpen(false);
@@ -297,6 +306,7 @@ function SupplyEntry() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

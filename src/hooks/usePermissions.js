@@ -1,20 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import permissionService from 'services/permissionService';
 import { getCategoryMap, ALWAYS_VISIBLE_CATEGORIES } from 'config/menuConfig';
 
 // Mapeo de nombres de categorías a sus IDs - Obtenido desde configuración centralizada
 const CATEGORY_MAP = getCategoryMap();
 
+// Tiempo de recarga automática de permisos (5 minutos)
+const PERMISSIONS_REFRESH_INTERVAL = 5 * 60 * 1000;
+
 export const usePermissions = () => {
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
 
-  useEffect(() => {
-    loadUserPermissions();
-  }, []);
-
-  const loadUserPermissions = async () => {
+  const loadUserPermissions = useCallback(async () => {
     try {
       // Obtener información del usuario desde localStorage o sessionStorage
       const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -26,8 +25,8 @@ export const usePermissions = () => {
       const user = JSON.parse(userStr);
       setUserRole(user.role);
 
-      // Si es Super Admin (nivel 0), tiene acceso a todo
-      if (user.role?.hierarchyLevel === 0) {
+      // Si es Super Admin (nivel 0) o Administrador (nivel 1), tiene acceso a todo
+      if (user.role?.hierarchyLevel <= 1) {
         setPermissions('ALL'); // Marcador especial para acceso total
         setLoading(false);
         return;
@@ -45,7 +44,19 @@ export const usePermissions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadUserPermissions();
+
+    // Configurar recarga periódica de permisos
+    const intervalId = setInterval(() => {
+      loadUserPermissions();
+    }, PERMISSIONS_REFRESH_INTERVAL);
+
+    // Limpiar intervalo al desmontar
+    return () => clearInterval(intervalId);
+  }, [loadUserPermissions]);
 
   // Verificar si el usuario tiene permiso para ver una categoría
   const hasAccessToCategory = (categoryName) => {
@@ -97,11 +108,18 @@ export const usePermissions = () => {
     return permission.submenus && permission.submenus.includes(submenuName);
   };
 
+  // Función para recargar permisos manualmente
+  const refreshPermissions = async () => {
+    setLoading(true);
+    await loadUserPermissions();
+  };
+
   return {
     permissions,
     loading,
     userRole,
     hasAccessToCategory,
-    hasAccessToSubmenu
+    hasAccessToSubmenu,
+    refreshPermissions
   };
 };

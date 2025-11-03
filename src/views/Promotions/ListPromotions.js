@@ -81,6 +81,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -98,6 +99,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoadingProducts(false);
@@ -151,6 +153,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -162,6 +165,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -173,6 +177,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -202,6 +207,7 @@ function ListPromotions() {
         status: "success",
         duration: 2000,
         isClosable: true,
+        position: "top-right",
       });
       onEditClose();
       loadPromotions();
@@ -212,6 +218,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -225,6 +232,7 @@ function ListPromotions() {
         status: "success",
         duration: 2000,
         isClosable: true,
+        position: "top-right",
       });
       loadPromotions();
     } else {
@@ -234,6 +242,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -252,6 +261,7 @@ function ListPromotions() {
         status: "success",
         duration: 2000,
         isClosable: true,
+        position: "top-right",
       });
       loadPromotions();
     } else {
@@ -261,6 +271,7 @@ function ListPromotions() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     onDeleteClose();

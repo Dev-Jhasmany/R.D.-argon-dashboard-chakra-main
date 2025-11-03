@@ -73,6 +73,7 @@ function SignIn() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -88,6 +89,7 @@ function SignIn() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       // Redirigir al dashboard
       history.push("/admin/dashboard");
@@ -98,6 +100,7 @@ function SignIn() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

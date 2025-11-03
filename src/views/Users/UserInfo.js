@@ -42,6 +42,7 @@ function UserInfo() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);

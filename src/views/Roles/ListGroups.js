@@ -53,6 +53,7 @@ function ListGroups() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -67,6 +68,7 @@ function ListGroups() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadGroups();
     } else {
@@ -76,6 +78,7 @@ function ListGroups() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);

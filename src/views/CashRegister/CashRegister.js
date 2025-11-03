@@ -50,6 +50,7 @@ import Card from 'components/Card/Card';
 import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
 import cashRegisterService from 'services/cashRegisterService';
+import orderService from 'services/orderService';
 import { useAuth } from 'contexts/AuthContext';
 
 function CashRegister() {
@@ -149,6 +150,8 @@ function CashRegister() {
         description: 'Ingrese un monto inicial válido',
         status: 'warning',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -165,6 +168,8 @@ function CashRegister() {
         description: 'La caja se abrió exitosamente',
         status: 'success',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       setIsOpenModalOpen(false);
       setOpenForm({ name: '', user_name: '', opening_amount: '', notes: '' });
@@ -176,6 +181,8 @@ function CashRegister() {
         description: result.error,
         status: 'error',
         duration: 5000,
+        isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -200,6 +207,8 @@ function CashRegister() {
         description: `Diferencia: Bs. ${parseFloat(diff).toFixed(2)}`,
         status: diff === 0 ? 'success' : 'warning',
         duration: 5000,
+        isClosable: true,
+        position: "top-right",
       });
       setIsCloseModalOpen(false);
       setCloseForm({ closing_amount: '', notes: '' });
@@ -211,6 +220,8 @@ function CashRegister() {
         description: result.error,
         status: 'error',
         duration: 5000,
+        isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -222,6 +233,8 @@ function CashRegister() {
         description: 'Ingrese un monto válido',
         status: 'warning',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -237,6 +250,8 @@ function CashRegister() {
         title: 'Movimiento registrado',
         status: 'success',
         duration: 3000,
+        isClosable: true,
+        position: "top-right",
       });
       setIsMovementModalOpen(false);
       setMovementForm({ type: 'deposit', amount: '', description: '' });
@@ -247,6 +262,8 @@ function CashRegister() {
         description: result.error,
         status: 'error',
         duration: 5000,
+        isClosable: true,
+        position: "top-right",
       });
     }
   };

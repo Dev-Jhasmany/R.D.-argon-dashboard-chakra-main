@@ -1,30 +1,32 @@
 // chakra imports
-import { Box, ChakraProvider, Portal } from "@chakra-ui/react";
+import { Box, ChakraProvider } from "@chakra-ui/react";
 import Footer from "components/Footer/Footer.js";
 // core components
-import AuthNavbar from "components/Navbars/AuthNavbar.js";
+import CustomerNavbar from "components/Navbars/CustomerNavbar.js";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import routes from "routes.js";
+// Assets - Imagen de fondo
+import shopBackgroundImage from "assets/img/signInImage.png";
 
-export default function Pages(props) {
+export default function CustomerLayout(props) {
   const { ...rest } = props;
-  // ref for the wrapper div
   const wrapper = React.createRef();
+
   React.useEffect(() => {
     document.body.style.overflow = "unset";
-    // Specify how to clean up after this effect:
     return function cleanup() {};
   });
+
   const getActiveRoute = (routes) => {
-    let activeRoute = "Default Brand Text";
+    let activeRoute = "E-Commerce";
     for (let i = 0; i < routes.length; i++) {
       if (routes[i].collapse) {
         let collapseActiveRoute = getActiveRoute(routes[i].views);
         if (collapseActiveRoute !== activeRoute) {
           return collapseActiveRoute;
         }
-      } else if (routes[i].category && routes[i].views) {
+      } else if (routes[i].category) {
         let categoryActiveRoute = getActiveRoute(routes[i].views);
         if (categoryActiveRoute !== activeRoute) {
           return categoryActiveRoute;
@@ -39,35 +41,16 @@ export default function Pages(props) {
     }
     return activeRoute;
   };
-  const getActiveNavbar = (routes) => {
-    let activeNavbar = false;
-    for (let i = 0; i < routes.length; i++) {
-      if (routes[i].category && routes[i].views) {
-        let categoryActiveNavbar = getActiveNavbar(routes[i].views);
-        if (categoryActiveNavbar !== activeNavbar) {
-          return categoryActiveNavbar;
-        }
-      } else {
-        if (
-          window.location.href.indexOf(routes[i].layout + routes[i].path) !== -1
-        ) {
-          if (routes[i].secondaryNavbar) {
-            return routes[i].secondaryNavbar;
-          }
-        }
-      }
-    }
-    return activeNavbar;
-  };
+
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
       if (prop.collapse) {
         return getRoutes(prop.views);
       }
-      if (prop.category === "account" && prop.views) {
+      if (prop.category && prop.views) {
         return getRoutes(prop.views);
       }
-      if (prop.layout === "/auth") {
+      if (prop.layout === "/customer") {
         return (
           <Route
             path={prop.layout + prop.path}
@@ -80,22 +63,40 @@ export default function Pages(props) {
       }
     });
   };
+
   const navRef = React.useRef();
-  document.documentElement.dir = "ltr";
+
   return (
-    <Box ref={navRef} w='100%'>
-      <Portal containerRef={navRef}>
-        <AuthNavbar secondary={getActiveNavbar(routes)} logoText='' />
-      </Portal>
-      <Box w='100%'>
-        <Box ref={wrapper} w='100%'>
+    <Box ref={navRef} w="100%">
+      <CustomerNavbar logoText="TIENDA ONLINE" />
+      <Box
+        w="100%"
+        minH="100vh"
+        ref={wrapper}
+        position="relative"
+      >
+        <Box position="relative" zIndex={1}>
           <Switch>
             {getRoutes(routes)}
-            <Redirect from='/auth' to='/auth/signin' />
+            <Redirect from="/customer" to="/customer/shop" />
           </Switch>
         </Box>
+        <Box
+          overflowX="hidden"
+          h="100%"
+          w="100%"
+          left="0px"
+          position="absolute"
+          top="0"
+          bgImage={shopBackgroundImage}
+          bgSize="cover"
+          bgPosition="center"
+          zIndex="0"
+        >
+          <Box w="100%" h="100%" bgSize="cover" bg="blue.500" opacity="0.8"></Box>
+        </Box>
       </Box>
-      <Box px='24px' mx='auto' width='1044px' maxW='100%' mt='60px'>
+      <Box px="24px" mx="auto" width="1044px" maxW="100%">
         <Footer />
       </Box>
     </Box>

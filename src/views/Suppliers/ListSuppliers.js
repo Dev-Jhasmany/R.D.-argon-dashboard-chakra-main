@@ -70,6 +70,7 @@ function ListSuppliers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -84,6 +85,7 @@ function ListSuppliers() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadSuppliers();
     } else {
@@ -93,6 +95,7 @@ function ListSuppliers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -142,6 +145,7 @@ function ListSuppliers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -155,6 +159,7 @@ function ListSuppliers() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadSuppliers();
       setIsEditOpen(false);
@@ -166,6 +171,7 @@ function ListSuppliers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -179,6 +185,7 @@ function ListSuppliers() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadSuppliers();
     } else {
@@ -188,6 +195,7 @@ function ListSuppliers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

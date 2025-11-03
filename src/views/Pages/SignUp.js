@@ -64,6 +64,7 @@ function SignUp() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -75,6 +76,7 @@ function SignUp() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -105,6 +107,7 @@ function SignUp() {
         status: "success",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
       history.push("/auth/signin");
     } else {
@@ -114,6 +117,7 @@ function SignUp() {
         status: "error",
         duration: 5000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };

@@ -95,6 +95,7 @@ function ListUsers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setLoading(false);
@@ -109,6 +110,7 @@ function ListUsers() {
         status: "success",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadUsers();
     } else {
@@ -118,6 +120,7 @@ function ListUsers() {
         status: "error",
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
     setIsDeleteOpen(false);
@@ -174,6 +177,7 @@ function ListUsers() {
         status: 'warning',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       return;
     }
@@ -198,6 +202,7 @@ function ListUsers() {
         status: 'success',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
       loadUsers();
       closeEditDialog();
@@ -208,6 +213,7 @@ function ListUsers() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+        position: "top-right",
       });
     }
   };
@@ -255,6 +261,7 @@ function ListUsers() {
       status: "success",
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
@@ -305,6 +312,7 @@ function ListUsers() {
       status: "success",
       duration: 3000,
       isClosable: true,
+        position: "top-right",
     });
   };
 
