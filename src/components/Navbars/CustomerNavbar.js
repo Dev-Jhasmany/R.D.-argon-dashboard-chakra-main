@@ -5,6 +5,7 @@ import {
   Text,
   Button,
   useColorModeValue,
+  useColorMode,
   Icon,
   Badge,
   HStack,
@@ -15,13 +16,14 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
-import { FiShoppingCart, FiUser, FiMenu } from "react-icons/fi";
+import { FiShoppingCart, FiUser, FiMenu, FiSun, FiMoon } from "react-icons/fi";
 
 export default function CustomerNavbar(props) {
   const { logoText, ...rest } = props;
   const history = useHistory();
 
   // Chakra color mode
+  const { colorMode, toggleColorMode } = useColorMode();
   const navbarBg = useColorModeValue("white", "gray.800");
   const navbarShadow = useColorModeValue(
     "0px 7px 23px rgba(0, 0, 0, 0.05)",
@@ -91,6 +93,16 @@ export default function CustomerNavbar(props) {
         >
           Productos
         </Button>
+
+        {/* Theme Toggle Button */}
+        <IconButton
+          icon={colorMode === "light" ? <Icon as={FiMoon} /> : <Icon as={FiSun} />}
+          onClick={toggleColorMode}
+          variant="ghost"
+          size={{ base: "sm", md: "md" }}
+          aria-label="Toggle theme"
+          title={colorMode === "light" ? "Modo oscuro" : "Modo claro"}
+        />
 
         {/* Cart Button */}
         <Button

@@ -61,6 +61,22 @@ export default function AuthNavbar(props) {
   hamburgerColor = { base: "white" };
   var linksAuth = (
     <HStack display={{ sm: "none", lg: "flex" }}>
+      <Link href="/">
+        <Button
+          fontSize="sm"
+          ms="0px"
+          me="0px"
+          px="0px"
+          me={{ sm: "2px", md: "16px" }}
+          color={navbarIcon}
+          variant="no-effects"
+          leftIcon={
+            <HomeIcon color={navbarIcon} w="12px" h="12px" me="0px" />
+          }
+        >
+          <Text>Tienda Online</Text>
+        </Button>
+      </Link>
 
       <NavLink to="/auth/reset-password">
         <Button

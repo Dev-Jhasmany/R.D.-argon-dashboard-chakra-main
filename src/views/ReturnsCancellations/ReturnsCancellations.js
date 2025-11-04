@@ -49,6 +49,7 @@ function ReturnsCancellations() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterSource, setFilterSource] = useState('all'); // all, store, online
 
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -62,7 +63,7 @@ function ReturnsCancellations() {
 
   useEffect(() => {
     filterSales();
-  }, [sales, searchTerm, filterStatus]);
+  }, [sales, searchTerm, filterStatus, filterSource]);
 
   const loadSales = async () => {
     setLoading(true);
@@ -103,6 +104,13 @@ function ReturnsCancellations() {
       filtered = filtered.filter((sale) => !sale.is_active && sale.sale_status === 'cancelled');
     }
 
+    // Filtrar por origen (tienda/online)
+    if (filterSource === 'online') {
+      filtered = filtered.filter((sale) => !sale.created_by && !sale.cash_register);
+    } else if (filterSource === 'store') {
+      filtered = filtered.filter((sale) => sale.created_by || sale.cash_register);
+    }
+
     setFilteredSales(filtered);
   };
 
@@ -110,7 +118,16 @@ function ReturnsCancellations() {
   const canReturn = (sale) => {
     if (!user) return false;
 
-    // CUALQUIER usuario autenticado puede hacer devoluciones
+    // Verificar si es una venta online (sin created_by ni cash_register)
+    const isOnlineSale = !sale.created_by && !sale.cash_register;
+
+    // Si es venta online, solo administradores pueden hacer devoluciones
+    if (isOnlineSale) {
+      const adminRoles = ['Administrador', 'Super Administrador'];
+      return user.role && adminRoles.includes(user.role.name);
+    }
+
+    // Para ventas normales, CUALQUIER usuario autenticado puede hacer devoluciones
     // La devolución solo cambia el estado de "active" a "returned" pero NO desactiva la venta
     return true;
   };
@@ -226,7 +243,7 @@ function ReturnsCancellations() {
         <CardBody>
           {/* Filtros */}
           <Grid
-            templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
+            templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }}
             gap='20px'
             mb='20px'
           >
@@ -252,6 +269,19 @@ function ReturnsCancellations() {
                 <option value='active'>Activas</option>
                 <option value='returned'>Devueltas</option>
                 <option value='cancelled'>Anuladas</option>
+              </Select>
+            </FormControl>
+            <FormControl>
+              <FormLabel fontSize='sm'>Origen de Venta</FormLabel>
+              <Select
+                value={filterSource}
+                onChange={(e) => setFilterSource(e.target.value)}
+                bg={inputBg}
+                size='sm'
+              >
+                <option value='all'>Todas</option>
+                <option value='store'>Tienda Física</option>
+                <option value='online'>Tienda Online</option>
               </Select>
             </FormControl>
           </Grid>
@@ -302,7 +332,11 @@ function ReturnsCancellations() {
                           ? `${sale.created_by.full_name} ${sale.created_by.full_last_name}`
                           : sale.cash_register?.opened_by?.full_name && sale.cash_register?.opened_by?.full_last_name
                           ? `${sale.cash_register.opened_by.full_name} ${sale.cash_register.opened_by.full_last_name}`
-                          : 'N/A'}
+                          : (
+                            <Badge colorScheme="purple" fontSize="xs">
+                              Tienda Online
+                            </Badge>
+                          )}
                       </Td>
                       <Td borderColor={borderColor}>
                         {sale.cash_register?.name || 'N/A'}
@@ -403,10 +437,17 @@ function ReturnsCancellations() {
               <>
                 <Alert status='info' mb={4}>
                   <AlertIcon />
-                  <AlertDescription>
-                    Venta: {selectedSale.sale_number} - Bs.{' '}
-                    {parseFloat(selectedSale.total).toFixed(2)}
-                  </AlertDescription>
+                  <Box>
+                    <Text fontWeight="bold">
+                      Venta: {selectedSale.sale_number} - Bs.{' '}
+                      {parseFloat(selectedSale.total).toFixed(2)}
+                    </Text>
+                    {!selectedSale.created_by && !selectedSale.cash_register && (
+                      <Badge colorScheme="purple" mt={2}>
+                        🛒 Venta de Tienda Online
+                      </Badge>
+                    )}
+                  </Box>
                 </Alert>
                 <FormControl mb={4} isRequired>
                   <FormLabel>Motivo de la Devolución</FormLabel>
@@ -446,10 +487,17 @@ function ReturnsCancellations() {
               <>
                 <Alert status='warning' mb={4}>
                   <AlertIcon />
-                  <AlertDescription>
-                    ¿Está seguro que desea anular la venta{' '}
-                    {selectedSale.sale_number}?
-                  </AlertDescription>
+                  <Box>
+                    <Text fontWeight="bold">
+                      ¿Está seguro que desea anular la venta{' '}
+                      {selectedSale.sale_number}?
+                    </Text>
+                    {!selectedSale.created_by && !selectedSale.cash_register && (
+                      <Badge colorScheme="purple" mt={2}>
+                        🛒 Venta de Tienda Online
+                      </Badge>
+                    )}
+                  </Box>
                 </Alert>
                 <FormControl mb={4} isRequired>
                   <FormLabel>Motivo de la Anulación</FormLabel>

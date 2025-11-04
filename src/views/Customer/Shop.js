@@ -31,6 +31,13 @@ function Shop() {
   const textColor = useColorModeValue("gray.700", "white");
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
+  const headingColor = useColorModeValue("gray.800", "white");
+  const subheadingColor = useColorModeValue("gray.600", "gray.300");
+  const categoryColor = useColorModeValue("gray.500", "gray.400");
+  const descriptionColor = useColorModeValue("gray.600", "gray.400");
+  const stockColor = useColorModeValue("gray.500", "gray.400");
+  const headerBg = useColorModeValue("linear(to-r, blue.400, blue.600)", "linear(to-r, blue.600, blue.800)");
+  const cardHoverShadow = useColorModeValue("xl", "dark-lg");
   const toast = useToast();
 
   const [products, setProducts] = useState([]);
@@ -365,11 +372,28 @@ function Shop() {
   return (
     <Box pt={{ base: "80px", md: "100px" }} px={{ base: "15px", md: "30px" }} pb="30px" bg="transparent">
       {/* Header */}
-      <Box mb={8}>
-        <Text fontSize="3xl" fontWeight="bold" color="white" mb={2}>
+      <Box
+        mb={8}
+        p={6}
+        borderRadius="xl"
+        bgGradient={headerBg}
+        boxShadow="lg"
+      >
+        <Text
+          fontSize={{ base: "3xl", md: "4xl" }}
+          fontWeight="extrabold"
+          color="white"
+          mb={2}
+          textShadow="0 2px 10px rgba(0,0,0,0.2)"
+          letterSpacing="tight"
+        >
           Nuestros Productos
         </Text>
-        <Text color="white">
+        <Text
+          color="whiteAlpha.900"
+          fontSize={{ base: "md", md: "lg" }}
+          fontWeight="medium"
+        >
           Encuentra los mejores productos con entrega rápida
         </Text>
       </Box>
@@ -408,7 +432,7 @@ function Shop() {
       {filteredProducts.length === 0 ? (
         <Center h="300px">
           <VStack spacing={4}>
-            <Text color="gray.500" fontSize="lg">
+            <Text color={subheadingColor} fontSize="lg" fontWeight="medium">
               No se encontraron productos
             </Text>
           </VStack>
@@ -425,14 +449,17 @@ function Shop() {
                 transition="all 0.3s"
                 _hover={{
                   transform: "translateY(-5px)",
-                  boxShadow: "xl",
+                  boxShadow: cardHoverShadow,
                 }}
+                bg={bgColor}
+                borderColor={borderColor}
+                borderWidth="1px"
               >
                 <CardBody p={0}>
                   {/* Product Image */}
                   <Box
                     h="200px"
-                    bg="gray.100"
+                    bg={useColorModeValue("gray.100", "gray.700")}
                     position="relative"
                     overflow="hidden"
                   >
@@ -485,16 +512,18 @@ function Shop() {
                   <Box p={4}>
                     <Text
                       fontSize="sm"
-                      color="gray.500"
+                      color={categoryColor}
                       mb={1}
                       textTransform="uppercase"
+                      fontWeight="semibold"
+                      letterSpacing="wide"
                     >
                       {product.category_name}
                     </Text>
                     <Text
                       fontSize="lg"
                       fontWeight="bold"
-                      color={textColor}
+                      color={headingColor}
                       mb={2}
                       noOfLines={2}
                       minH="50px"
@@ -502,14 +531,21 @@ function Shop() {
                       {product.name}
                     </Text>
                     {product.description && (
-                      <Text fontSize="sm" color="gray.600" mb={3} noOfLines={2}>
+                      <Text fontSize="sm" color={descriptionColor} mb={3} noOfLines={2}>
                         {product.description}
                       </Text>
                     )}
 
                     {/* Mostrar información de promoción si existe */}
                     {product.promotion && product.promotion.is_active && (
-                      <Box mb={2} p={2} bg="green.50" borderRadius="md" borderLeft="3px solid" borderColor="green.500">
+                      <Box
+                        mb={2}
+                        p={2}
+                        bg={useColorModeValue("green.50", "green.900")}
+                        borderRadius="md"
+                        borderLeft="3px solid"
+                        borderColor="green.500"
+                      >
                         <HStack spacing={2}>
                           <Badge colorScheme="green" fontSize="xs">
                             {product.promotion.discount_type === 'percentage'
@@ -519,12 +555,22 @@ function Shop() {
                               : `Bs. ${parseFloat(product.promotion.discount_value).toFixed(2)} OFF`
                             }
                           </Badge>
-                          <Text fontSize="xs" color="green.700" fontWeight="semibold" noOfLines={1}>
+                          <Text
+                            fontSize="xs"
+                            color={useColorModeValue("green.700", "green.200")}
+                            fontWeight="semibold"
+                            noOfLines={1}
+                          >
                             {product.promotion.name}
                           </Text>
                         </HStack>
                         {product.promotion.description && (
-                          <Text fontSize="xs" color="gray.600" mt={1} noOfLines={2}>
+                          <Text
+                            fontSize="xs"
+                            color={useColorModeValue("gray.600", "gray.300")}
+                            mt={1}
+                            noOfLines={2}
+                          >
                             {product.promotion.description}
                           </Text>
                         )}
@@ -561,7 +607,7 @@ function Shop() {
                           </Text>
                         )}
                       </Box>
-                      <Text fontSize="sm" color="gray.500">
+                      <Text fontSize="sm" color={stockColor} fontWeight="medium">
                         Stock: {product.stock}
                       </Text>
                     </HStack>
@@ -588,13 +634,16 @@ function Shop() {
                         />
                         <Flex
                           flex={1}
-                          bg="blue.50"
+                          bg={useColorModeValue("blue.50", "blue.900")}
                           py={2}
                           borderRadius="md"
                           justifyContent="center"
                           alignItems="center"
                         >
-                          <Text fontWeight="bold" color="blue.600">
+                          <Text
+                            fontWeight="bold"
+                            color={useColorModeValue("blue.600", "blue.200")}
+                          >
                             {quantityInCart} en carrito
                           </Text>
                         </Flex>

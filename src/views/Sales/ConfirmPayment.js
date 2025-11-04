@@ -40,8 +40,14 @@ import {
   AlertDescription,
   Spinner,
   Center,
+  Input,
+  FormControl,
+  FormLabel,
+  Textarea,
+  IconButton,
+  Select,
 } from '@chakra-ui/react';
-import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
+import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import Card from 'components/Card/Card';
 import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
@@ -50,6 +56,11 @@ import api from 'services/api';
 function ConfirmPayment() {
   const textColor = useColorModeValue('gray.700', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const hoverBg = useColorModeValue('gray.50', 'gray.700');
+  const modalBg = useColorModeValue('gray.50', 'gray.700');
+  const itemBg = useColorModeValue('gray.50', 'gray.600');
+  const infoBg = useColorModeValue('blue.50', 'blue.900');
+  const successBg = useColorModeValue('green.50', 'green.900');
   const toast = useToast();
 
   const [pendingOrders, setPendingOrders] = useState([]);
@@ -57,19 +68,34 @@ function ConfirmPayment() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  const [editedCustomerData, setEditedCustomerData] = useState({
+    customer_name: '',
+    customer_email: '',
+    customer_nit: '',
+    delivery_address: '',
+    order_type: 'pickup',
+    delivery_time: '12:00'
+  });
 
   useEffect(() => {
     loadPendingOrders();
 
     // Actualizar cada 5 segundos para detectar nuevos pedidos
+    // SOLO si no hay modales abiertos
     const intervalId = setInterval(() => {
-      loadPendingOrders();
+      // No actualizar si el modal de validación o el modal de imagen están abiertos
+      if (!isModalOpen && !isImageModalOpen) {
+        loadPendingOrders();
+      }
     }, 5000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [isModalOpen, isImageModalOpen]);
 
   const loadPendingOrders = async () => {
     setLoading(true);
@@ -126,6 +152,17 @@ function ConfirmPayment() {
           const notes = sale.notes || '';
           const emailMatch = notes.match(/Email:\s*([^\s-]+)/);
           const addressMatch = notes.match(/Dirección:\s*([^-]+)/);
+          const typeMatch = notes.match(/Tipo:\s*([^-]+)/);
+          const timeMatch = notes.match(/Entrega programada:\s*(\d{2}:\d{2})/);
+
+          // Mapear el tipo de pedido
+          const orderTypeMap = {
+            'Para llevar': 'pickup',
+            'Delivery': 'delivery',
+            'En el local': 'dine-in'
+          };
+          const orderTypeText = typeMatch ? typeMatch[1].trim() : 'Para llevar';
+          const orderType = orderTypeMap[orderTypeText] || 'pickup';
 
           return {
             // Mapear al formato que espera el componente
@@ -134,7 +171,9 @@ function ConfirmPayment() {
             customer_name: sale.customer_name,
             customer_email: emailMatch ? emailMatch[1] : null,
             customer_phone: sale.customer_nit, // Usamos nit como teléfono
-            delivery_address: addressMatch ? addressMatch[1].trim() : null,
+            delivery_address: sale.delivery_address || (addressMatch ? addressMatch[1].trim() : null),
+            order_type: sale.order_type || orderType,
+            delivery_time: sale.delivery_time || (timeMatch ? timeMatch[1] : '12:00'),
             payment_method: sale.payment_method,
             total: sale.total,
             created_at: sale.created_at,
@@ -170,11 +209,101 @@ function ConfirmPayment() {
   const openOrderModal = (order) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
+    // Inicializar datos para edición
+    setEditedCustomerData({
+      customer_name: order.customer_name || '',
+      customer_email: order.customer_email || '',
+      customer_nit: order.customer_phone || '',
+      delivery_address: order.delivery_address || '',
+      order_type: order.order_type || 'pickup',
+      delivery_time: order.delivery_time || '12:00'
+    });
+    setIsEditingCustomer(false);
   };
 
   const closeOrderModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
+    setIsEditingCustomer(false);
+  };
+
+  const openImageModal = (imageSrc) => {
+    setSelectedImage(imageSrc);
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage(null);
+  };
+
+  const handleSaveCustomerInfo = async () => {
+    if (!selectedOrder) return;
+
+    setProcessingPayment(true);
+
+    try {
+      // Actualizar información del cliente en el backend
+      await api.patch(`/sales/${selectedOrder.saleId}/customer-info`, {
+        customer_name: editedCustomerData.customer_name,
+        customer_email: editedCustomerData.customer_email,
+        customer_nit: editedCustomerData.customer_nit,
+        delivery_address: editedCustomerData.delivery_address,
+        order_type: editedCustomerData.order_type,
+        delivery_time: editedCustomerData.delivery_time
+      });
+
+      // Actualizar el pedido en el estado local
+      setSelectedOrder({
+        ...selectedOrder,
+        customer_name: editedCustomerData.customer_name,
+        customer_email: editedCustomerData.customer_email,
+        customer_phone: editedCustomerData.customer_nit,
+        delivery_address: editedCustomerData.delivery_address,
+        order_type: editedCustomerData.order_type,
+        delivery_time: editedCustomerData.delivery_time
+      });
+
+      // Actualizar la lista de pedidos pendientes
+      setPendingOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.saleId === selectedOrder.saleId
+            ? {
+                ...order,
+                customer_name: editedCustomerData.customer_name,
+                customer_email: editedCustomerData.customer_email,
+                customer_phone: editedCustomerData.customer_nit,
+                delivery_address: editedCustomerData.delivery_address,
+                order_type: editedCustomerData.order_type,
+                delivery_time: editedCustomerData.delivery_time
+              }
+            : order
+        )
+      );
+
+      setIsEditingCustomer(false);
+
+      toast({
+        title: 'Datos actualizados',
+        description: 'La información del cliente ha sido actualizada correctamente',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-right',
+      });
+    } catch (error) {
+      console.error('Error al actualizar información del cliente:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar la información del cliente',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-right',
+      });
+    } finally {
+      setProcessingPayment(false);
+    }
   };
 
   const quickConfirmPayment = async (order) => {
@@ -439,11 +568,11 @@ function ConfirmPayment() {
         </CardHeader>
         <CardBody>
           {pendingOrders.length === 0 ? (
-            <Box p={6} bg="green.50" borderRadius="md" textAlign="center">
-              <Text color="green.700" fontSize="lg" fontWeight="bold" mb={2}>
+            <Box p={6} bg={successBg} borderRadius="md" textAlign="center">
+              <Text color={useColorModeValue("green.700", "green.200")} fontSize="lg" fontWeight="bold" mb={2}>
                 ✅ No hay pedidos pendientes de confirmación
               </Text>
-              <Text color="green.600" fontSize="sm">
+              <Text color={useColorModeValue("green.600", "green.300")} fontSize="sm">
                 Todos los pagos han sido procesados
               </Text>
             </Box>
@@ -471,7 +600,7 @@ function ConfirmPayment() {
                   </Thead>
                   <Tbody>
                     {pendingOrders.map((order) => (
-                      <Tr key={order.saleId || order.order_number} _hover={{ bg: 'gray.50' }}>
+                      <Tr key={order.saleId || order.order_number} _hover={{ bg: hoverBg }}>
                         <Td borderColor={borderColor} fontWeight="bold">
                           {order.order_number}
                         </Td>
@@ -535,38 +664,170 @@ function ConfirmPayment() {
             {selectedOrder && (
               <VStack spacing={4} align="stretch">
                 {/* Información del Cliente */}
-                <Box p={4} bg="gray.50" borderRadius="md">
-                  <Text fontSize="sm" fontWeight="bold" mb={2}>
-                    Información del Cliente
-                  </Text>
-                  <VStack align="start" spacing={1}>
-                    <HStack>
-                      <Text fontSize="sm" fontWeight="semibold">Nombre:</Text>
-                      <Text fontSize="sm">{selectedOrder.customer_name}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontSize="sm" fontWeight="semibold">Email:</Text>
-                      <Text fontSize="sm">{selectedOrder.customer_email}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontSize="sm" fontWeight="semibold">Teléfono:</Text>
-                      <Text fontSize="sm">{selectedOrder.customer_phone}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontSize="sm" fontWeight="semibold">Dirección:</Text>
-                      <Text fontSize="sm">{selectedOrder.delivery_address}</Text>
-                    </HStack>
-                  </VStack>
+                <Box p={4} bg={modalBg} borderRadius="md">
+                  <HStack justify="space-between" mb={2}>
+                    <Text fontSize="sm" fontWeight="bold">
+                      Información del Cliente
+                    </Text>
+                    {!isEditingCustomer && (
+                      <IconButton
+                        icon={<EditIcon />}
+                        size="sm"
+                        colorScheme="blue"
+                        variant="ghost"
+                        onClick={() => setIsEditingCustomer(true)}
+                        aria-label="Editar información del cliente"
+                      />
+                    )}
+                  </HStack>
+
+                  {isEditingCustomer ? (
+                    <VStack align="stretch" spacing={3}>
+                      <FormControl>
+                        <FormLabel fontSize="sm">Nombre</FormLabel>
+                        <Input
+                          size="sm"
+                          value={editedCustomerData.customer_name}
+                          onChange={(e) => setEditedCustomerData({
+                            ...editedCustomerData,
+                            customer_name: e.target.value
+                          })}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel fontSize="sm">Email</FormLabel>
+                        <Input
+                          size="sm"
+                          type="email"
+                          value={editedCustomerData.customer_email}
+                          onChange={(e) => setEditedCustomerData({
+                            ...editedCustomerData,
+                            customer_email: e.target.value
+                          })}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel fontSize="sm">Teléfono</FormLabel>
+                        <Input
+                          size="sm"
+                          value={editedCustomerData.customer_nit}
+                          onChange={(e) => setEditedCustomerData({
+                            ...editedCustomerData,
+                            customer_nit: e.target.value
+                          })}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel fontSize="sm">Dirección</FormLabel>
+                        <Textarea
+                          size="sm"
+                          rows={2}
+                          value={editedCustomerData.delivery_address}
+                          onChange={(e) => setEditedCustomerData({
+                            ...editedCustomerData,
+                            delivery_address: e.target.value
+                          })}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel fontSize="sm">Tipo de Pedido</FormLabel>
+                        <Select
+                          size="sm"
+                          value={editedCustomerData.order_type}
+                          onChange={(e) => setEditedCustomerData({
+                            ...editedCustomerData,
+                            order_type: e.target.value
+                          })}
+                        >
+                          <option value="pickup">Para llevar</option>
+                          <option value="delivery">Delivery</option>
+                          <option value="dine-in">En el local</option>
+                        </Select>
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel fontSize="sm">Hora de Entrega</FormLabel>
+                        <Input
+                          size="sm"
+                          type="time"
+                          value={editedCustomerData.delivery_time}
+                          onChange={(e) => setEditedCustomerData({
+                            ...editedCustomerData,
+                            delivery_time: e.target.value
+                          })}
+                        />
+                      </FormControl>
+                      <HStack spacing={2} justify="flex-end">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setIsEditingCustomer(false);
+                            setEditedCustomerData({
+                              customer_name: selectedOrder.customer_name || '',
+                              customer_email: selectedOrder.customer_email || '',
+                              customer_nit: selectedOrder.customer_phone || '',
+                              delivery_address: selectedOrder.delivery_address || '',
+                              order_type: selectedOrder.order_type || 'pickup',
+                              delivery_time: selectedOrder.delivery_time || '12:00'
+                            });
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          size="sm"
+                          colorScheme="blue"
+                          onClick={handleSaveCustomerInfo}
+                          isLoading={processingPayment}
+                        >
+                          Guardar
+                        </Button>
+                      </HStack>
+                    </VStack>
+                  ) : (
+                    <VStack align="start" spacing={1}>
+                      <HStack>
+                        <Text fontSize="sm" fontWeight="semibold">Nombre:</Text>
+                        <Text fontSize="sm">{selectedOrder.customer_name}</Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontSize="sm" fontWeight="semibold">Email:</Text>
+                        <Text fontSize="sm">{selectedOrder.customer_email}</Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontSize="sm" fontWeight="semibold">Teléfono:</Text>
+                        <Text fontSize="sm">{selectedOrder.customer_phone}</Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontSize="sm" fontWeight="semibold">Tipo de Pedido:</Text>
+                        <Text fontSize="sm">
+                          {selectedOrder.order_type === 'delivery' ? 'Delivery' :
+                           selectedOrder.order_type === 'pickup' ? 'Para llevar' :
+                           selectedOrder.order_type === 'dine-in' ? 'En el local' : 'Para llevar'}
+                        </Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontSize="sm" fontWeight="semibold">Hora de Entrega:</Text>
+                        <Text fontSize="sm">{selectedOrder.delivery_time}</Text>
+                      </HStack>
+                      {selectedOrder.delivery_address && (
+                        <HStack>
+                          <Text fontSize="sm" fontWeight="semibold">Dirección:</Text>
+                          <Text fontSize="sm">{selectedOrder.delivery_address}</Text>
+                        </HStack>
+                      )}
+                    </VStack>
+                  )}
                 </Box>
 
                 {/* Método de Pago */}
-                <Box p={4} bg="blue.50" borderRadius="md">
+                <Box p={4} bg={infoBg} borderRadius="md">
                   <Text fontSize="sm" fontWeight="bold" mb={2}>
                     Método de Pago
                   </Text>
                   <HStack>
                     {getPaymentMethodBadge(selectedOrder.payment_method)}
-                    <Text fontSize="sm" color="gray.600">
+                    <Text fontSize="sm" color={useColorModeValue("gray.600", "gray.300")}>
                       {selectedOrder.payment_method === 'qr' && 'Código QR'}
                       {selectedOrder.payment_method === 'paypal' && 'PayPal Digital'}
                       {selectedOrder.payment_method === 'stripe' && 'Tarjeta vía Stripe'}
@@ -576,8 +837,8 @@ function ConfirmPayment() {
 
                 {/* Comprobante de Pago (si existe) */}
                 {(selectedOrder.paymentDetails?.paymentProof || selectedOrder.payment_proof) && (
-                  <Box p={4} bg="green.50" borderRadius="md" borderWidth="2px" borderColor="green.200">
-                    <Text fontSize="sm" fontWeight="bold" mb={3} color="green.700">
+                  <Box p={4} bg={successBg} borderRadius="md" borderWidth="2px" borderColor="green.200">
+                    <Text fontSize="sm" fontWeight="bold" mb={3} color={useColorModeValue("green.700", "green.200")}>
                       📸 Comprobante de Pago Adjunto
                     </Text>
                     <Box
@@ -585,7 +846,15 @@ function ConfirmPayment() {
                       overflow="hidden"
                       border="2px solid"
                       borderColor="green.300"
-                      bg="white"
+                      bg={useColorModeValue("white", "gray.800")}
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      _hover={{
+                        transform: "scale(1.02)",
+                        boxShadow: "lg",
+                        borderColor: "green.500"
+                      }}
+                      onClick={() => openImageModal(selectedOrder.payment_proof || selectedOrder.paymentDetails?.paymentProof)}
                     >
                       <img
                         src={selectedOrder.payment_proof || selectedOrder.paymentDetails?.paymentProof}
@@ -593,8 +862,8 @@ function ConfirmPayment() {
                         style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
                       />
                     </Box>
-                    <Text fontSize="xs" color="gray.600" mt={2} textAlign="center">
-                      Haz clic para ver en tamaño completo
+                    <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.300")} mt={2} textAlign="center" fontWeight="medium">
+                      🔍 Haz clic en la imagen para ver en tamaño completo
                     </Text>
                   </Box>
                 )}
@@ -608,7 +877,7 @@ function ConfirmPayment() {
                   </Text>
                   <VStack align="stretch" spacing={2}>
                     {selectedOrder.items.map((item, idx) => (
-                      <HStack key={idx} justify="space-between" p={2} bg="gray.50" borderRadius="md">
+                      <HStack key={idx} justify="space-between" p={2} bg={itemBg} borderRadius="md">
                         <Text fontSize="sm">
                           {item.product_name} x {item.quantity}
                         </Text>
@@ -623,11 +892,11 @@ function ConfirmPayment() {
                 <Divider />
 
                 {/* Total */}
-                <HStack justify="space-between" p={4} bg="green.50" borderRadius="md">
+                <HStack justify="space-between" p={4} bg={successBg} borderRadius="md">
                   <Text fontSize="lg" fontWeight="bold">
                     Total a Pagar
                   </Text>
-                  <Text fontSize="2xl" fontWeight="bold" color="green.600">
+                  <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("green.600", "green.300")}>
                     Bs. {parseFloat(selectedOrder.total).toFixed(2)}
                   </Text>
                 </HStack>
@@ -664,6 +933,43 @@ function ConfirmPayment() {
               </Button>
             </HStack>
           </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal para ver la imagen en tamaño completo */}
+      <Modal isOpen={isImageModalOpen} onClose={closeImageModal} size="full" isCentered>
+        <ModalOverlay bg="blackAlpha.800" />
+        <ModalContent bg="transparent" boxShadow="none" maxW="95vw" maxH="95vh">
+          <ModalCloseButton
+            color="white"
+            bg="blackAlpha.600"
+            _hover={{ bg: "blackAlpha.800" }}
+            size="lg"
+            zIndex={2}
+          />
+          <ModalBody display="flex" alignItems="center" justifyContent="center" p={0}>
+            {selectedImage && (
+              <Box
+                maxW="100%"
+                maxH="95vh"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <img
+                  src={selectedImage}
+                  alt="Comprobante de pago - Tamaño completo"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '95vh',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+                  }}
+                />
+              </Box>
+            )}
+          </ModalBody>
         </ModalContent>
       </Modal>
     </Flex>

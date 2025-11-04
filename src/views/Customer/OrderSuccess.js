@@ -273,6 +273,10 @@ function OrderSuccess() {
   const generateTicket = () => {
     if (!orderData) return;
 
+    const orderTypeLabel = orderData.order_type === 'en_el_local' ? 'En el local' : 'Para llevar';
+    const scheduledInfo = orderData.scheduled_delivery && orderData.scheduled_time
+      ? ` - Entrega programada: ${orderData.scheduled_time}`
+      : '';
     const ticketSaleData = {
       sale_number: orderData.order_number,
       created_at: orderData.created_at,
@@ -280,7 +284,7 @@ function OrderSuccess() {
       total: orderData.total,
       discount: 0,
       payment_method: orderData.payment_method,
-      notes: `Dirección: ${orderData.delivery_address}`,
+      notes: `Tipo de pedido: ${orderTypeLabel}${scheduledInfo}`,
       details: orderData.items.map(item => ({
         product_name: item.product_name,
         quantity: item.quantity,

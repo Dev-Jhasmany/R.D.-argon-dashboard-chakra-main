@@ -16,6 +16,7 @@ import {
   Icon,
   IconButton,
   Tooltip,
+  keyframes,
 } from "@chakra-ui/react";
 import { CheckIcon, TimeIcon, RepeatIcon } from "@chakra-ui/icons";
 import Card from "components/Card/Card";
@@ -24,6 +25,19 @@ import CardHeader from "components/Card/CardHeader";
 import orderService from "services/orderService";
 import api from "services/api";
 import { useAuth } from "contexts/AuthContext";
+
+// Animación de pulso para alertas urgentes
+const pulse = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+`;
 
 function OrdersList() {
   const textColor = useColorModeValue("gray.700", "white");
@@ -81,14 +95,27 @@ function OrdersList() {
             const notes = sale.notes || '';
             const emailMatch = notes.match(/Email:\s*([^\s-]+)/);
             const addressMatch = notes.match(/Dirección:\s*([^-]+)/);
+            const typeMatch = notes.match(/Tipo:\s*([^-]+)/);
+            const timeMatch = notes.match(/Entrega programada:\s*(\d{2}:\d{2})/);
+
+            // Mapear el tipo de pedido
+            const orderTypeMap = {
+              'Para llevar': 'pickup',
+              'Delivery': 'delivery',
+              'En el local': 'dine-in'
+            };
+            const orderTypeText = typeMatch ? typeMatch[1].trim() : 'Para llevar';
+            const orderType = orderTypeMap[orderTypeText] || 'pickup';
 
             return {
               ...order,
               order_type: 'online',
+              delivery_type: sale.order_type || orderType,
+              delivery_time: sale.delivery_time || (timeMatch ? timeMatch[1] : null),
               customer_name: sale.customer_name || 'Cliente Online',
               customer_phone: sale.customer_nit || 'N/A',
               customer_email: emailMatch ? emailMatch[1] : null,
-              delivery_address: addressMatch ? addressMatch[1].trim() : 'N/A',
+              delivery_address: sale.delivery_address || (addressMatch ? addressMatch[1].trim() : 'N/A'),
               payment_method: sale.payment_method || 'N/A',
               total: sale.total,
               items: sale.details?.map(d => ({
@@ -244,6 +271,113 @@ function OrdersList() {
     });
   };
 
+  /**
+   * Calcula la hora de inicio de preparación
+   * Resta el tiempo de preparación estimado de la hora de entrega
+   */
+  const calculateStartTime = (deliveryTime, estimatedMinutes) => {
+    if (!deliveryTime || !estimatedMinutes) return null;
+
+    try {
+      // Crear fecha de hoy con la hora de entrega
+      const today = new Date();
+      const [hours, minutes] = deliveryTime.split(':');
+      const deliveryDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+
+      // Restar el tiempo de preparación
+      const startDate = new Date(deliveryDate.getTime() - estimatedMinutes * 60000);
+
+      return startDate.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error calculando hora de inicio:', error);
+      return null;
+    }
+  };
+
+  /**
+   * Calcula cuántos minutos faltan para empezar a preparar
+   */
+  const getMinutesUntilStart = (deliveryTime, estimatedMinutes) => {
+    if (!deliveryTime || !estimatedMinutes) return null;
+
+    try {
+      const now = new Date();
+      const today = new Date();
+      const [hours, minutes] = deliveryTime.split(':');
+      const deliveryDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+
+      // Hora de inicio de preparación
+      const startDate = new Date(deliveryDate.getTime() - estimatedMinutes * 60000);
+
+      // Diferencia en minutos
+      const diffMinutes = Math.floor((startDate - now) / 60000);
+
+      return diffMinutes;
+    } catch (error) {
+      console.error('Error calculando minutos restantes:', error);
+      return null;
+    }
+  };
+
+  /**
+   * Obtiene el badge de urgencia según minutos restantes
+   */
+  const getUrgencyBadge = (minutesUntilStart) => {
+    if (minutesUntilStart === null) return null;
+
+    if (minutesUntilStart <= 0) {
+      return { label: '🚨 PREPARAR AHORA', color: 'red', pulse: true };
+    } else if (minutesUntilStart <= 5) {
+      return { label: `⚠️ Preparar en ${minutesUntilStart} min`, color: 'orange', pulse: true };
+    } else if (minutesUntilStart <= 15) {
+      return { label: `⏰ Preparar en ${minutesUntilStart} min`, color: 'yellow', pulse: false };
+    } else {
+      return { label: `✓ Preparar en ${minutesUntilStart} min`, color: 'green', pulse: false };
+    }
+  };
+
+  /**
+   * Obtiene el label del tipo de pedido
+   */
+  const getDeliveryTypeLabel = (type) => {
+    const labels = {
+      'pickup': '🏃 Para llevar',
+      'delivery': '🛵 Delivery',
+      'dine-in': '🍽️ En el local'
+    };
+    return labels[type] || type;
+  };
+
+  /**
+   * Verifica si ya es hora de recepcionar el pedido
+   * Retorna true si ya llegó o pasó la hora de inicio de preparación
+   */
+  const canReceiveOrder = (deliveryTime, estimatedMinutes) => {
+    if (!deliveryTime || !estimatedMinutes) {
+      // Si no hay hora de entrega, siempre permitir recepcionar
+      return true;
+    }
+
+    try {
+      const now = new Date();
+      const today = new Date();
+      const [hours, minutes] = deliveryTime.split(':');
+      const deliveryDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+
+      // Hora de inicio de preparación
+      const startDate = new Date(deliveryDate.getTime() - estimatedMinutes * 60000);
+
+      // Permitir recepcionar si ya pasó o es la hora de inicio
+      return now >= startDate;
+    } catch (error) {
+      console.error('Error verificando hora de recepción:', error);
+      return true; // En caso de error, permitir recepcionar
+    }
+  };
+
   if (loading) {
     return (
       <Flex direction='column' pt={{ base: "120px", md: "75px" }}>
@@ -332,25 +466,87 @@ function OrdersList() {
 
                       {/* Información del cliente para pedidos online */}
                       {order.order_type === 'online' && (
-                        <Box p={3} bg="cyan.50" borderRadius="md" borderWidth="1px" borderColor="cyan.200">
-                          <VStack align="stretch" spacing={1}>
-                            <Text fontSize="xs" fontWeight="bold" color="cyan.700">
-                              📦 Pedido Online
-                            </Text>
-                            <Text fontSize="xs" color="gray.700">
-                              👤 {order.customer_name}
-                            </Text>
-                            <Text fontSize="xs" color="gray.700">
-                              📞 {order.customer_phone}
-                            </Text>
-                            <Text fontSize="xs" color="gray.700">
-                              📍 {order.delivery_address}
-                            </Text>
-                            <Text fontSize="xs" color="gray.700">
-                              💳 {order.payment_method?.toUpperCase()}
-                            </Text>
-                          </VStack>
-                        </Box>
+                        <>
+                          <Box p={3} bg="cyan.50" borderRadius="md" borderWidth="1px" borderColor="cyan.200">
+                            <VStack align="stretch" spacing={1}>
+                              <Text fontSize="xs" fontWeight="bold" color="cyan.700">
+                                📦 Pedido Online
+                              </Text>
+                              <Text fontSize="xs" color="gray.700">
+                                👤 {order.customer_name}
+                              </Text>
+                              <Text fontSize="xs" color="gray.700">
+                                📞 {order.customer_phone}
+                              </Text>
+                              <Text fontSize="xs" color="gray.700">
+                                📍 {order.delivery_address}
+                              </Text>
+                              <Text fontSize="xs" color="gray.700">
+                                💳 {order.payment_method?.toUpperCase()}
+                              </Text>
+                            </VStack>
+                          </Box>
+
+                          {/* Tipo de pedido y hora de entrega */}
+                          {(order.delivery_type || order.delivery_time) && (
+                            <Box p={3} bg="purple.50" borderRadius="md" borderWidth="2px" borderColor="purple.300">
+                              <VStack align="stretch" spacing={2}>
+                                {order.delivery_type && (
+                                  <HStack justify="space-between">
+                                    <Text fontSize="xs" fontWeight="bold" color="purple.700">
+                                      Tipo de Pedido:
+                                    </Text>
+                                    <Badge colorScheme="purple" fontSize="xs" px={2} py={1}>
+                                      {getDeliveryTypeLabel(order.delivery_type)}
+                                    </Badge>
+                                  </HStack>
+                                )}
+                                {order.delivery_time && (
+                                  <>
+                                    <HStack justify="space-between">
+                                      <Text fontSize="xs" fontWeight="bold" color="purple.700">
+                                        Hora de Entrega:
+                                      </Text>
+                                      <Badge colorScheme="blue" fontSize="sm" px={2} py={1}>
+                                        🕐 {order.delivery_time}
+                                      </Badge>
+                                    </HStack>
+                                    {order.estimatedPreparationTime && calculateStartTime(order.delivery_time, order.estimatedPreparationTime) && (
+                                      <>
+                                        <HStack justify="space-between">
+                                          <Text fontSize="xs" fontWeight="bold" color="purple.700">
+                                            Iniciar Preparación:
+                                          </Text>
+                                          <Badge colorScheme="teal" fontSize="sm" px={2} py={1}>
+                                            🍳 {calculateStartTime(order.delivery_time, order.estimatedPreparationTime)}
+                                          </Badge>
+                                        </HStack>
+                                        {(() => {
+                                          const minutesUntilStart = getMinutesUntilStart(order.delivery_time, order.estimatedPreparationTime);
+                                          const urgency = getUrgencyBadge(minutesUntilStart);
+                                          return urgency && (
+                                            <Box
+                                              p={2}
+                                              bg={`${urgency.color}.100`}
+                                              borderRadius="md"
+                                              borderWidth="2px"
+                                              borderColor={`${urgency.color}.400`}
+                                              animation={urgency.pulse ? `${pulse} 2s infinite` : 'none'}
+                                            >
+                                              <Text fontSize="sm" fontWeight="bold" color={`${urgency.color}.700`} textAlign="center">
+                                                {urgency.label}
+                                              </Text>
+                                            </Box>
+                                          );
+                                        })()}
+                                      </>
+                                    )}
+                                  </>
+                                )}
+                              </VStack>
+                            </Box>
+                          )}
+                        </>
                       )}
 
                       <Divider />
@@ -441,17 +637,39 @@ function OrdersList() {
 
                       {/* Acciones */}
                       <VStack spacing={2}>
-                        {order.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            colorScheme="blue"
-                            width="full"
-                            onClick={() => handleReceive(order.id)}
-                            isDisabled={!user || !user.id}
-                          >
-                            Recepcionar Pedido
-                          </Button>
-                        )}
+                        {order.status === 'pending' && (() => {
+                          const canReceive = canReceiveOrder(order.delivery_time, order.estimatedPreparationTime);
+                          const minutesUntilStart = getMinutesUntilStart(order.delivery_time, order.estimatedPreparationTime);
+                          const startTime = calculateStartTime(order.delivery_time, order.estimatedPreparationTime);
+
+                          let tooltipLabel = '';
+                          if (!user || !user.id) {
+                            tooltipLabel = 'Debes iniciar sesión para recepcionar pedidos';
+                          } else if (!canReceive && startTime) {
+                            tooltipLabel = `Este pedido se puede recepcionar a las ${startTime} (en ${minutesUntilStart} minutos)`;
+                          } else if (canReceive) {
+                            tooltipLabel = 'Haz click para recepcionar este pedido';
+                          }
+
+                          return (
+                            <Tooltip
+                              label={tooltipLabel}
+                              placement="top"
+                              hasArrow
+                            >
+                              <Button
+                                size="sm"
+                                colorScheme="blue"
+                                width="full"
+                                onClick={() => handleReceive(order.id)}
+                                isDisabled={!user || !user.id || !canReceive}
+                                opacity={!canReceive ? 0.5 : 1}
+                              >
+                                {!canReceive ? '🔒 Recepcionar Pedido' : 'Recepcionar Pedido'}
+                              </Button>
+                            </Tooltip>
+                          );
+                        })()}
 
                         {(order.status === 'received' || order.status === 'in_progress') && (
                           <Button

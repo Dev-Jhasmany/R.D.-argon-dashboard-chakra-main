@@ -17,6 +17,7 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  Checkbox,
 } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 import Card from "components/Card/Card";
@@ -26,18 +27,28 @@ import publicApi from "services/publicApi";
 
 function Checkout() {
   const textColor = useColorModeValue("gray.700", "white");
+  const selectBg = useColorModeValue("white", "gray.700");
+  const selectColor = useColorModeValue("gray.800", "white");
+  const selectBorderColor = useColorModeValue("gray.300", "gray.600");
+  const selectHoverBorderColor = useColorModeValue("gray.400", "gray.500");
+  const timePickerBg = useColorModeValue("white", "gray.700");
+  const timePickerBorderColor = useColorModeValue("gray.200", "gray.600");
+  const timePickerDisplayBg = useColorModeValue("blue.50", "blue.900");
+  const timePickerTextColor = useColorModeValue("gray.600", "gray.300");
+  const timePickerInfoColor = useColorModeValue("gray.500", "gray.400");
   const toast = useToast();
   const history = useHistory();
 
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [scheduleDelivery, setScheduleDelivery] = useState(false);
+  const [scheduledTime, setScheduledTime] = useState("");
   const [formData, setFormData] = useState({
     customer_name: "",
     customer_email: "",
     customer_phone: "",
-    delivery_address: "",
+    order_type: "para_llevar", // "en_el_local" o "para_llevar"
     payment_method: "qr",
-    notes: "",
   });
 
   useEffect(() => {
@@ -89,10 +100,22 @@ function Checkout() {
       return false;
     }
 
-    if (!formData.delivery_address.trim()) {
+    if (!formData.order_type) {
       toast({
         title: "Campo requerido",
-        description: "Por favor ingrese la dirección de entrega",
+        description: "Por favor seleccione el tipo de pedido",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return false;
+    }
+
+    if (scheduleDelivery && !scheduledTime.trim()) {
+      toast({
+        title: "Campo requerido",
+        description: "Por favor seleccione la hora de entrega programada",
         status: "warning",
         duration: 3000,
         isClosable: true,
@@ -111,14 +134,18 @@ function Checkout() {
 
     try {
       // Preparar datos de la venta para el backend
+      const orderTypeLabel = formData.order_type === 'en_el_local' ? 'En el local' : 'Para llevar';
+      const scheduledInfo = scheduleDelivery && scheduledTime
+        ? ` - Entrega programada: ${scheduledTime}`
+        : '';
       const saleData = {
         customer_name: formData.customer_name,
         customer_nit: formData.customer_phone, // Usamos el teléfono como NIT temporal
         payment_method: formData.payment_method,
-        notes: `Pedido online - Dirección: ${formData.delivery_address}${formData.customer_email ? ` - Email: ${formData.customer_email}` : ''}${formData.notes ? ` - Notas: ${formData.notes}` : ''}`,
+        notes: `Pedido online - Tipo: ${orderTypeLabel}${formData.customer_email ? ` - Email: ${formData.customer_email}` : ''}${scheduledInfo}`,
         discount: 0,
         details: cart.map((item) => ({
-          product_id: item.id,
+          product_id: item._originalProductId || item.id, // Usar el ID original del producto
           quantity: item.quantity,
           unit_price: item.price,
         })),
@@ -138,18 +165,18 @@ function Checkout() {
         customer_name: formData.customer_name,
         customer_email: formData.customer_email,
         customer_phone: formData.customer_phone,
-        delivery_address: formData.delivery_address,
+        order_type: formData.order_type, // "en_el_local" o "para_llevar"
         payment_method: formData.payment_method,
-        notes: formData.notes,
+        scheduled_delivery: scheduleDelivery,
+        scheduled_time: scheduleDelivery && scheduledTime ? scheduledTime : null,
         items: cart.map((item) => ({
-          product_id: item.id,
+          product_id: item._originalProductId || item.id, // Usar el ID original del producto
           product_name: item.name,
           quantity: item.quantity,
           unit_price: item.price,
           subtotal: item.price * item.quantity,
         })),
         total: calculateTotal(),
-        order_type: "online",
         status: "pending_payment",
         created_at: response.data.created_at,
       };
@@ -251,28 +278,140 @@ function Checkout() {
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel fontSize="sm">Dirección de Entrega</FormLabel>
-                  <Textarea
-                    name="delivery_address"
-                    value={formData.delivery_address}
+                  <FormLabel fontSize="sm">Tipo de Pedido</FormLabel>
+                  <Select
+                    name="order_type"
+                    value={formData.order_type}
                     onChange={handleChange}
-                    placeholder="Ingrese su dirección completa"
-                    rows={3}
                     size="lg"
-                  />
+                    bg={selectBg}
+                    color={selectColor}
+                    borderColor={selectBorderColor}
+                    _hover={{
+                      borderColor: selectHoverBorderColor,
+                    }}
+                    sx={{
+                      option: {
+                        bg: selectBg,
+                        color: selectColor,
+                      }
+                    }}
+                  >
+                    <option value="para_llevar">Para llevar (Recoger en el establecimiento)</option>
+                    <option value="en_el_local">En el Establecimiento (Consumir en el Establecimiento)</option>
+                  </Select>
                 </FormControl>
 
-                <FormControl>
-                  <FormLabel fontSize="sm">Notas adicionales (Opcional)</FormLabel>
-                  <Textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleChange}
-                    placeholder="Instrucciones especiales para la entrega"
-                    rows={2}
+                <Box>
+                  <Checkbox
+                    isChecked={scheduleDelivery}
+                    onChange={(e) => {
+                      setScheduleDelivery(e.target.checked);
+                      if (!e.target.checked) {
+                        setScheduledTime("");
+                      }
+                    }}
+                    colorScheme="blue"
                     size="lg"
-                  />
-                </FormControl>
+                  >
+                    <Text fontSize="sm" fontWeight="medium">
+                      Programar entrega para más tarde
+                    </Text>
+                  </Checkbox>
+                </Box>
+
+                {scheduleDelivery && (
+                  <FormControl isRequired>
+                    <FormLabel fontSize="sm">Hora de entrega</FormLabel>
+                    <Box
+                      p={4}
+                      borderWidth="2px"
+                      borderRadius="lg"
+                      borderColor={timePickerBorderColor}
+                      bg={timePickerBg}
+                    >
+                      {/* Display de hora seleccionada */}
+                      <Flex justify="center" mb={4}>
+                        <Box
+                          px={6}
+                          py={3}
+                          bg={timePickerDisplayBg}
+                          borderRadius="lg"
+                          borderWidth="2px"
+                          borderColor="blue.500"
+                        >
+                          <Text fontSize="3xl" fontWeight="bold" color="blue.500" textAlign="center">
+                            {scheduledTime || '--:--'}
+                          </Text>
+                        </Box>
+                      </Flex>
+
+                      {/* Selector de Horas */}
+                      <VStack spacing={3} align="stretch">
+                        <Box>
+                          <Text fontSize="xs" fontWeight="semibold" mb={2} color={timePickerTextColor}>
+                            Selecciona la hora:
+                          </Text>
+                          <Flex wrap="wrap" gap={2}>
+                            {Array.from({ length: 15 }, (_, i) => i + 8).map(hour => {
+                              const hourStr = hour.toString().padStart(2, '0');
+                              const isSelected = scheduledTime.split(':')[0] === hourStr;
+                              return (
+                                <Button
+                                  key={hour}
+                                  size="sm"
+                                  colorScheme={isSelected ? "blue" : "gray"}
+                                  variant={isSelected ? "solid" : "outline"}
+                                  onClick={() => {
+                                    const minute = scheduledTime.split(':')[1] || '00';
+                                    setScheduledTime(`${hourStr}:${minute}`);
+                                  }}
+                                  minW="45px"
+                                  fontWeight={isSelected ? "bold" : "normal"}
+                                >
+                                  {hourStr}
+                                </Button>
+                              );
+                            })}
+                          </Flex>
+                        </Box>
+
+                        <Divider />
+
+                        {/* Selector de Minutos */}
+                        <Box>
+                          <Text fontSize="xs" fontWeight="semibold" mb={2} color={timePickerTextColor}>
+                            Selecciona los minutos:
+                          </Text>
+                          <Flex gap={2}>
+                            {['00', '15', '30', '45'].map(minute => {
+                              const isSelected = scheduledTime.split(':')[1] === minute;
+                              return (
+                                <Button
+                                  key={minute}
+                                  flex={1}
+                                  size="md"
+                                  colorScheme={isSelected ? "blue" : "gray"}
+                                  variant={isSelected ? "solid" : "outline"}
+                                  onClick={() => {
+                                    const hour = scheduledTime.split(':')[0] || '08';
+                                    setScheduledTime(`${hour}:${minute}`);
+                                  }}
+                                  fontWeight={isSelected ? "bold" : "normal"}
+                                >
+                                  :{minute}
+                                </Button>
+                              );
+                            })}
+                          </Flex>
+                        </Box>
+                      </VStack>
+                    </Box>
+                    <Text fontSize="xs" color={timePickerInfoColor} mt={2}>
+                      🕐 Horario de atención: 8:00 AM - 10:00 PM
+                    </Text>
+                  </FormControl>
+                )}
 
                 <Divider />
 

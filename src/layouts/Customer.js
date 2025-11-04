@@ -1,5 +1,5 @@
 // chakra imports
-import { Box, ChakraProvider } from "@chakra-ui/react";
+import { Box, ChakraProvider, useColorModeValue } from "@chakra-ui/react";
 import Footer from "components/Footer/Footer.js";
 // core components
 import CustomerNavbar from "components/Navbars/CustomerNavbar.js";
@@ -12,6 +12,12 @@ import shopBackgroundImage from "assets/img/signInImage.png";
 export default function CustomerLayout(props) {
   const { ...rest } = props;
   const wrapper = React.createRef();
+
+  // Theme-aware colors
+  const bgOverlayLight = "blue.500";
+  const bgOverlayDark = "navy.900";
+  const bgOverlay = useColorModeValue(bgOverlayLight, bgOverlayDark);
+  const overlayOpacity = useColorModeValue("0.8", "0.85");
 
   React.useEffect(() => {
     document.body.style.overflow = "unset";
@@ -68,7 +74,7 @@ export default function CustomerLayout(props) {
 
   return (
     <Box ref={navRef} w="100%">
-      <CustomerNavbar logoText="TIENDA ONLINE" />
+      <CustomerNavbar logoText="TIENDA ONLINE PIKA" />
       <Box
         w="100%"
         minH="100vh"
@@ -93,10 +99,10 @@ export default function CustomerLayout(props) {
           bgPosition="center"
           zIndex="0"
         >
-          <Box w="100%" h="100%" bgSize="cover" bg="blue.500" opacity="0.8"></Box>
+          <Box w="100%" h="100%" bgSize="cover" bg={bgOverlay} opacity={overlayOpacity}></Box>
         </Box>
       </Box>
-      <Box px="24px" mx="auto" width="1044px" maxW="100%">
+      <Box px="24px" mx="auto" width="1044px" maxW="100%" mt="40px" mb="20px">
         <Footer />
       </Box>
     </Box>

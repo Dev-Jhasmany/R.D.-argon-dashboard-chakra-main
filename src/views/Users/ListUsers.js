@@ -401,9 +401,16 @@ function ListUsers() {
                           name={`${user.full_name || ''} ${user.full_last_name || ''}`}
                           me='10px'
                         />
-                        <Text fontSize='sm' fontWeight='bold'>
-                          {user.username}
-                        </Text>
+                        <Flex direction='column'>
+                          <Text fontSize='sm' fontWeight='bold'>
+                            {user.username}
+                          </Text>
+                          {user.email === 'tienda-online@sistema.local' && (
+                            <Badge colorScheme='orange' fontSize='xs' mt={1} w='fit-content'>
+                              Sistema
+                            </Badge>
+                          )}
+                        </Flex>
                       </Flex>
                     </Td>
                     <Td borderColor={borderColor}>
@@ -444,7 +451,7 @@ function ListUsers() {
                       </Badge>
                     </Td>
                     <Td borderColor={borderColor}>
-                      {user.email === 'jhasmany@admin.com' ? (
+                      {user.email === 'jhasmany@admin.com' || user.email === 'tienda-online@sistema.local' ? (
                         <Badge colorScheme='gray' fontSize='xs' p='4px 8px' borderRadius='6px'>
                           Protegido
                         </Badge>

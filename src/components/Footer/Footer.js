@@ -1,8 +1,10 @@
 /*eslint-disable*/
-import { Flex, Link, List, ListItem, Text } from "@chakra-ui/react";
+import { Flex, Link, List, ListItem, Text, useColorModeValue } from "@chakra-ui/react";
 import React from "react";
 
 export default function Footer(props) {
+  const textColor = useColorModeValue("gray.600", "gray.300");
+
   return (
     <Flex
       flexDirection={{
@@ -15,11 +17,12 @@ export default function Footer(props) {
       }}
       justifyContent='center'
       px='30px'
-      pb='20px'>
+      py='30px'>
       <Text
-        color='gray.400'
+        color={textColor}
         textAlign='center'
-        mb={{ base: "20px", xl: "0px" }}>
+        mb={{ base: "20px", xl: "0px" }}
+        fontWeight="medium">
         &copy; {1900 + new Date().getYear()} - Todos los derechos reservados
       </Text>
     </Flex>

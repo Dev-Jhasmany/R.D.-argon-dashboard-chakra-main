@@ -1304,11 +1304,11 @@ function RegisterSale() {
         <CardBody>
           {loadingInventory ? (
             <Box p={4} textAlign='center'>
-              <Text color='gray.500'>Cargando inventario...</Text>
+              <Text color={useColorModeValue('gray.500', 'gray.400')}>Cargando inventario...</Text>
             </Box>
           ) : allProducts.length === 0 ? (
-            <Box p={4} bg='gray.50' borderRadius='md'>
-              <Text color='gray.600'>No hay productos activos registrados.</Text>
+            <Box p={4} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius='md'>
+              <Text color={useColorModeValue('gray.600', 'gray.300')}>No hay productos activos registrados.</Text>
             </Box>
           ) : (
             <Box overflowX='auto'>
@@ -1327,30 +1327,36 @@ function RegisterSale() {
                   {allProducts.map((product) => {
                     const stock = parseFloat(product.stock);
                     let stockStatus = 'normal';
-                    let stockColor = 'green';
-                    let stockBg = 'green.100';
+                    let stockColor = useColorModeValue('green.700', 'green.300');
+                    let stockBg = useColorModeValue('green.100', 'green.900');
                     let stockText = 'Disponible';
 
                     // Determinar el estado del stock
                     if (stock === 0) {
                       stockStatus = 'out';
-                      stockColor = 'red.700';
-                      stockBg = 'red.100';
+                      stockColor = useColorModeValue('red.700', 'red.300');
+                      stockBg = useColorModeValue('red.100', 'red.900');
                       stockText = 'Agotado';
                     } else if (stock <= 5) {
                       stockStatus = 'low';
-                      stockColor = 'orange.700';
-                      stockBg = 'orange.100';
+                      stockColor = useColorModeValue('orange.700', 'orange.300');
+                      stockBg = useColorModeValue('orange.100', 'orange.900');
                       stockText = 'Stock Bajo';
                     } else if (stock <= 10) {
                       stockStatus = 'medium';
-                      stockColor = 'yellow.700';
-                      stockBg = 'yellow.100';
+                      stockColor = useColorModeValue('yellow.700', 'yellow.300');
+                      stockBg = useColorModeValue('yellow.100', 'yellow.900');
                       stockText = 'Por Agotarse';
                     }
 
+                    const rowBg = stock === 0
+                      ? useColorModeValue('red.50', 'red.900')
+                      : stock <= 5
+                      ? useColorModeValue('orange.50', 'orange.900')
+                      : useColorModeValue('white', 'gray.800');
+
                     return (
-                      <Tr key={product.id} bg={stock === 0 ? 'red.50' : stock <= 5 ? 'orange.50' : 'white'}>
+                      <Tr key={product.id} bg={rowBg}>
                         <Td borderColor={borderColor} fontWeight='semibold'>
                           {product.code}
                         </Td>
