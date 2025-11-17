@@ -123,6 +123,19 @@ const orderService = {
     }
   },
 
+  // Cancelar un pedido
+  cancelOrder: async (id) => {
+    try {
+      const response = await api.patch(`/orders/${id}/cancel`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error al cancelar pedido',
+      };
+    }
+  },
+
   // Eliminar un pedido
   deleteOrder: async (id) => {
     try {

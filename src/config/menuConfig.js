@@ -75,6 +75,12 @@ export const MENU_STRUCTURE = [
     category: "activity_log",
     submenus: ["Ver Bitácora"]
   },
+  {
+    id: "payroll",
+    name: "Planilla Sueldos",
+    category: "payroll",
+    submenus: ["Gestión Horarios"]
+  },
 ];
 
 // Categorías y menús que siempre son visibles para todos los usuarios

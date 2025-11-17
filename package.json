@@ -15,6 +15,7 @@
 		"ajv": "^8.17.1",
 		"axios": "^1.12.2",
 		"classnames": "2.3.1",
+		"express": "^4.21.2",
 		"file-saver": "^2.0.5",
 		"framer-motion": "4.1.17",
 		"jspdf": "^3.0.3",
@@ -47,10 +48,11 @@
 	},
 	"scripts": {
 		"start": "react-scripts start",
+		"start:prod": "node server.js",
 		"build": "cross-env CI=false;cross-env PUBLIC_URL=/ react-scripts build && gulp licenses",
 		"test": "react-scripts test --env=jsdom",
 		"eject": "react-scripts eject",
-		"deploy": "npm run build",
+		"deploy": "npm run build && npm run start:prod",
 		"lint:check": "eslint . --ext=js,jsx;  exit 0",
 		"lint:fix": "eslint . --ext=js,jsx --fix;  exit 0",
 		"install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start"

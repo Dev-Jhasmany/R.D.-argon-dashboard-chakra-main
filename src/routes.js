@@ -39,6 +39,11 @@ import OnlineOrders from "views/Orders/OnlineOrders.js";
 // import PaymentMethods from "views/Payments/PaymentMethods.js";
 import ActivityLog from "views/Settings/ActivityLog.js";
 import Logout from "views/Settings/Logout.js";
+// Attendance
+import RegisterAttendance from "views/Attendance/RegisterAttendance.js";
+import AuthorizedLocations from "views/Attendance/AuthorizedLocations.js";
+// Payroll
+import ScheduleManagement from "views/Payroll/ScheduleManagement.js";
 // Customer E-commerce
 import Shop from "views/Customer/Shop.js";
 import Cart from "views/Customer/Cart.js";
@@ -462,6 +467,31 @@ var dashRoutes = [
   //   ],
   // },
   {
+    name: "Control Asistencia",
+    category: "attendance",
+    rtlName: "مراقبة الحضور",
+    state: "attendanceCollapse",
+    icon: <StatsIcon color='inherit' />,
+    views: [
+      {
+        path: "/register-attendance",
+        name: "Registrar Asistencia",
+        rtlName: "تسجيل الحضور",
+        icon: <StatsIcon color='inherit' />,
+        component: RegisterAttendance,
+        layout: "/admin",
+      },
+      {
+        path: "/authorized-locations",
+        name: "Ubicaciones Autorizadas",
+        rtlName: "المواقع المصرح بها",
+        icon: <HomeIcon color='inherit' />,
+        component: AuthorizedLocations,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
     name: "Bitácora",
     category: "activity_log",
     rtlName: "سجل النشاط",
@@ -474,6 +504,23 @@ var dashRoutes = [
         rtlName: "عرض سجل النشاط",
         icon: <DocumentIcon color='inherit' />,
         component: ActivityLog,
+        layout: "/admin",
+      },
+    ],
+  },
+  {
+    name: "Planilla Sueldos",
+    category: "payroll",
+    rtlName: "كشوف المرتبات",
+    state: "payrollCollapse",
+    icon: <CreditIcon color='inherit' />,
+    views: [
+      {
+        path: "/schedule-management",
+        name: "Gestión Horarios",
+        rtlName: "إدارة الجداول",
+        icon: <StatsIcon color='inherit' />,
+        component: ScheduleManagement,
         layout: "/admin",
       },
     ],

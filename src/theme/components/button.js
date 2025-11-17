@@ -20,9 +20,9 @@ export const buttonStyles = {
           _active: { bg: "navy.900" },
         },
         "no-effects": {
-          _hover: "none",
-          _active: "none",
-          _focus: "none",
+          _hover: {},
+          _active: {},
+          _focus: {},
         },
         danger: () => ({
           color: "white",

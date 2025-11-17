@@ -272,7 +272,7 @@ function ListProducts() {
       return [
         product.name,
         product.sku || product.code || 'N/A',
-        `$${product.price ? Number(product.price).toFixed(2) : '0.00'}`,
+        `Bs. ${product.price ? Number(product.price).toFixed(2) : '0.00'}`,
         product.stock || 0,
         product.unit || 'N/A',
         product.category?.name || 'Sin categoría',
@@ -430,7 +430,7 @@ function ListProducts() {
                       </Td>
                       <Td borderColor={borderColor}>
                         <Text fontSize='sm' fontWeight='bold'>
-                          ${product.price ? Number(product.price).toFixed(2) : '0.00'}
+                          Bs. {product.price ? Number(product.price).toFixed(2) : '0.00'}
                         </Text>
                       </Td>
                       <Td borderColor={borderColor}>

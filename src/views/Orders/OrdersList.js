@@ -29,13 +29,13 @@ import { useAuth } from "contexts/AuthContext";
 // Animación de pulso para alertas urgentes
 const pulse = keyframes`
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+    boxShadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+    boxShadow: 0 0 0 10px rgba(255, 0, 0, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+    boxShadow: 0 0 0 0 rgba(255, 0, 0, 0);
   }
 `;
 
@@ -217,6 +217,31 @@ function OrdersList() {
       toast({
         title: "Pedido concluido",
         description: "El pedido ha sido marcado como concluido",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      loadOrders();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  };
+
+  const handleCancel = async (orderId) => {
+    const result = await orderService.cancelOrder(orderId);
+
+    if (result.success) {
+      toast({
+        title: "Pedido cancelado",
+        description: "El pedido ha sido cancelado exitosamente",
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -652,34 +677,56 @@ function OrdersList() {
                           }
 
                           return (
-                            <Tooltip
-                              label={tooltipLabel}
-                              placement="top"
-                              hasArrow
-                            >
+                            <>
+                              <Tooltip
+                                label={tooltipLabel}
+                                placement="top"
+                                hasArrow
+                              >
+                                <Button
+                                  size="sm"
+                                  colorScheme="blue"
+                                  width="full"
+                                  onClick={() => handleReceive(order.id)}
+                                  isDisabled={!user || !user.id || !canReceive}
+                                  opacity={!canReceive ? 0.5 : 1}
+                                >
+                                  {!canReceive ? '🔒 Recepcionar Pedido' : 'Recepcionar Pedido'}
+                                </Button>
+                              </Tooltip>
                               <Button
                                 size="sm"
-                                colorScheme="blue"
+                                colorScheme="red"
+                                variant="outline"
                                 width="full"
-                                onClick={() => handleReceive(order.id)}
-                                isDisabled={!user || !user.id || !canReceive}
-                                opacity={!canReceive ? 0.5 : 1}
+                                onClick={() => handleCancel(order.id)}
                               >
-                                {!canReceive ? '🔒 Recepcionar Pedido' : 'Recepcionar Pedido'}
+                                Cancelar Pedido
                               </Button>
-                            </Tooltip>
+                            </>
                           );
                         })()}
 
                         {(order.status === 'received' || order.status === 'in_progress') && (
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            width="full"
-                            onClick={() => handleComplete(order.id)}
-                          >
-                            Marcar como Concluido
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              colorScheme="green"
+                              width="full"
+                              onClick={() => handleComplete(order.id)}
+                            >
+                              Marcar como Concluido
+                            </Button>
+                            <Button
+                              size="sm"
+                              colorScheme="red"
+                              variant="outline"
+                              width="full"
+                              onClick={() => handleCancel(order.id)}
+                            >
+                              Cancelar Pedido
+                            </Button>
+                          </>
                         )}
 
                         {order.receivedAt && (

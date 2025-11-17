@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Box,
   Button,
   Flex,
   Table,
@@ -15,6 +16,7 @@ import {
   useToast,
   Spinner,
   Center,
+  VStack,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -50,6 +52,7 @@ import { saveAs } from "file-saver";
 function ListUsers() {
   const textColor = useColorModeValue("gray.700", "white");
   const borderColor = useColorModeValue("gray.200", "gray.600");
+  const inactiveBgColor = useColorModeValue("gray.50", "gray.700");
   const toast = useToast();
 
   const [users, setUsers] = useState([]);
@@ -58,6 +61,8 @@ function ListUsers() {
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isToggleOpen, setIsToggleOpen] = useState(false);
+  const [userToToggle, setUserToToggle] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({
     username: '',
@@ -114,17 +119,105 @@ function ListUsers() {
       });
       loadUsers();
     } else {
+      const userToHandle = users.find(u => u.id === deleteId);
+
+      // Verificar si el error es por caja abierta
+      if (result.error.includes('caja abierta') || result.error.includes('debe cerrar la caja')) {
+        setIsDeleteOpen(false);
+
+        toast({
+          title: "Caja abierta - No se puede eliminar",
+          description: `${userToHandle?.username || 'Este usuario'} tiene una caja abierta. Solo el mismo cajero o un administrador puede cerrarla. RECOMENDACIÓN: En lugar de eliminar, desactiva al usuario haciendo clic en el badge de estado. Esto impide que inicie sesión mientras mantiene sus registros intactos.`,
+          status: "warning",
+          duration: 12000,
+          isClosable: true,
+          position: "top-right",
+        });
+
+        setDeleteId(null);
+        return;
+      }
+
+      // Si es error de registros asociados (cajas cerradas, ventas, etc.)
+      if (result.status === 500 ||
+          result.error.includes('dependen') ||
+          result.error.includes('relacionad') ||
+          result.error.includes('asociados') ||
+          result.error.includes('servidor')) {
+
+        setIsDeleteOpen(false);
+
+        // Si tiene registros históricos pero NO cajas abiertas, puede desactivarse
+        toast({
+          title: "Registros históricos",
+          description: `${userToHandle?.username || 'Este usuario'} tiene registros históricos (ventas cerradas, asistencias, etc.). Si ya no trabaja, puedes desactivarlo haciendo clic en el badge de estado.`,
+          status: "info",
+          duration: 6000,
+          isClosable: true,
+          position: "top-right",
+        });
+
+        setDeleteId(null);
+        return;
+      }
+
       toast({
-        title: "Error",
+        title: "Error al eliminar",
         description: result.error,
         status: "error",
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
         position: "top-right",
       });
     }
     setIsDeleteOpen(false);
     setDeleteId(null);
+  };
+
+  const openToggleDialog = (user) => {
+    setUserToToggle(user);
+    setIsToggleOpen(true);
+  };
+
+  const handleToggleStatus = async () => {
+    if (!userToToggle) return;
+
+    // Intentar actualizar el estado
+    const result = await userService.updateUser(userToToggle.id, {
+      is_active: !userToToggle.is_active,
+      username: userToToggle.username,
+      email: userToToggle.email,
+      ci: userToToggle.ci,
+      full_name: userToToggle.full_name,
+      full_last_name: userToToggle.full_last_name,
+      role_id: userToToggle.role?.id,
+    });
+
+    if (result.success) {
+      toast({
+        title: userToToggle.is_active ? "Usuario desactivado" : "Usuario activado",
+        description: userToToggle.is_active
+          ? `${userToToggle.username} no podrá iniciar sesión. Sus registros históricos se mantienen.`
+          : `${userToToggle.username} ahora puede iniciar sesión en el sistema.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      loadUsers();
+    } else {
+      toast({
+        title: "Error al actualizar usuario",
+        description: result.error || "No se pudo cambiar el estado del usuario",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+
+    setIsToggleOpen(false);
+    setUserToToggle(null);
   };
 
   const openDeleteDialog = (id) => {
@@ -393,7 +486,7 @@ function ListUsers() {
               </Thead>
               <Tbody>
                 {users.map((user) => (
-                  <Tr key={user.id}>
+                  <Tr key={user.id} opacity={user.is_active ? 1 : 0.6} bg={user.is_active ? 'transparent' : inactiveBgColor}>
                     <Td borderColor={borderColor}>
                       <Flex align='center'>
                         <Avatar
@@ -408,6 +501,11 @@ function ListUsers() {
                           {user.email === 'tienda-online@sistema.local' && (
                             <Badge colorScheme='orange' fontSize='xs' mt={1} w='fit-content'>
                               Sistema
+                            </Badge>
+                          )}
+                          {!user.is_active && (
+                            <Badge colorScheme='red' fontSize='xs' mt={1} w='fit-content'>
+                              Inactivo
                             </Badge>
                           )}
                         </Flex>
@@ -442,13 +540,32 @@ function ListUsers() {
                       )}
                     </Td>
                     <Td borderColor={borderColor}>
-                      <Badge
-                        colorScheme={user.is_active ? "green" : "red"}
-                        fontSize='sm'
-                        p='3px 10px'
-                        borderRadius='8px'>
-                        {user.is_active ? "Activo" : "Inactivo"}
-                      </Badge>
+                      {user.email === 'jhasmany@admin.com' || user.email === 'tienda-online@sistema.local' ? (
+                        <Badge
+                          colorScheme={user.is_active ? "green" : "red"}
+                          fontSize='sm'
+                          p='3px 10px'
+                          borderRadius='8px'>
+                          {user.is_active ? "Activo" : "Inactivo"}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          colorScheme={user.is_active ? "green" : "red"}
+                          fontSize='sm'
+                          p='6px 12px'
+                          borderRadius='8px'
+                          cursor='pointer'
+                          onClick={() => openToggleDialog(user)}
+                          _hover={{
+                            opacity: 0.8,
+                            transform: 'scale(1.05)',
+                          }}
+                          transition='all 0.2s'
+                          title={user.is_active ? 'Haz clic para desactivar' : 'Haz clic para activar'}
+                        >
+                          {user.is_active ? "Activo ▼" : "Inactivo ▲"}
+                        </Badge>
+                      )}
                     </Td>
                     <Td borderColor={borderColor}>
                       {user.email === 'jhasmany@admin.com' || user.email === 'tienda-online@sistema.local' ? (
@@ -456,12 +573,11 @@ function ListUsers() {
                           Protegido
                         </Badge>
                       ) : (
-                        <>
+                        <Flex gap={2} flexWrap='wrap'>
                           <Button
                             size='sm'
                             variant='outline'
                             colorScheme='blue'
-                            me='5px'
                             onClick={() => openEditDialog(user)}
                           >
                             Editar
@@ -474,7 +590,7 @@ function ListUsers() {
                           >
                             Eliminar
                           </Button>
-                        </>
+                        </Flex>
                       )}
                     </Td>
                   </Tr>
@@ -498,7 +614,34 @@ function ListUsers() {
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              ¿Estás seguro? Esta acción no se puede deshacer.
+              <VStack align='start' spacing={3}>
+                <Text>
+                  ¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.
+                </Text>
+                <Box bg='red.50' p={3} borderRadius='md' borderLeft='4px solid' borderColor='red.400'>
+                  <Text fontSize='sm' fontWeight='bold' color='red.800' mb={1}>
+                    🚫 No se puede eliminar si:
+                  </Text>
+                  <Text fontSize='sm' color='red.700' mb={1}>
+                    • Tiene una <strong>caja abierta</strong> (solo el mismo cajero o admin puede cerrarla)
+                  </Text>
+                  <Text fontSize='sm' color='red.700'>
+                    • Tiene pedidos activos o pagos pendientes
+                  </Text>
+                </Box>
+                <Box bg='green.50' p={3} borderRadius='md' borderLeft='4px solid' borderColor='green.400'>
+                  <Text fontSize='sm' fontWeight='bold' color='green.800' mb={1}>
+                    ✅ RECOMENDADO: Desactivar usuario
+                  </Text>
+                  <Text fontSize='sm' color='green.700' mb={2}>
+                    Si el usuario ya no trabaja, <strong>desactívalo</strong> en lugar de eliminarlo.
+                    Haz clic en el badge <Badge colorScheme='green' fontSize='xs'>Activo</Badge> en la columna ESTADO.
+                  </Text>
+                  <Text fontSize='sm' color='green.700' fontWeight='bold'>
+                    Ventajas: No podrá iniciar sesión, no afecta operaciones activas, mantiene registros históricos.
+                  </Text>
+                </Box>
+              </VStack>
             </AlertDialogBody>
 
             <AlertDialogFooter>
@@ -507,6 +650,48 @@ function ListUsers() {
               </Button>
               <Button colorScheme='red' onClick={handleDelete} ml={3}>
                 Eliminar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
+      {/* Alert Dialog para confirmar cambio de estado */}
+      <AlertDialog
+        isOpen={isToggleOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setIsToggleOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+              {userToToggle?.is_active ? 'Desactivar Usuario' : 'Activar Usuario'}
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              {userToToggle?.is_active ? (
+                <>
+                  ¿Desactivar a <strong>{userToToggle?.username}</strong>?
+                  El usuario no podrá iniciar sesión pero sus registros se mantendrán.
+                </>
+              ) : (
+                <>
+                  ¿Activar a <strong>{userToToggle?.username}</strong>?
+                  El usuario podrá iniciar sesión nuevamente.
+                </>
+              )}
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={() => setIsToggleOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme={userToToggle?.is_active ? 'orange' : 'green'}
+                onClick={handleToggleStatus}
+                ml={3}
+              >
+                {userToToggle?.is_active ? 'Desactivar' : 'Activar'}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -587,15 +772,32 @@ function ListUsers() {
               </Select>
             </FormControl>
 
-            <FormControl display='flex' alignItems='center'>
-              <FormLabel mb='0'>Usuario Activo</FormLabel>
-              <Switch
-                name='is_active'
-                isChecked={editForm.is_active}
-                onChange={handleEditChange}
-                colorScheme='teal'
-              />
-            </FormControl>
+            <Box bg={editForm.is_active ? 'green.50' : 'red.50'} p={4} borderRadius='md' borderLeft='4px solid' borderColor={editForm.is_active ? 'green.400' : 'red.400'} mb={4}>
+              <FormControl display='flex' alignItems='center' justifyContent='space-between'>
+                <VStack align='start' spacing={1}>
+                  <FormLabel mb='0' fontWeight='bold' color={editForm.is_active ? 'green.800' : 'red.800'}>
+                    Estado del Usuario
+                  </FormLabel>
+                  <Text fontSize='sm' color={editForm.is_active ? 'green.700' : 'red.700'}>
+                    {editForm.is_active
+                      ? '✓ El usuario PUEDE iniciar sesión en el sistema'
+                      : '✗ El usuario NO PUEDE iniciar sesión (Desactivado)'}
+                  </Text>
+                </VStack>
+                <Switch
+                  name='is_active'
+                  size='lg'
+                  isChecked={editForm.is_active}
+                  onChange={handleEditChange}
+                  colorScheme={editForm.is_active ? 'green' : 'red'}
+                />
+              </FormControl>
+              {!editForm.is_active && (
+                <Text fontSize='xs' color='orange.700' mt={2}>
+                  <strong>Nota:</strong> Los registros históricos del usuario (ventas, asistencias) se mantienen intactos.
+                </Text>
+              )}
+            </Box>
           </ModalBody>
 
           <ModalFooter>

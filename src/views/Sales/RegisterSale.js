@@ -1420,7 +1420,8 @@ function RegisterSale() {
                       }}
                       bg={inputBg}
                       color={inputTextColor}
-                      value={selectedPromotion?.id || ''}>
+                      value={selectedPromotion?.id || ''}
+                      isDisabled={!!selectedProduct}>
                       {promotions.map((promo) => {
                         const price = promo.promotion_type === 'combo'
                           ? parseFloat(promo.combo_price).toFixed(2)
@@ -1483,7 +1484,8 @@ function RegisterSale() {
                     }}
                     bg={inputBg}
                     color={inputTextColor}
-                    value={selectedProduct?.id || ''}>
+                    value={selectedProduct?.id || ''}
+                    isDisabled={!!selectedPromotion}>
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>
                         {product.code} - {product.name} (Stock: {product.stock}) - Bs. {product.price}
@@ -1493,10 +1495,10 @@ function RegisterSale() {
                 </FormControl>
                 {selectedProduct && (
                   <Box p={3} bg='blue.50' borderRadius='md' mt={2}>
-                    <Text fontSize='sm'>
+                    <Text fontSize='sm' color='blue.800'>
                       <strong>Stock disponible:</strong> {selectedProduct.stock}
                     </Text>
-                    <Text fontSize='sm'>
+                    <Text fontSize='sm' color='blue.800'>
                       <strong>Precio:</strong> Bs. {selectedProduct.price}
                     </Text>
                   </Box>

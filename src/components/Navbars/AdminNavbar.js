@@ -88,7 +88,7 @@ export default function AdminNavbar(props) {
       borderStyle="solid"
       transitionDelay="0s, 0s, 0s, 0s"
       transitionDuration=" 0.25s, 0.25s, 0.25s, 0s"
-      transition-property="box-shadow, background-color, filter, border"
+      transitionProperty="box-shadow, background-color, filter, border"
       transitionTimingFunction="linear, linear, linear, linear"
       alignItems={{ xl: "center" }}
       borderRadius="16px"

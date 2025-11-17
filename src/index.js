@@ -17,7 +17,7 @@
 */
 import React from "react";
 import ReactDOM from "react-dom";
-import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
+import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 
 import AuthLayout from "layouts/Auth.js";
 import AdminLayout from "layouts/Admin.js";
@@ -32,7 +32,7 @@ import { AuthProvider } from "contexts/AuthContext";
 ReactDOM.render(
   <ChakraProvider theme={theme} resetCss={false} position="relative">
     <AuthProvider>
-      <HashRouter>
+      <BrowserRouter>
         <Switch>
           <Route path={`/auth`} component={AuthLayout} />
           <Route path={`/admin`} component={AdminLayout} />
@@ -40,7 +40,7 @@ ReactDOM.render(
           <Route path={`/customer`} component={CustomerLayout} />
           <Redirect from={`/`} to="/customer/shop" />
         </Switch>
-      </HashRouter>
+      </BrowserRouter>
     </AuthProvider>
   </ChakraProvider>,
   document.getElementById("root")
