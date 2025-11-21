@@ -87,11 +87,25 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Log completo del error para debugging
+    console.error('❌ Error en API:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      method: error.config?.method,
+      message: error.response?.data?.message || error.message,
+      fullError: error.response?.data
+    });
+
     // Si el token expiró o es inválido
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/#/auth/signin';
+      console.error('🔒 Error 401 - No autorizado. Redirigiendo a login...');
+
+      // Solo hacer logout si NO es el endpoint de login
+      if (!error.config?.url?.includes('/auth/login')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/#/auth/signin';
+      }
     }
 
     // Manejo de errores de red

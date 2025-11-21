@@ -20,6 +20,7 @@ import Sidebar from "components/Sidebar/Sidebar.js";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import routes from "routes.js";
+import { usePermissions } from "hooks/usePermissions";
 // Custom Chakra theme
 import FixedPlugin from "../components/FixedPlugin/FixedPlugin";
 // Custom components
@@ -31,6 +32,8 @@ import bgAdmin from "assets/img/admin-background.png";
 export default function Dashboard(props) {
   const { ...rest } = props;
   const { colorMode } = useColorMode();
+  const { hasAccessToCategory, hasAccessToSubmenu, loading: permissionsLoading } = usePermissions();
+
   // functions for changing the states from components
   const getRoute = () => {
     return window.location.pathname !== "/admin/full-screen-maps";
@@ -79,6 +82,39 @@ export default function Dashboard(props) {
     }
     return activeNavbar;
   };
+  // Obtener la primera ruta accesible para el usuario
+  const getFirstAccessibleRoute = (routes) => {
+    // Si aún está cargando permisos, esperar
+    if (permissionsLoading) {
+      return null; // No redirigir hasta que se carguen los permisos
+    }
+
+    for (let i = 0; i < routes.length; i++) {
+      const route = routes[i];
+
+      // Si es una ruta simple (como Dashboard) - verificar primero
+      if (route.category && !route.views && route.layout === "/admin") {
+        if (hasAccessToCategory(route.name)) {
+          return route.layout + route.path;
+        }
+      }
+      // Si tiene vistas (es una categoría con submenús)
+      else if (route.category && route.views) {
+        // Verificar si tiene acceso a la categoría
+        if (hasAccessToCategory(route.name)) {
+          // Buscar el primer submenú accesible
+          for (let view of route.views) {
+            if (hasAccessToSubmenu(route.name, view.name) && view.layout === "/admin") {
+              return view.layout + view.path;
+            }
+          }
+        }
+      }
+    }
+    // Si no tiene acceso a ninguna ruta, redirigir a logout
+    return "/admin/logout";
+  };
+
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
       if (prop.collapse) {
@@ -88,6 +124,22 @@ export default function Dashboard(props) {
         return getRoutes(prop.views);
       }
       if (prop.layout === "/admin") {
+        // Verificar permisos antes de renderizar la ruta
+        // Si la ruta tiene un 'name' asociado a una categoría/submenú, verificar acceso
+        if (prop.name) {
+          // Buscar la categoría padre de esta vista
+          const parentCategory = routes.find(r =>
+            r.views && r.views.some(v => v.path === prop.path)
+          );
+
+          if (parentCategory && parentCategory.name) {
+            // Verificar si tiene acceso al submenú
+            if (!hasAccessToSubmenu(parentCategory.name, prop.name)) {
+              return null; // No renderizar la ruta si no tiene acceso
+            }
+          }
+        }
+
         return (
           <Route
             path={prop.layout + prop.path}
@@ -156,7 +208,9 @@ export default function Dashboard(props) {
             <PanelContainer>
               <Switch>
                 {getRoutes(routes)}
-                <Redirect from='/admin' to='/admin/dashboard' />
+                {!permissionsLoading && (
+                  <Redirect from='/admin' to={getFirstAccessibleRoute(routes)} />
+                )}
               </Switch>
             </PanelContainer>
           </PanelContent>

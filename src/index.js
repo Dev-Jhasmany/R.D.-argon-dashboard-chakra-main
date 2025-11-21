@@ -38,7 +38,7 @@ ReactDOM.render(
           <Route path={`/admin`} component={AdminLayout} />
           <Route path={`/rtl`} component={RTLLayout} />
           <Route path={`/customer`} component={CustomerLayout} />
-          <Redirect from={`/`} to="/customer/shop" />
+          <Redirect from={`/`} to="/auth/signin" />
         </Switch>
       </BrowserRouter>
     </AuthProvider>

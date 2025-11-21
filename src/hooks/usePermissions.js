@@ -25,8 +25,9 @@ export const usePermissions = () => {
       const user = JSON.parse(userStr);
       setUserRole(user.role);
 
-      // Si es Super Admin (nivel 0) o Administrador (nivel 1), tiene acceso a todo
-      if (user.role?.hierarchyLevel <= 1) {
+      // Solo Super Admin (nivel 0) tiene acceso total automático
+      // Administrador (nivel 1) y otros roles deben tener permisos explícitos
+      if (user.role?.hierarchyLevel === 0) {
         setPermissions('ALL'); // Marcador especial para acceso total
         setLoading(false);
         return;

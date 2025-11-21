@@ -7,10 +7,10 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-# Construir la aplicación para producción
-RUN npm run build
+# Construir la aplicación para producción (comentado para desarrollo)
+# RUN npm run build
 
 EXPOSE 3001
 
-# Usar el servidor Express para servir la aplicación con soporte para BrowserRouter
-CMD ["npm", "run", "start:prod"]
+# Modo desarrollo
+CMD ["npm", "start"]

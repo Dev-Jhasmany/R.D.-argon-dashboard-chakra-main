@@ -498,7 +498,7 @@ function ListUsers() {
                           <Text fontSize='sm' fontWeight='bold'>
                             {user.username}
                           </Text>
-                          {user.email === 'tienda-online@sistema.local' && (
+                          {user.email === 'tienda.online@restaurante.com' && (
                             <Badge colorScheme='orange' fontSize='xs' mt={1} w='fit-content'>
                               Sistema
                             </Badge>
@@ -540,7 +540,7 @@ function ListUsers() {
                       )}
                     </Td>
                     <Td borderColor={borderColor}>
-                      {user.email === 'jhasmany@admin.com' || user.email === 'tienda-online@sistema.local' ? (
+                      {user.email === 'jhasmany@admin.com' || user.email === 'tienda.online@restaurante.com' ? (
                         <Badge
                           colorScheme={user.is_active ? "green" : "red"}
                           fontSize='sm'
@@ -568,7 +568,7 @@ function ListUsers() {
                       )}
                     </Td>
                     <Td borderColor={borderColor}>
-                      {user.email === 'jhasmany@admin.com' || user.email === 'tienda-online@sistema.local' ? (
+                      {user.email === 'jhasmany@admin.com' || user.email === 'tienda.online@restaurante.com' ? (
                         <Badge colorScheme='gray' fontSize='xs' p='4px 8px' borderRadius='6px'>
                           Protegido
                         </Badge>

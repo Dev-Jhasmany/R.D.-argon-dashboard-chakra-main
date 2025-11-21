@@ -91,8 +91,8 @@ function SignIn() {
         isClosable: true,
         position: "top-right",
       });
-      // Redirigir al dashboard
-      history.push("/admin/dashboard");
+      // Redirigir a /admin, que automáticamente redirigirá según permisos
+      history.push("/admin");
     } else {
       toast({
         title: "Error al iniciar sesión",

@@ -31,6 +31,7 @@ import Card from 'components/Card/Card';
 import CardBody from 'components/Card/CardBody';
 import CardHeader from 'components/Card/CardHeader';
 import { FiEdit, FiTrash2, FiClock, FiPlus } from 'react-icons/fi';
+import roleService from 'services/roleService';
 
 function ScheduleManagement() {
   const textColor = useColorModeValue('gray.700', 'white');
@@ -40,6 +41,7 @@ function ScheduleManagement() {
   const toast = useToast();
 
   const [schedules, setSchedules] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -80,7 +82,27 @@ function ScheduleManagement() {
 
   useEffect(() => {
     loadSchedules();
+    loadRoles();
   }, []);
+
+  const loadRoles = async () => {
+    try {
+      const result = await roleService.getAllRoles();
+      if (result.success) {
+        setRoles(result.data);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'No se pudieron cargar los roles',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar roles:', error);
+    }
+  };
 
   const loadSchedules = async () => {
     setLoading(true);
@@ -387,13 +409,19 @@ function ScheduleManagement() {
               {/* Nombre del horario */}
               <FormControl isRequired>
                 <FormLabel fontWeight="bold">Nombre del Horario</FormLabel>
-                <Input
+                <Select
                   name="scheduleName"
                   value={formData.scheduleName}
                   onChange={handleInputChange}
-                  placeholder="Ej: Horario Regular de Lunes a Viernes"
+                  placeholder="Seleccione un rol"
                   bg={inputBg}
-                />
+                >
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
 
               <Divider />
